@@ -2,8 +2,8 @@
 
 ```mermaid
 flowchart LR
-  subgraph GH[Free Oracle Cloud server, scheduled]
-    C[collect.py<br/>every 2 h] --> P[process.py<br/>tag + group]
+  subgraph GH[GitHub Actions, scheduled]
+    C[collect.py<br/>every 3 h] --> P[process.py<br/>tag + group]
     X[cleanup.py + accounts.py<br/>nightly]
   end
   F[(Public RSS / Atom feeds<br/>sources.csv)] --> C

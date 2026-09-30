@@ -1,8 +1,8 @@
 [Unit]
-Description=All-Lens: collect, tag and group news every 2 hours
+Description=All-Lens: collect, tag and group news every 3 hours
 
 [Timer]
-OnCalendar=*-*-* 00/2:07:00 UTC
+OnCalendar=*-*-* 00/3:07:00 UTC
 Persistent=true
 Unit=alllens@collect.service
 

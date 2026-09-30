@@ -43,9 +43,9 @@ GitHub repo → Settings → Secrets and variables → Actions → **New reposit
 Then Actions → **Collect news** → Run workflow. The first run takes ~5 minutes (it downloads the multilingual model once; later runs reuse it).
 **Check:** Supabase → Table editor → `stories` has rows, `runs` shows feeds OK / failed.
 
-From now on collection runs every 2 hours and clean-up every night, by themselves.
+From now on collection runs every 3 hours and clean-up every night, by themselves.
 
-**Keep it free and private:** a private repository gets 2,000 GitHub Actions minutes a month, which the collect schedule outgrows as sources are added. Move the scheduled jobs to a free Oracle Cloud server with `docs/SERVER.md` (about 45 minutes, once); GitHub then only runs Tests.
+**Free and private:** a private repository gets 2,000 GitHub Actions minutes a month; collecting every 3 hours with cached packages fits. Check GitHub → Settings → Billing and licensing → Usage now and then; if it nears 2,000 as sources are added, move the scheduled jobs to a free server with `docs/SERVER.md`.
 
 ## 4. Vercel: put the website online (10 min)
 

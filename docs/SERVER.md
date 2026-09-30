@@ -1,8 +1,11 @@
-# Free server for the scheduled jobs (Oracle Cloud "Always Free")
+# Optional: free server for the scheduled jobs (Oracle Cloud "Always Free")
 
-GitHub's free plan gives a private repository 2,000 Actions minutes a month; collecting from
-hundreds of feeds every 2 hours needs more. Oracle Cloud's
-Always Free tier includes a small server that never expires and has no run limit. The
+**Not needed today.** The scheduled jobs run on GitHub Actions (collect every 3 hours, with the
+installed packages cached), which fits a private repository's free 2,000 minutes a month.
+Use this guide only if the monthly usage (GitHub → Settings → Billing and licensing → Usage)
+gets close to 2,000 as sources are added.
+
+Oracle Cloud's Always Free tier includes a small server that never expires and has no run limit. The
 **collect** and **cleanup** jobs run there; GitHub keeps running
 **Tests** on every push, and the website stays on Vercel.
 

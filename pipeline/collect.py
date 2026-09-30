@@ -1,6 +1,6 @@
 """Collect new articles from every source feed and store them.
 
-Run every 1-2 hours (see .github/workflows/collect.yml):
+Runs every 3 hours (see .github/workflows/collect.yml):
     python -m pipeline.collect
 
 Stores only headline, short snippet, link and metadata. Skips items older than
