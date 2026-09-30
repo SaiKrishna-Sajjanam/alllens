@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { groupsOf, languageName } from '@/lib/catalog';
 import { formatTime, t } from '@/lib/i18n';
+import { translateUrl } from '@/lib/translate';
 import type { Article, Lang } from '@/lib/types';
 import AskAI from './AskAI';
 import { BackIcon, ExternalIcon } from './Icons';
@@ -52,10 +53,19 @@ export default function CompareView({ articles, lang, storyId, aiAssistant }: {
               <a href={a.url} target="_blank" rel="noopener noreferrer" className="row" style={{ minHeight: 44, fontWeight: 600 }}>
                 {t(lang, 'compare.original')} <ExternalIcon />
               </a>
+              {translateUrl(a.url, a.language, lang) && (
+                <a href={translateUrl(a.url, a.language, lang)!} target="_blank" rel="noopener noreferrer" className="row"
+                  style={{ minHeight: 44 }} title={t(lang, 'story.translateNote')}>
+                  {t(lang, 'story.translate')} <ExternalIcon />
+                </a>
+              )}
             </section>
           );
         })}
       </div>
+      {articles.some((a) => translateUrl(a.url, a.language, lang)) && (
+        <p className="small muted">{t(lang, 'story.translateNote')}</p>
+      )}
       <div className="narrow stack" style={{ margin: 0 }}>
         <AskAI urls={articles.map((a) => a.url)} lang={lang} preferred={aiAssistant} label={t(lang, 'compare.askAll')} block />
         <p className="small muted">{t(lang, 'ai.note')}</p>

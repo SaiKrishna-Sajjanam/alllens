@@ -1,7 +1,34 @@
-// Interface text in English and Telugu. News itself is never translated:
-// headlines and snippets always appear in the words and language the source used.
-// Telugu wording: please have a native speaker review before launch.
+// Interface text. English and Telugu live here; the other languages are in lib/locales/.
+// News itself is never translated by us: headlines and snippets always appear in the words
+// and language the source used ("Translate" hands the original to Google Translate instead).
+// Every language except English is a draft: have a native speaker review it before launch.
+import { bn } from './locales/bn';
+import { gu } from './locales/gu';
+import { hi } from './locales/hi';
+import { kn } from './locales/kn';
+import { ml } from './locales/ml';
+import { mr } from './locales/mr';
+import { or } from './locales/or';
+import { pa } from './locales/pa';
+import { ta } from './locales/ta';
+import { ur } from './locales/ur';
 import type { Lang } from './types';
+
+/** Interface languages: code, own name, date locale, writing direction. English first, then by speakers. */
+export const UI_LANGUAGES: { code: Lang; name: string; locale: string; rtl?: boolean }[] = [
+  { code: 'en', name: 'English', locale: 'en-IN' },
+  { code: 'hi', name: 'हिन्दी', locale: 'hi-IN' },
+  { code: 'bn', name: 'বাংলা', locale: 'bn-IN' },
+  { code: 'mr', name: 'मराठी', locale: 'mr-IN' },
+  { code: 'te', name: 'తెలుగు', locale: 'te-IN' },
+  { code: 'ta', name: 'தமிழ்', locale: 'ta-IN' },
+  { code: 'gu', name: 'ગુજરાતી', locale: 'gu-IN' },
+  { code: 'ur', name: 'اردو', locale: 'ur-IN', rtl: true },
+  { code: 'kn', name: 'ಕನ್ನಡ', locale: 'kn-IN' },
+  { code: 'or', name: 'ଓଡ଼ିଆ', locale: 'or-IN' },
+  { code: 'ml', name: 'മലയാളം', locale: 'ml-IN' },
+  { code: 'pa', name: 'ਪੰਜਾਬੀ', locale: 'pa-IN' },
+];
 
 const en = {
   brand: 'All-Lens',
@@ -14,8 +41,6 @@ const en = {
   'nav.signin': 'Sign in',
   'nav.settings': 'Settings',
   'nav.menu': 'Main menu',
-  'lang.switch': 'తెలుగు',
-  'lang.switchLabel': 'Show the app in Telugu',
 
   'welcome.title': 'Every version of the news, at your time',
   'welcome.intro': 'Pick what you follow. We show every public source, untouched, with a link to each original.',
@@ -29,7 +54,7 @@ const en = {
   'prefs.remove': 'Remove {name}',
   'prefs.places': 'Your places',
   'prefs.state': 'State',
-  'prefs.statePilot': 'Telangana is the first state. Others are added state by state.',
+  'prefs.statePilot': 'Telangana has district and local outlets so far. Other states show national outlets for now; their own outlets are added state by state.',
   'prefs.cities': 'Cities or districts',
   'prefs.languages': 'Languages of news',
   'prefs.languagesHint': 'English is on by default. Add the others you read.',
@@ -85,6 +110,8 @@ const en = {
   'story.sort': 'Order',
   'story.orderNote': 'We never rank or rate sources. Order is by time unless you change it.',
   'story.read': 'Read at {source}',
+  'story.translate': 'Translate',
+  'story.translateNote': 'Opens the original in Google Translate. The translation is Google\'s, not the source\'s words.',
   'story.compare': 'Compare',
   'story.compareN': 'Compare side by side ({n})',
   'story.compareHint': 'Tick 2 or 3 reports to compare them.',
@@ -213,8 +240,6 @@ const te: Record<Key, string> = {
   'nav.signin': 'సైన్ ఇన్',
   'nav.settings': 'సెట్టింగ్‌లు',
   'nav.menu': 'ప్రధాన మెనూ',
-  'lang.switch': 'English',
-  'lang.switchLabel': 'Show the app in English',
 
   'welcome.title': 'ప్రతి వార్త, అన్ని వెర్షన్లు, మీకు వీలైన సమయంలో',
   'welcome.intro': 'మీకు ఆసక్తి ఉన్నవి ఎంచుకోండి. ప్రతి పబ్లిక్ వార్తా వనరును మార్చకుండా, అసలు కథనం లింక్‌తో చూపిస్తాం.',
@@ -228,7 +253,7 @@ const te: Record<Key, string> = {
   'prefs.remove': '{name} తొలగించు',
   'prefs.places': 'మీ ప్రాంతాలు',
   'prefs.state': 'రాష్ట్రం',
-  'prefs.statePilot': 'మొదటి రాష్ట్రం తెలంగాణ. మిగతా రాష్ట్రాలు ఒక్కొక్కటిగా జోడిస్తాం.',
+  'prefs.statePilot': 'ప్రస్తుతం తెలంగాణకు జిల్లా, స్థానిక వనరులు ఉన్నాయి. మిగతా రాష్ట్రాలకు ఇప్పటికి జాతీయ వనరులు చూపిస్తాం; వాటి సొంత వనరులు ఒక్కో రాష్ట్రంగా జోడిస్తాం.',
   'prefs.cities': 'నగరాలు లేదా జిల్లాలు',
   'prefs.languages': 'వార్తల భాషలు',
   'prefs.languagesHint': 'ఇంగ్లీష్ డిఫాల్ట్‌గా ఉంటుంది. మీరు చదివే ఇతర భాషలు జోడించండి.',
@@ -284,6 +309,8 @@ const te: Record<Key, string> = {
   'story.sort': 'క్రమం',
   'story.orderNote': 'మేము వనరులకు ర్యాంకులు, రేటింగ్‌లు ఇవ్వం. మీరు మార్చకపోతే సమయం ప్రకారం క్రమం.',
   'story.read': '{source}లో చదవండి',
+  'story.translate': 'అనువదించు',
+  'story.translateNote': 'అసలు కథనాన్ని Google Translateలో తెరుస్తుంది. అనువాదం Googleది, వనరు మాటలు కావు.',
   'story.compare': 'పోల్చు',
   'story.compareN': 'పక్కపక్కన పోల్చండి ({n})',
   'story.compareHint': 'పోల్చడానికి 2 లేదా 3 కథనాలు ఎంచుకోండి.',
@@ -399,7 +426,7 @@ const te: Record<Key, string> = {
   'common.close': 'మూసివేయి',
 };
 
-const DICTS: Record<Lang, Record<Key, string>> = { en, te };
+const DICTS: Record<Lang, Record<Key, string>> = { en, te, hi, ta, kn, ml, mr, bn, gu, pa, or, ur };
 
 export function t(lang: Lang, key: Key, vars?: Record<string, string | number>): string {
   let s = DICTS[lang]?.[key] ?? en[key];
@@ -408,10 +435,12 @@ export function t(lang: Lang, key: Key, vars?: Record<string, string | number>):
 }
 
 export function isLang(x: unknown): x is Lang {
-  return x === 'en' || x === 'te';
+  return UI_LANGUAGES.some((l) => l.code === x);
 }
 
-export const LOCALE: Record<Lang, string> = { en: 'en-IN', te: 'te-IN' };
+export const LOCALE = Object.fromEntries(UI_LANGUAGES.map((l) => [l.code, l.locale])) as Record<Lang, string>;
+
+export const isRtl = (lang: Lang) => UI_LANGUAGES.some((l) => l.code === lang && l.rtl);
 
 /** "29 Sep, 8:45 pm" in India time, in the interface language. */
 export function formatTime(iso: string | null | undefined, lang: Lang): string {

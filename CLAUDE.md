@@ -33,7 +33,7 @@ Purpose: one version makes people believe; many versions make them think.
 Python 3.11 (requests, psycopg, numpy; sentence-transformers for multilingual grouping) · Supabase (Postgres + Auth) · GitHub Actions · Next.js/React on Vercel · Resend for email · VS Code + Claude Code.
 
 ## Pilot scope
-Telangana: India layer + Telangana + Hyderabad and districts. English (default) + Telugu interface; news in English, Telugu, Hindi. Web + installable app (PWA); store apps later.
+Telangana: India layer + Telangana + Hyderabad and districts (the only state with its own outlets so far; any state/UT can be chosen and shows national outlets' coverage of it). Interface in English (default) + 11 Indian languages (`web/lib/i18n.ts`, `web/lib/locales/`, drafts needing native-speaker review); news in English, Telugu, Hindi. "Translate" only links the original article to Google Translate; the app never shows translated news text (rules 2 and 3). Web + installable app (PWA); store apps later.
 
 ## Roadmap
 1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs, story page, compare, follow, Ask your AI, archive, sources + suggest, sign-in, settings, daily email, legal page templates)

@@ -1,7 +1,7 @@
 // Reader choices: defaults, validation, and conversion to/from the cookie
 // (guests) and the profiles table (signed-in readers).
 import { AI_ASSISTANTS } from './ai';
-import { LANGUAGES, PILOT_STATES, SOURCE_GROUPS, isPlace, isTopic } from './catalog';
+import { LANGUAGES, SOURCE_GROUPS, inState, isState, isTopic } from './catalog';
 import { isLang } from './i18n';
 import type { FeedSort, Prefs } from './types';
 
@@ -38,11 +38,15 @@ export function cleanPrefs(input: unknown): Prefs {
   const langs = strList(o.languages, (c) => LANGUAGES.some((l) => l.code === c), 5);
   const custom = strList(o.customTopics, (s) => s.trim().length >= 2 && s.length <= 60, 20)?.map((s) => s.trim());
   const time = typeof o.catchupTime === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(o.catchupTime) ? o.catchupTime : undefined;
+  const state = typeof o.state === 'string' && isState(o.state) ? o.state : DEFAULT_PREFS.state;
+  // Places are cities/districts of the chosen state; the defaults only apply to the default state.
+  const places = strList(o.places, (p) => inState(p, state), MAX_PLACES)
+    ?? DEFAULT_PREFS.places.filter((p) => inState(p, state));
   return {
     topics: strList(o.topics, isTopic, 20) ?? DEFAULT_PREFS.topics,
     customTopics: custom ?? DEFAULT_PREFS.customTopics,
-    state: typeof o.state === 'string' && PILOT_STATES.includes(o.state) ? o.state : DEFAULT_PREFS.state,
-    places: strList(o.places, (p) => isPlace(p) && p !== 'tg', MAX_PLACES) ?? DEFAULT_PREFS.places,
+    state,
+    places,
     languages: langs && langs.length ? langs : DEFAULT_PREFS.languages,
     sourceTypes: strList(o.sourceTypes, (g) => (SOURCE_GROUPS as readonly string[]).includes(g), 10) ?? [],
     hideCrime: typeof o.hideCrime === 'boolean' ? o.hideCrime : DEFAULT_PREFS.hideCrime,

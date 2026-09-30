@@ -1,4 +1,5 @@
-export type Lang = 'en' | 'te';
+/** Interface languages. Keep in step with UI_LANGUAGES in lib/i18n.ts and profiles_ui_language in supabase/migrations. */
+export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml' | 'mr' | 'bn' | 'gu' | 'pa' | 'or' | 'ur';
 export type FeedSort = 'sources' | 'latest' | 'random';
 export type StorySort = 'earliest' | 'latest' | 'random' | 'source';
 

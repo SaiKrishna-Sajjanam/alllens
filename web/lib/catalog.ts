@@ -3,6 +3,7 @@
 // `python -m pipeline.export_web_data`, so the app and the pipeline use the same ids.
 import placesData from './generated/places.json';
 import topicsData from './generated/topics.json';
+import { extraName } from './names';
 import type { Lang } from './types';
 
 export interface Place {
@@ -23,8 +24,19 @@ export const TOPICS = topicsData as Topic[];
 const PLACE_BY_ID = new Map(PLACES.map((p) => [p.id, p]));
 const TOPIC_BY_ID = new Map(TOPICS.map((t) => [t.id, t]));
 
-/** States offered in onboarding. The pilot covers Telangana; more are added state by state. */
-export const PILOT_STATES = ['tg'];
+/** Every state and union territory, Telangana first (it has district and local outlets), then A-Z. */
+export const STATES: string[] = PLACES.filter((p) => p.kind === 'state')
+  .sort((a, b) => Number(b.id === 'tg') - Number(a.id === 'tg') || a.en.localeCompare(b.en))
+  .map((p) => p.id);
+
+export function isState(id: string): boolean {
+  return PLACE_BY_ID.get(id)?.kind === 'state';
+}
+
+/** A city or district that belongs to the given state. */
+export function inState(id: string, state: string): boolean {
+  return PLACE_BY_ID.get(id)?.parents.includes(state) ?? false;
+}
 
 /** Largest cities first so the short list in onboarding covers most readers; the rest A-Z. */
 const FIRST = ['tg-hyderabad', 'tg-rangareddy', 'tg-medchal-malkajgiri', 'tg-warangal', 'tg-hanumakonda',
@@ -36,9 +48,12 @@ export function districtsOf(state: string): Place[] {
   return PLACES.filter((p) => p.parents.includes(state)).sort((a, b) => rank(a) - rank(b) || a.en.localeCompare(b.en));
 }
 
+/** Place name in the interface language; English where that language has no name yet. */
 export function placeName(id: string, lang: Lang): string {
   const p = PLACE_BY_ID.get(id);
-  return p ? (lang === 'te' ? p.te : p.en) : id;
+  if (!p) return id;
+  if (lang === 'te') return p.te || p.en;
+  return (p.kind === 'state' && extraName('state', id, lang)) || p.en;
 }
 
 export function isPlace(id: string): boolean {
@@ -47,7 +62,8 @@ export function isPlace(id: string): boolean {
 
 export function topicName(id: string, lang: Lang): string {
   const t = TOPIC_BY_ID.get(id);
-  return t ? (lang === 'te' ? t.te : t.en) : id;
+  if (!t) return id;
+  return lang === 'te' ? t.te : extraName('topic', id, lang) ?? t.en;
 }
 
 export function isTopic(id: string): boolean {

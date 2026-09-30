@@ -61,6 +61,18 @@ class NotifyTests(unittest.TestCase):
         self.assertIn("NTV Telugu", text)
         self.assertNotIn("breaking", html_body.lower())
 
+    def test_other_interface_languages_and_states(self):
+        from pipeline.notify import TEXT
+
+        self.assertEqual(sorted(TEXT), sorted(["en", "hi", "te", "ta", "kn", "ml", "mr", "bn", "gu", "pa", "or", "ur"]))
+        for lang, t in TEXT.items():
+            self.assertEqual(set(t), set(TEXT["en"]), f"{lang}: keys differ from English")
+        places = {**PLACES, "tn": {"en": "Tamil Nadu", "te": "తమిళనాడు"}}
+        d = build_digest(reader(ui="ta", state="tn", places=[]), [story("chennai", ["tn"], [])], [], places)
+        heads = [h for h, _ in d.sections]
+        self.assertEqual(heads, ["Tamil Nadu"], "no Tamil place name yet: English, never the code 'tn'")
+        self.assertIn("சுருக்கம்", d.subject)
+
     def test_nothing_new_means_no_email(self):
         self.assertTrue(build_digest(reader(), [], [dict(story("f", [], []), new=0)], PLACES).empty)
 

@@ -42,6 +42,77 @@ TEXT = {
         "new_reports": "{n} కొత్త కథనాలు",
         "open": "మీ ఫీడ్ తెరవండి", "settings": "ఈ ఈమెయిల్స్ మార్చండి లేదా ఆపండి",
     },
+    # Drafts, like the web app's interface text: native-speaker review before launch.
+    "hi": {
+        "subject": "आपका अपडेट: पिछली विज़िट के बाद {n} ख़बरें", "subject_none": "आपका अपडेट: आपकी फ़ॉलो की गई ख़बरें",
+        "intro": "हर रूप, आपके समय पर। शीर्षक वैसे ही हैं जैसे हर स्रोत ने लिखे।",
+        "national": "राष्ट्रीय", "international": "अंतरराष्ट्रीय", "following": "आप जिन ख़बरों को फ़ॉलो करते हैं",
+        "sources": "{n} स्रोत", "source1": "1 स्रोत", "first": "सबसे पहले प्रकाशित: {s}", "new_reports": "{n} नई रिपोर्ट",
+        "open": "अपनी फ़ीड खोलें", "settings": "ये ईमेल बदलें या बंद करें",
+    },
+    "ta": {
+        "subject": "உங்கள் சுருக்கம்: கடைசி வருகைக்குப் பின் {n} செய்திகள்", "subject_none": "உங்கள் சுருக்கம்: நீங்கள் பின்தொடரும் செய்திகள்",
+        "intro": "ஒவ்வொரு வடிவமும், உங்கள் நேரத்தில். தலைப்புகள் ஒவ்வொரு ஆதாரமும் எழுதியபடியே.",
+        "national": "தேசியம்", "international": "சர்வதேசம்", "following": "நீங்கள் பின்தொடரும் செய்திகள்",
+        "sources": "{n} ஆதாரங்கள்", "source1": "1 ஆதாரம்", "first": "முதலில் வெளியிட்டது: {s}", "new_reports": "{n} புதிய செய்திகள்",
+        "open": "உங்கள் ஃபீடைத் திறக்கவும்", "settings": "இந்த மின்னஞ்சல்களை மாற்று அல்லது நிறுத்து",
+    },
+    "kn": {
+        "subject": "ನಿಮ್ಮ ಅಪ್‌ಡೇಟ್: ಕೊನೆಯ ಭೇಟಿಯ ನಂತರ {n} ಸುದ್ದಿಗಳು", "subject_none": "ನಿಮ್ಮ ಅಪ್‌ಡೇಟ್: ನೀವು ಫಾಲೋ ಮಾಡುವ ಸುದ್ದಿಗಳು",
+        "intro": "ಪ್ರತಿ ರೂಪ, ನಿಮ್ಮ ಸಮಯದಲ್ಲಿ. ಶೀರ್ಷಿಕೆಗಳು ಪ್ರತಿ ಮೂಲ ಬರೆದಂತೆಯೇ.",
+        "national": "ರಾಷ್ಟ್ರೀಯ", "international": "ಅಂತರರಾಷ್ಟ್ರೀಯ", "following": "ನೀವು ಫಾಲೋ ಮಾಡುವ ಸುದ್ದಿಗಳು",
+        "sources": "{n} ಮೂಲಗಳು", "source1": "1 ಮೂಲ", "first": "ಮೊದಲು ಪ್ರಕಟಿಸಿದ್ದು: {s}", "new_reports": "{n} ಹೊಸ ವರದಿಗಳು",
+        "open": "ನಿಮ್ಮ ಫೀಡ್ ತೆರೆಯಿರಿ", "settings": "ಈ ಇಮೇಲ್‌ಗಳನ್ನು ಬದಲಿಸಿ ಅಥವಾ ನಿಲ್ಲಿಸಿ",
+    },
+    "ml": {
+        "subject": "നിങ്ങളുടെ അപ്‌ഡേറ്റ്: അവസാന സന്ദർശനത്തിന് ശേഷം {n} വാർത്തകൾ", "subject_none": "നിങ്ങളുടെ അപ്‌ഡേറ്റ്: നിങ്ങൾ പിന്തുടരുന്ന വാർത്തകൾ",
+        "intro": "ഓരോ പതിപ്പും, നിങ്ങളുടെ സമയത്ത്. തലക്കെട്ടുകൾ ഓരോ ഉറവിടവും എഴുതിയതുപോലെ.",
+        "national": "ദേശീയം", "international": "അന്താരാഷ്ട്രം", "following": "നിങ്ങൾ പിന്തുടരുന്ന വാർത്തകൾ",
+        "sources": "{n} ഉറവിടങ്ങൾ", "source1": "1 ഉറവിടം", "first": "ആദ്യം പ്രസിദ്ധീകരിച്ചത്: {s}", "new_reports": "{n} പുതിയ റിപ്പോർട്ടുകൾ",
+        "open": "നിങ്ങളുടെ ഫീഡ് തുറക്കുക", "settings": "ഈ ഇമെയിലുകൾ മാറ്റുക അല്ലെങ്കിൽ നിർത്തുക",
+    },
+    "mr": {
+        "subject": "तुमचे अपडेट: मागील भेटीनंतर {n} बातम्या", "subject_none": "तुमचे अपडेट: तुम्ही फॉलो करत असलेल्या बातम्या",
+        "intro": "प्रत्येक रूप, तुमच्या वेळेनुसार. मथळे प्रत्येक स्रोताने लिहिल्याप्रमाणेच.",
+        "national": "राष्ट्रीय", "international": "आंतरराष्ट्रीय", "following": "तुम्ही फॉलो करत असलेल्या बातम्या",
+        "sources": "{n} स्रोत", "source1": "1 स्रोत", "first": "प्रथम प्रकाशित: {s}", "new_reports": "{n} नवीन वृत्त",
+        "open": "तुमचे फीड उघडा", "settings": "हे ईमेल बदला किंवा थांबवा",
+    },
+    "bn": {
+        "subject": "আপনার আপডেট: শেষ ভিজিটের পর {n}টি খবর", "subject_none": "আপনার আপডেট: আপনার ফলো করা খবর",
+        "intro": "প্রতিটি রূপ, আপনার সময়ে। শিরোনাম প্রতিটি সূত্র যেমন লিখেছে তেমনই।",
+        "national": "জাতীয়", "international": "আন্তর্জাতিক", "following": "আপনি যে খবরগুলি ফলো করেন",
+        "sources": "{n}টি সূত্র", "source1": "1টি সূত্র", "first": "প্রথম প্রকাশ: {s}", "new_reports": "{n}টি নতুন প্রতিবেদন",
+        "open": "আপনার ফিড খুলুন", "settings": "এই ইমেলগুলি বদলান বা বন্ধ করুন",
+    },
+    "gu": {
+        "subject": "તમારું અપડેટ: છેલ્લી મુલાકાત પછી {n} સમાચાર", "subject_none": "તમારું અપડેટ: તમે ફૉલો કરો છો તે સમાચાર",
+        "intro": "દરેક રૂપ, તમારા સમયે. મથાળાં દરેક સ્ત્રોતે લખ્યાં છે તેમ જ.",
+        "national": "રાષ્ટ્રીય", "international": "આંતરરાષ્ટ્રીય", "following": "તમે ફૉલો કરો છો તે સમાચાર",
+        "sources": "{n} સ્ત્રોતો", "source1": "1 સ્ત્રોત", "first": "સૌથી પહેલાં પ્રકાશિત: {s}", "new_reports": "{n} નવા અહેવાલો",
+        "open": "તમારું ફીડ ખોલો", "settings": "આ ઇમેઇલ બદલો કે બંધ કરો",
+    },
+    "pa": {
+        "subject": "ਤੁਹਾਡੀ ਅੱਪਡੇਟ: ਪਿਛਲੀ ਫੇਰੀ ਤੋਂ ਬਾਅਦ {n} ਖ਼ਬਰਾਂ", "subject_none": "ਤੁਹਾਡੀ ਅੱਪਡੇਟ: ਤੁਹਾਡੀਆਂ ਫ਼ਾਲੋ ਕੀਤੀਆਂ ਖ਼ਬਰਾਂ",
+        "intro": "ਹਰ ਰੂਪ, ਤੁਹਾਡੇ ਸਮੇਂ ਤੇ। ਸਿਰਲੇਖ ਉਵੇਂ ਹੀ ਜਿਵੇਂ ਹਰ ਸਰੋਤ ਨੇ ਲਿਖੇ।",
+        "national": "ਰਾਸ਼ਟਰੀ", "international": "ਅੰਤਰਰਾਸ਼ਟਰੀ", "following": "ਜਿਹੜੀਆਂ ਖ਼ਬਰਾਂ ਤੁਸੀਂ ਫ਼ਾਲੋ ਕਰਦੇ ਹੋ",
+        "sources": "{n} ਸਰੋਤ", "source1": "1 ਸਰੋਤ", "first": "ਸਭ ਤੋਂ ਪਹਿਲਾਂ ਛਾਪਿਆ: {s}", "new_reports": "{n} ਨਵੀਆਂ ਰਿਪੋਰਟਾਂ",
+        "open": "ਆਪਣੀ ਫੀਡ ਖੋਲ੍ਹੋ", "settings": "ਇਹ ਈਮੇਲਾਂ ਬਦਲੋ ਜਾਂ ਬੰਦ ਕਰੋ",
+    },
+    "or": {
+        "subject": "ଆପଣଙ୍କ ଅପଡେଟ୍: ଶେଷ ଭ୍ରମଣ ପରେ {n}ଟି ଖବର", "subject_none": "ଆପଣଙ୍କ ଅପଡେଟ୍: ଆପଣ ଫଲୋ କରୁଥିବା ଖବର",
+        "intro": "ପ୍ରତ୍ୟେକ ରୂପ, ଆପଣଙ୍କ ସମୟରେ। ଶିରୋନାମା ପ୍ରତ୍ୟେକ ଉତ୍ସ ଯେପରି ଲେଖିଛି।",
+        "national": "ଜାତୀୟ", "international": "ଆନ୍ତର୍ଜାତୀୟ", "following": "ଆପଣ ଫଲୋ କରୁଥିବା ଖବର",
+        "sources": "{n}ଟି ଉତ୍ସ", "source1": "1ଟି ଉତ୍ସ", "first": "ପ୍ରଥମେ ପ୍ରକାଶ: {s}", "new_reports": "{n}ଟି ନୂଆ ରିପୋର୍ଟ",
+        "open": "ଆପଣଙ୍କ ଫିଡ୍ ଖୋଲନ୍ତୁ", "settings": "ଏହି ଇମେଲ୍ ବଦଳାନ୍ତୁ ବା ବନ୍ଦ କରନ୍ତୁ",
+    },
+    "ur": {
+        "subject": "آپ کی اپڈیٹ: پچھلے دورے کے بعد {n} خبریں", "subject_none": "آپ کی اپڈیٹ: آپ کی فالو کی گئی خبریں",
+        "intro": "ہر صورت، آپ کے وقت پر۔ سرخیاں ویسی ہی ہیں جیسی ہر ذریعے نے لکھیں۔",
+        "national": "قومی", "international": "بین الاقوامی", "following": "جن خبروں کو آپ فالو کرتے ہیں",
+        "sources": "{n} ذرائع", "source1": "1 ذریعہ", "first": "سب سے پہلے شائع کیا: {s}", "new_reports": "{n} نئی رپورٹیں",
+        "open": "اپنی فیڈ کھولیں", "settings": "یہ ای میل بدلیں یا بند کریں",
+    },
 }
 
 PLACE_NAMES = {"tg": {"en": "Telangana", "te": "తెలంగాణ"}}
@@ -119,13 +190,17 @@ def build_digest(r: Reader, stories: list[dict], followed: list[dict], place_nam
 
     fresh = [s for s in stories if matches(s, r)]
     fresh.sort(key=lambda s: (-int(s["source_count"]), -(to_datetime(s["last_article_at"]).timestamp())))
+    def name(place: str) -> str:   # the reader's language, else English (names exist in en/te so far)
+        names = place_names.get(place, {})
+        return names.get(r.ui) or names.get("en") or place
+
     sections: list[tuple[str, list[Item]]] = []
     for place in r.places:
         chosen = [item(s) for s in fresh if place in as_list(s.get("places"))][:PER_SECTION]
-        sections.append((place_names.get(place, {}).get(r.ui, place), chosen))
+        sections.append((name(place), chosen))
     state = [item(s) for s in fresh if r.state in as_list(s.get("places"))
              and not set(as_list(s.get("places"))) & set(r.places)][:PER_SECTION]
-    sections.append((place_names.get(r.state, {}).get(r.ui, r.state), state))
+    sections.append((name(r.state), state))
     # In the email, National skips the reader's own state (already listed above) so no headline repeats.
     world = [s for s in fresh if s.get("scope") == "international"]
     national = [item(s) for s in fresh if s not in world and r.state not in as_list(s.get("places"))][:PER_SECTION]

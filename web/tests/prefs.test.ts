@@ -35,6 +35,18 @@ test('cookie and profile round trips keep choices', () => {
   assert.deepEqual(prefsFromProfile({ ...row, catchup_time: '07:15:00' }), p);
 });
 
+test('any state or union territory, with places only from that state; any interface language', () => {
+  const tn = cleanPrefs({ state: 'tn', places: ['tg-hyderabad'], uiLanguage: 'ta' });
+  assert.equal(tn.state, 'tn');
+  assert.deepEqual(tn.places, [], 'a Telangana district is dropped for a Tamil Nadu reader');
+  assert.equal(tn.uiLanguage, 'ta');
+  assert.deepEqual(cleanPrefs({ state: 'tn' }).places, [], 'the Hyderabad default belongs to Telangana only');
+  assert.equal(cleanPrefs({ state: 'dl' }).state, 'dl');
+  assert.equal(cleanPrefs({ state: 'tg-hyderabad' }).state, 'tg', 'a district is not a state');
+  assert.equal(cleanPrefs({ state: 'atlantis' }).state, 'tg');
+  assert.equal(cleanPrefs({ uiLanguage: 'ur' }).uiLanguage, 'ur');
+});
+
 test('"All" districts are kept, within the database limit', () => {
   const all = districtsOf('tg').map((d) => d.id);
   const p = cleanPrefs({ places: all });

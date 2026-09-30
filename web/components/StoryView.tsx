@@ -6,6 +6,7 @@ import {
   MAX_COMPARE, filterArticles, pickLabel, presentGroups, presentLanguages, sortArticles, toggleCompare, wireCounts,
 } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
+import { translateUrl } from '@/lib/translate';
 import type { Article, Lang, Story, StorySort } from '@/lib/types';
 import AskAI from './AskAI';
 import FollowButton from './FollowButton';
@@ -97,6 +98,9 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
           </select>
         </div>
         <p className="small muted">{t(lang, 'story.orderNote')}</p>
+        {articles.some((a) => translateUrl(a.url, a.language, lang)) && (
+          <p className="small muted">{t(lang, 'story.translateNote')}</p>
+        )}
       </div>
 
       <div className="article-list">
@@ -130,6 +134,13 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
                   {t(lang, 'story.read', { source: name })}
                   <ExternalIcon />
                 </a>
+                {translateUrl(a.url, a.language, lang) && (
+                  <a className="btn btn-secondary btn-small" href={translateUrl(a.url, a.language, lang)!} target="_blank"
+                    rel="noopener noreferrer" title={t(lang, 'story.translateNote')}>
+                    {t(lang, 'story.translate')}
+                    <ExternalIcon />
+                  </a>
+                )}
                 <AskAI urls={[a.url]} lang={lang} preferred={aiAssistant} />
                 <label className="check compare small" style={{ minHeight: 40, alignItems: 'center' }}>
                   <input type="checkbox" checked={checked} onChange={() => pick(a.id)}

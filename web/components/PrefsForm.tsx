@@ -3,8 +3,8 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { savePrefs } from '@/app/actions';
 import { AI_ASSISTANTS } from '@/lib/ai';
-import { LANGUAGES, PILOT_STATES, SOURCE_GROUPS, TOPICS, districtsOf, placeName } from '@/lib/catalog';
-import { t } from '@/lib/i18n';
+import { LANGUAGES, SOURCE_GROUPS, STATES, TOPICS, districtsOf, placeName, topicName } from '@/lib/catalog';
+import { UI_LANGUAGES, isLang, t } from '@/lib/i18n';
 import { DEFAULT_PREFS, MAX_PLACES } from '@/lib/prefs';
 import type { Lang, Prefs } from '@/lib/types';
 
@@ -83,7 +83,7 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
           {TOPICS.map((topic) => (
             <button key={topic.id} type="button" className="chip" aria-pressed={p.topics.includes(topic.id)}
               onClick={() => set({ topics: toggle(p.topics, topic.id) })}>
-              {lang === 'te' ? topic.te : topic.en}
+              {topicName(topic.id, lang)}
             </button>
           ))}
         </div>
@@ -115,12 +115,12 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
         <label className="field" htmlFor="state">
           <span>{t(lang, 'prefs.state')}</span>
           <select id="state" value={p.state} onChange={(e) => set({ state: e.target.value, places: [] })}>
-            {PILOT_STATES.map((s) => <option key={s} value={s}>{placeName(s, lang)}</option>)}
+            {STATES.map((s) => <option key={s} value={s}>{placeName(s, lang)}</option>)}
           </select>
         </label>
         <p className="small muted">{t(lang, 'prefs.statePilot')}</p>
-        <span className="small">{t(lang, 'prefs.cities')}</span>
-        <div className="chips">
+        {districts.length > 0 && <span className="small">{t(lang, 'prefs.cities')}</span>}
+        {districts.length > 0 && <div className="chips">
           <AllChip lang={lang} soft on={hasAll(p.places, districtIds)}
             onClick={() => {
               setAllDistricts(true);
@@ -129,7 +129,7 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
           {visible.map((d) => (
             <button key={d.id} type="button" className="chip soft" aria-pressed={p.places.includes(d.id)}
               onClick={() => set({ places: toggle(p.places, d.id).slice(0, MAX_PLACES) })}>
-              {lang === 'te' ? d.te : d.en}
+              {placeName(d.id, lang)}
             </button>
           ))}
           {!allDistricts && districts.length > SHOWN_DISTRICTS && (
@@ -137,7 +137,7 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
               + {districts.length - SHOWN_DISTRICTS}
             </button>
           )}
-        </div>
+        </div>}
       </fieldset>
 
       <fieldset className="form-section" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -211,9 +211,9 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
           <span className="field-label">{t(lang, 'settings.app')}</span>
           <label className="field" htmlFor="ui-lang">
             {t(lang, 'settings.ui')}
-            <select id="ui-lang" value={p.uiLanguage} onChange={(e) => set({ uiLanguage: e.target.value as Lang })}>
-              <option value="en">English</option>
-              <option value="te" lang="te">తెలుగు</option>
+            <select id="ui-lang" value={p.uiLanguage}
+              onChange={(e) => { if (isLang(e.target.value)) set({ uiLanguage: e.target.value }); }}>
+              {UI_LANGUAGES.map((l) => <option key={l.code} value={l.code} lang={l.code}>{l.name}</option>)}
             </select>
           </label>
           <label className="field" htmlFor="ai">

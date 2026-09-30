@@ -60,6 +60,19 @@ select pg_temp.expect_denied($q$insert into public.profiles (user_id) values ('2
 update public.profiles set topics = '{sports}' where user_id = :'u1';
 -- "All" districts: a reader may keep every district of their state.
 update public.profiles set places = array(select 'tg-d' || g from generate_series(1, 33) g) where user_id = :'u1';
+-- Any state, and the interface in the main Indian languages; an unknown language is refused.
+update public.profiles set state = 'tn', places = '{}', ui_language = 'ta' where user_id = :'u1';
+update public.profiles set ui_language = 'ur' where user_id = :'u1';
+do $$
+begin
+    begin
+        update public.profiles set ui_language = 'fr' where user_id = '11111111-1111-1111-1111-111111111111';
+    exception when check_violation then
+        return;
+    end;
+    raise exception 'expected ui_language check to refuse fr';
+end $$;
+update public.profiles set state = 'tg', ui_language = 'en' where user_id = :'u1';
 insert into public.follows (user_id, story_id) values (:'u1', 'st1');
 insert into public.source_suggestions (user_id, name, url) values (:'u1', 'Local Portal', 'https://local.example');
 select pg_temp.expect_denied($q$insert into public.source_suggestions (user_id, name) values ('22222222-2222-2222-2222-222222222222', 'Fake')$q$);

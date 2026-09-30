@@ -2,7 +2,7 @@
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { savePrefs } from '@/app/actions';
-import { districtsOf } from '@/lib/catalog';
+import { districtsOf, placeName } from '@/lib/catalog';
 import { t } from '@/lib/i18n';
 import { MAX_PLACES } from '@/lib/prefs';
 import type { Lang, Prefs } from '@/lib/types';
@@ -19,6 +19,7 @@ export default function DistrictFilter({ prefs, lang }: { prefs: Prefs; lang: La
   const router = useRouter();
 
   const allOn = ids.length > 0 && ids.every((id) => places.includes(id));
+  if (!districts.length) return null;   // states without districts yet: the tab shows the whole state
   const visible = expanded ? districts : [...districts.slice(0, SHOWN), ...districts.slice(SHOWN).filter((d) => places.includes(d.id))];
 
   function save(next: string[]) {
@@ -43,7 +44,7 @@ export default function DistrictFilter({ prefs, lang }: { prefs: Prefs; lang: La
           return (
             <button key={d.id} type="button" className="chip soft" aria-pressed={on} disabled={pending}
               onClick={() => save(on ? places.filter((p) => p !== d.id) : [...places, d.id])}>
-              {lang === 'te' ? d.te : d.en}
+              {placeName(d.id, lang)}
             </button>
           );
         })}
