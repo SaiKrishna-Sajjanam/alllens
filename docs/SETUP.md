@@ -57,7 +57,7 @@ From now on collection runs every 3 hours and clean-up every night, by themselve
    | --- | --- |
    | `NEXT_PUBLIC_SUPABASE_URL` | Project URL from step 2.3 |
    | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | anon / publishable key from step 2.3 |
-   | `NEXT_PUBLIC_SITE_URL` | the Vercel address, e.g. `https://alllens.vercel.app` |
+   | `NEXT_PUBLIC_SITE_URL` | optional: only for a custom domain (Vercel provides its own address automatically) |
    | `NEXT_PUBLIC_GRIEVANCE_OFFICER` | name of the grievance officer (can be you for the pilot) |
    | `NEXT_PUBLIC_GRIEVANCE_EMAIL` | an inbox you check daily |
    | `NEXT_PUBLIC_CONTACT_EMAIL` | general contact inbox |
