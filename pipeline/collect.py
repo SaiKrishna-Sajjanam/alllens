@@ -102,6 +102,8 @@ def main(argv=None) -> int:
     ap.add_argument("--no-process", action="store_true", help="only collect; skip tagging and grouping")
     ap.add_argument("--regroup", action="store_true",
                     help="clear all story groupings and group every article again (articles are kept)")
+    ap.add_argument("--retag", action="store_true",
+                    help="tag every stored article again, e.g. after editing places or topics (stories are kept)")
     args = ap.parse_args(argv)
 
     db = DB()
@@ -110,6 +112,10 @@ def main(argv=None) -> int:
         from pipeline import process
 
         print(f"Cleared {process.clear_groups(db)} stories; every article will be grouped again")
+    if args.retag:
+        from pipeline import process
+
+        print(f"Tagging {process.retag_all(db)} stored articles again")
     summary = run(db, load_sources())
     print(f"Feeds OK: {summary['feeds_ok']}  failed: {summary['feeds_failed']}  "
           f"new articles: {summary['new_articles']}  re-worded headlines: {summary['updated_headlines']}")

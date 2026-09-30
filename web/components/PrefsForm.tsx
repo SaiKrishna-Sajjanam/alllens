@@ -3,9 +3,9 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { savePrefs } from '@/app/actions';
 import { AI_ASSISTANTS } from '@/lib/ai';
-import { LANGUAGES, SOURCE_GROUPS, STATES, TOPICS, districtsOf, placeName, topicName } from '@/lib/catalog';
+import { LANGUAGES, SOURCE_GROUPS, STATES, TOPICS, placeName, topicName } from '@/lib/catalog';
 import { UI_LANGUAGES, isLang, t } from '@/lib/i18n';
-import { DEFAULT_PREFS, MAX_PLACES } from '@/lib/prefs';
+import { DEFAULT_PREFS } from '@/lib/prefs';
 import type { Lang, Prefs } from '@/lib/types';
 
 interface Props {
@@ -14,8 +14,6 @@ interface Props {
   mode: 'welcome' | 'settings';
   signedIn: boolean;
 }
-
-const SHOWN_DISTRICTS = 8;
 
 function toggle(list: string[], v: string): string[] {
   return list.includes(v) ? list.filter((x) => x !== v) : [...list, v];
@@ -35,7 +33,6 @@ function AllChip({ lang, on, onClick, soft }: { lang: Lang; on: boolean; onClick
 export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
   const [p, setP] = useState<Prefs>(initial);
   const [custom, setCustom] = useState('');
-  const [allDistricts, setAllDistricts] = useState(false);
   const [saved, setSaved] = useState(false);
   const [pending, start] = useTransition();
   const router = useRouter();
@@ -44,13 +41,8 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
     setP((cur) => ({ ...cur, ...patch }));
   };
 
-  const districts = districtsOf(p.state);
   const topicIds = TOPICS.map((x) => x.id);
-  const districtIds = districts.map((d) => d.id);
   const languageCodes = LANGUAGES.map((l) => l.code);
-  const visible = allDistricts
-    ? districts
-    : [...districts.slice(0, SHOWN_DISTRICTS), ...districts.slice(SHOWN_DISTRICTS).filter((d) => p.places.includes(d.id))];
 
   function addCustom() {
     const v = custom.trim();
@@ -114,30 +106,12 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
         <legend className="field-label">{t(lang, 'prefs.places')}</legend>
         <label className="field" htmlFor="state">
           <span>{t(lang, 'prefs.state')}</span>
-          <select id="state" value={p.state} onChange={(e) => set({ state: e.target.value, places: [] })}>
+          <select id="state" value={p.state} onChange={(e) => set({ state: e.target.value })}>
+            {!p.state && <option value="">{t(lang, 'prefs.chooseState')}</option>}
             {STATES.map((s) => <option key={s} value={s}>{placeName(s, lang)}</option>)}
           </select>
         </label>
         <p className="small muted">{t(lang, 'prefs.statePilot')}</p>
-        {districts.length > 0 && <span className="small">{t(lang, 'prefs.cities')}</span>}
-        {districts.length > 0 && <div className="chips">
-          <AllChip lang={lang} soft on={hasAll(p.places, districtIds)}
-            onClick={() => {
-              setAllDistricts(true);
-              set({ places: hasAll(p.places, districtIds) ? [] : districtIds.slice(0, MAX_PLACES) });
-            }} />
-          {visible.map((d) => (
-            <button key={d.id} type="button" className="chip soft" aria-pressed={p.places.includes(d.id)}
-              onClick={() => set({ places: toggle(p.places, d.id).slice(0, MAX_PLACES) })}>
-              {placeName(d.id, lang)}
-            </button>
-          ))}
-          {!allDistricts && districts.length > SHOWN_DISTRICTS && (
-            <button type="button" className="chip dashed" onClick={() => setAllDistricts(true)}>
-              + {districts.length - SHOWN_DISTRICTS}
-            </button>
-          )}
-        </div>}
       </fieldset>
 
       <fieldset className="form-section" style={{ border: 0, padding: 0, margin: 0 }}>

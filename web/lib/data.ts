@@ -5,7 +5,7 @@ import { groupsOf } from './catalog';
 import { demoData, DEMO_SOURCES } from './demo';
 import { isConfigured } from './env';
 import {
-  ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, districtFilter, inTab, matchesInterests, sortStories, type TabId,
+  ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesInterests, sortStories, type TabId,
 } from './feed';
 import { isLang } from './i18n';
 import {
@@ -97,12 +97,11 @@ export async function getFeed(q: FeedQuery): Promise<FeedResult> {
   if (q.tab === 'international') query = query.eq('scope', 'international');
   else if (q.tab === 'national') query = query.or('scope.is.null,scope.neq.international');
   else {
+    if (!prefs.state) return { stories: [], hasMore: false, demo: false };   // no state chosen yet
     query = query.overlaps('places', [prefs.state]);
-    const districts = districtFilter(prefs);
-    if (districts.length) query = query.overlaps('places', districts);
   }
   if (prefs.languages.length) query = query.overlaps('languages', prefs.languages);
-  if (prefs.hideCrime) query = query.not('topics', 'ov', '{crime}');
+  if (prefs.hideCrime) query = query.not('topics', 'ov', `{${HIDDEN_BY_HIDE_CRIME.join(',')}}`);
   if (prefs.sourceTypes.length) {
     const raw = await rawTypesFor(prefs.sourceTypes);
     if (!raw.length) return { stories: [], hasMore: false, demo: false };

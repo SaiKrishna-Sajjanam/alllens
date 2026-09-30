@@ -7,7 +7,6 @@ export interface Prefs {
   topics: string[];
   customTopics: string[];
   state: string;
-  places: string[];
   languages: string[];
   sourceTypes: string[]; // empty = every type
   hideCrime: boolean;

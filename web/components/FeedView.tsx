@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { DEFAULT_TAB, type Tab, type TabId } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
 import type { FeedSort, Lang, Prefs, Story } from '@/lib/types';
-import DistrictFilter from './DistrictFilter';
+import StatePicker from './StatePicker';
 import StoryCard from './StoryCard';
 
 interface Props {
@@ -58,7 +58,7 @@ export default function FeedView(p: Props) {
             </Link>
           ))}
         </nav>
-        {p.tab === 'state' && <DistrictFilter prefs={prefs} lang={lang} />}
+        {p.tab === 'state' && <StatePicker prefs={prefs} lang={lang} />}
         <div className="spread">
           <div className="row" role="group" aria-label={t(lang, 'feed.order')}>
             <span className="small muted">{t(lang, 'feed.order')}:</span>
@@ -78,7 +78,7 @@ export default function FeedView(p: Props) {
         <p className="small muted">{t(lang, 'feed.orderNote')}</p>
       </div>
 
-      {p.stories.length === 0 ? (
+      {p.tab === 'state' && !prefs.state ? null : p.stories.length === 0 ? (
         <div className="panel stack">
           <p>{hasTopicChoice && !p.showAllTopics ? t(lang, 'feed.emptyTopics') : t(lang, 'feed.empty')}</p>
           {hasTopicChoice && !p.showAllTopics && (

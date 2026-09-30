@@ -55,13 +55,13 @@ select pg_temp.expect_count($q$select count(*) from public.search_story_ids('5_%
 reset role;
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'u1', false);
-insert into public.profiles (user_id, topics, places) values (:'u1', '{politics}', '{tg-warangal}');
+insert into public.profiles (user_id, topics) values (:'u1', '{politics}');
+-- Every state is treated alike: a new reader has no state until they pick one.
+select pg_temp.expect_count($q$select count(*) from public.profiles where state = ''$q$, 1);
 select pg_temp.expect_denied($q$insert into public.profiles (user_id) values ('22222222-2222-2222-2222-222222222222')$q$);
 update public.profiles set topics = '{sports}' where user_id = :'u1';
--- "All" districts: a reader may keep every district of their state.
-update public.profiles set places = array(select 'tg-d' || g from generate_series(1, 33) g) where user_id = :'u1';
 -- Any state, and the interface in the main Indian languages; an unknown language is refused.
-update public.profiles set state = 'tn', places = '{}', ui_language = 'ta' where user_id = :'u1';
+update public.profiles set state = 'tn', ui_language = 'ta' where user_id = :'u1';
 update public.profiles set ui_language = 'ur' where user_id = :'u1';
 do $$
 begin

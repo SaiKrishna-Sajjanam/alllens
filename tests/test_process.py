@@ -114,28 +114,41 @@ class GroupingTests(unittest.TestCase):
         self.assertEqual((image, credit), ("https://theprint.test/k.jpg", SOURCE_META["theprint"][0]))
 
     def test_places_and_scope(self):
+        # One level only: the state. Every state follows the same rules.
         rows = {sid: (as_list(p), scope) for sid, p, scope in
                 self.db.fetchall("SELECT id, places, scope FROM stories")}
-        places, scope = rows[self.story["kathua_print"]]
-        self.assertIn("jk", places)
-        self.assertEqual(scope, "state")
-        places, scope = rows[self.story["cm_ntv"]]
-        self.assertIn("tg-karimnagar", places)
-        self.assertIn("tg", places)
-        self.assertEqual(scope, "local")
-        places, _ = rows[self.story["alwal_ntv"]]
-        self.assertIn("tg-hyderabad", places)
-        places, scope = rows[self.story["kohli_ndtv"]]
-        self.assertEqual(scope, "national")
-        places, scope = rows[self.story["world_un"]]
-        self.assertEqual((places, scope), ([], "international"))
-        places, scope = rows[self.story["world_hyd"]]
-        self.assertIn("tg-hyderabad", places)
-        self.assertEqual(scope, "local", "world-desk report naming an Indian place stays in India")
+        self.assertEqual(rows[self.story["kathua_print"]], (["jk"], "state"))
+        self.assertEqual(rows[self.story["cm_ntv"]], (["tg"], "state"))
+        self.assertEqual(rows[self.story["alwal_ntv"]], (["tg"], "state"))
+        self.assertEqual(rows[self.story["lokayukta"]], (["mh"], "state"))
+        self.assertEqual(rows[self.story["delhi_air"]], (["dl"], "state"))
+        self.assertEqual(rows[self.story["kohli_ndtv"]][1], "national")
+        self.assertEqual(rows[self.story["world_un"]], ([], "international"))
+        self.assertEqual(rows[self.story["world_hyd"]], (["tg"], "state"),
+                         "world-desk report naming an Indian place stays in India")
+        # No place named, reported by one state's own outlet: that state.
+        self.assertEqual(rows[self.story["flipkart"]], (["tg"], "state"))
+        # No place named, national outlet: national.
+        self.assertEqual(rows[self.story["rrb"]], ([], "national"))
+
+    def test_ambiguous_names_need_the_same_state_nearby(self):
+        from pipeline.tagging import gazetteer
+
+        gz = gazetteer()
+        self.assertEqual(gz.tag("Rivers erode the coast", "").places, [], "an ordinary word is not a place")
+        self.assertEqual(gz.tag("Rain lashes Erode and Madurai", "").places, ["tn"])
+        self.assertEqual(gz.tag("Erode traders protest", "", "Tamil Nadu").places, ["tn"], "the state's own outlet")
+        self.assertEqual(gz.tag("Aurangabad court verdict", "").places, [], "found in two states: needs context")
+        self.assertEqual(gz.tag("Aurangabad and Patna see heavy rain", "").places, ["br"])
+        self.assertEqual(gz.tag("Madurai", "", "").primary, "tn")
+        self.assertEqual(gz.place_of("Hyderabad"), "tg")
+        self.assertEqual(gz.place_of("Kerala"), "kl")
+        self.assertIsNone(gz.place_of("India"))
 
     def test_topics(self):
         topics = {sid: as_list(t) for sid, t in self.db.fetchall("SELECT id, topics FROM stories")}
         self.assertIn("crime", topics[self.story["kathua_print"]])
+        self.assertIn("education", topics[self.story["rrb"]])
         self.assertIn("sports", topics[self.story["kohli_ndtv"]])
         self.assertIn("politics", topics[self.story["cm_ntv"]])
 

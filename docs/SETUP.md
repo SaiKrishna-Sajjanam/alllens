@@ -106,7 +106,7 @@ Supabase → **Authentication**:
 | Site shows the yellow sample banner | Vercel env vars `NEXT_PUBLIC_SUPABASE_URL` / `..._ANON_KEY` missing; redeploy after adding |
 | Sign-in link says failed | Step 5.1 redirect URLs and 5.2 email template |
 | A feed stopped working | Actions → Check feeds; mark it `broken` in `sources.csv` |
-| Wrong district on a story | Add the place or spelling to `pipeline/data/places.json`, run `python -m pipeline.export_web_data`, push |
+| Story shows the wrong state (or none) | Add the place or spelling to that state's aliases in `pipeline/data/places.json`, run `python -m pipeline.export_web_data`, push, then run Collect news with **retag** ticked |
 
 ## Costs to expect
 

@@ -12,8 +12,8 @@ export const DEMO_SOURCES: Source[] = [
   { id: 'ntvtelugu', name: 'NTV Telugu', layer: 'state', type: 'tv', language: 'te', region: 'Telangana', status: 'live' },
   { id: 'v6velugu', name: 'V6 Velugu', layer: 'state', type: 'tv_newspaper', language: 'te', region: 'Telangana', status: 'to_check' },
   { id: 'eenadu', name: 'Eenadu', layer: 'state', type: 'newspaper', language: 'te', region: 'Telangana', status: 'no_feed' },
-  { id: 'siasat', name: 'Siasat', layer: 'local', type: 'newspaper', language: 'en', region: 'Hyderabad', status: 'to_check' },
-  { id: 'reddit_hyderabad', name: 'r/hyderabad (Reddit)', layer: 'local', type: 'community', language: 'en', region: 'Hyderabad', status: 'to_check' },
+  { id: 'siasat', name: 'Siasat', layer: 'state', type: 'newspaper', language: 'en', region: 'Hyderabad', status: 'to_check' },
+  { id: 'reddit_hyderabad', name: 'r/hyderabad (Reddit)', layer: 'state', type: 'community', language: 'en', region: 'Hyderabad', status: 'to_check' },
 ];
 const SRC = new Map(DEMO_SOURCES.map((s) => [s.id, s]));
 
@@ -98,11 +98,11 @@ const META: Record<string, { places: string[]; topics: string[]; primary: string
   slap: { places: ['dl'], topics: ['politics'], primary: 'dl' },
   assam: { places: ['ar'], topics: ['crime'], primary: 'ar' },
   tgsir: { places: ['tg'], topics: ['politics'], primary: 'tg' },
-  cmtour: { places: ['tg-karimnagar', 'tg', 'tg-rajanna-sircilla'], topics: ['politics'], primary: 'tg-karimnagar' },
-  khairatabad: { places: ['tg-hyderabad', 'tg'], topics: ['politics'], primary: 'tg-hyderabad' },
-  alwal: { places: ['tg-hyderabad', 'tg', 'tg-medchal-malkajgiri'], topics: ['crime'], primary: 'tg-hyderabad' },
+  cmtour: { places: ['tg'], topics: ['politics'], primary: 'tg' },
+  khairatabad: { places: ['tg'], topics: ['politics'], primary: 'tg' },
+  alwal: { places: ['tg'], topics: ['crime'], primary: 'tg' },
   power: { places: ['tg'], topics: [], primary: 'tg' },
-  aidriving: { places: ['tg-hyderabad', 'tg', 'tg-rangareddy', 'tg-medchal-malkajgiri'], topics: ['tech'], primary: 'tg-hyderabad' },
+  aidriving: { places: ['tg'], topics: ['tech'], primary: 'tg' },
   kohli: { places: [], topics: ['sports'], primary: null },
   pulses: { places: ['tg'], topics: ['farming'], primary: 'tg' },
   rrb: { places: [], topics: ['education'], primary: null },
@@ -165,7 +165,7 @@ export function demoData(now = Date.now()): { stories: Story[]; articles: Articl
       source_types: [...new Set(arts.map((a) => a.sources!.type!))].sort(),
       places: meta.places,
       primary_place: meta.primary,
-      scope: meta.places.some((p) => p.startsWith('tg-')) ? 'local' : meta.places.length ? 'state' : 'national',
+      scope: meta.places.length ? 'state' : 'national',
       topics: meta.topics,
     };
   });

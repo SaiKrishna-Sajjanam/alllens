@@ -9,6 +9,10 @@ on:
         description: "Clear all story groupings and group every article again (articles are kept; follows of old stories are lost)"
         type: boolean
         default: false
+      retag:
+        description: "Tag every stored article again (after changing places, topics or source topics); stories and follows are kept"
+        type: boolean
+        default: false
 
 concurrency:
   group: collect
@@ -34,4 +38,4 @@ jobs:
           key: hf-multilingual-e5-small
       - run: pip install -r requirements.txt -r requirements-ml.txt
       - name: Collect, tag and group into stories
-        run: python -m pipeline.collect ${{ inputs.regroup && '--regroup' || '' }}
+        run: python -m pipeline.collect ${{ inputs.regroup && '--regroup' || '' }} ${{ inputs.retag && '--retag' || '' }}

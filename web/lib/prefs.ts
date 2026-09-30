@@ -1,7 +1,7 @@
 // Reader choices: defaults, validation, and conversion to/from the cookie
 // (guests) and the profiles table (signed-in readers).
 import { AI_ASSISTANTS } from './ai';
-import { LANGUAGES, SOURCE_GROUPS, inState, isState, isTopic } from './catalog';
+import { LANGUAGES, SOURCE_GROUPS, isState, isTopic } from './catalog';
 import { isLang } from './i18n';
 import type { FeedSort, Prefs } from './types';
 
@@ -12,8 +12,7 @@ export const UI_COOKIE = 'alllens_ui';
 export const DEFAULT_PREFS: Prefs = {
   topics: [],
   customTopics: [],
-  state: 'tg',
-  places: ['tg-hyderabad'],
+  state: '',            // none until the reader picks one: every state is treated alike
   languages: ['en'],
   sourceTypes: [],
   hideCrime: false,
@@ -25,9 +24,6 @@ export const DEFAULT_PREFS: Prefs = {
   notifyFollowed: true,
 };
 
-/** Enough for every district of the largest state; matches profiles_places_len in supabase/migrations. */
-export const MAX_PLACES = 100;
-
 const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
 const strList = (v: unknown, ok: (s: string) => boolean, max: number) =>
   Array.isArray(v) ? [...new Set(v.filter((x): x is string => typeof x === 'string' && ok(x)))].slice(0, max) : undefined;
@@ -35,18 +31,14 @@ const strList = (v: unknown, ok: (s: string) => boolean, max: number) =>
 /** Accept only known values; anything unexpected falls back to the default. */
 export function cleanPrefs(input: unknown): Prefs {
   const o = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>;
-  const langs = strList(o.languages, (c) => LANGUAGES.some((l) => l.code === c), 5);
+  const langs = strList(o.languages, (c) => LANGUAGES.some((l) => l.code === c), LANGUAGES.length);
   const custom = strList(o.customTopics, (s) => s.trim().length >= 2 && s.length <= 60, 20)?.map((s) => s.trim());
   const time = typeof o.catchupTime === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(o.catchupTime) ? o.catchupTime : undefined;
   const state = typeof o.state === 'string' && isState(o.state) ? o.state : DEFAULT_PREFS.state;
-  // Places are cities/districts of the chosen state; the defaults only apply to the default state.
-  const places = strList(o.places, (p) => inState(p, state), MAX_PLACES)
-    ?? DEFAULT_PREFS.places.filter((p) => inState(p, state));
   return {
     topics: strList(o.topics, isTopic, 20) ?? DEFAULT_PREFS.topics,
     customTopics: custom ?? DEFAULT_PREFS.customTopics,
     state,
-    places,
     languages: langs && langs.length ? langs : DEFAULT_PREFS.languages,
     sourceTypes: strList(o.sourceTypes, (g) => (SOURCE_GROUPS as readonly string[]).includes(g), 10) ?? [],
     hideCrime: typeof o.hideCrime === 'boolean' ? o.hideCrime : DEFAULT_PREFS.hideCrime,
@@ -96,7 +88,6 @@ export function prefsFromProfile(row: Partial<ProfileRow>): Prefs {
     topics: row.topics,
     customTopics: row.custom_topics,
     state: row.state,
-    places: row.places,
     languages: row.languages,
     sourceTypes: row.source_types,
     hideCrime: row.hide_crime,
@@ -115,7 +106,7 @@ export function profileFromPrefs(userId: string, p: Prefs): ProfileRow {
     topics: p.topics,
     custom_topics: p.customTopics,
     state: p.state,
-    places: p.places,
+    places: [],            // the district level was removed; the column is kept empty
     languages: p.languages,
     source_types: p.sourceTypes,
     hide_crime: p.hideCrime,

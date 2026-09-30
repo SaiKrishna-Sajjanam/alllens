@@ -8,7 +8,7 @@ import type { Lang } from './types';
 
 export interface Place {
   id: string;
-  kind: 'state' | 'district' | 'city';
+  kind: 'state';
   en: string;
   te: string;
   parents: string[];
@@ -24,28 +24,13 @@ export const TOPICS = topicsData as Topic[];
 const PLACE_BY_ID = new Map(PLACES.map((p) => [p.id, p]));
 const TOPIC_BY_ID = new Map(TOPICS.map((t) => [t.id, t]));
 
-/** Every state and union territory, Telangana first (it has district and local outlets), then A-Z. */
+/** Every state and union territory, A-Z. All are treated alike; none comes first. */
 export const STATES: string[] = PLACES.filter((p) => p.kind === 'state')
-  .sort((a, b) => Number(b.id === 'tg') - Number(a.id === 'tg') || a.en.localeCompare(b.en))
+  .sort((a, b) => a.en.localeCompare(b.en))
   .map((p) => p.id);
 
 export function isState(id: string): boolean {
   return PLACE_BY_ID.get(id)?.kind === 'state';
-}
-
-/** A city or district that belongs to the given state. */
-export function inState(id: string, state: string): boolean {
-  return PLACE_BY_ID.get(id)?.parents.includes(state) ?? false;
-}
-
-/** Largest cities first so the short list in onboarding covers most readers; the rest A-Z. */
-const FIRST = ['tg-hyderabad', 'tg-rangareddy', 'tg-medchal-malkajgiri', 'tg-warangal', 'tg-hanumakonda',
-  'tg-karimnagar', 'tg-khammam', 'tg-nizamabad'];
-
-/** Cities and districts of a state. */
-export function districtsOf(state: string): Place[] {
-  const rank = (p: Place) => (FIRST.includes(p.id) ? FIRST.indexOf(p.id) : FIRST.length);
-  return PLACES.filter((p) => p.parents.includes(state)).sort((a, b) => rank(a) - rank(b) || a.en.localeCompare(b.en));
 }
 
 /** Place name in the interface language; English where that language has no name yet. */
@@ -70,16 +55,26 @@ export function isTopic(id: string): boolean {
   return TOPIC_BY_ID.has(id);
 }
 
-/** Most specific place first (city/district before state). */
+/** The place shown on a story card: its state (the app has one level only). */
 export function mostSpecific(ids: string[]): string | null {
-  const rank = (id: string) => ({ city: 3, district: 2, state: 1 })[PLACE_BY_ID.get(id)?.kind ?? 'state'] ?? 0;
-  return [...ids].sort((a, b) => rank(b) - rank(a))[0] ?? null;
+  return ids.find((id) => PLACE_BY_ID.has(id)) ?? null;
 }
 
+/** News languages: English, then the Indian languages we collect in (sources.csv `language`). */
 export const LANGUAGES: { code: string; name: string }[] = [
   { code: 'en', name: 'English' },
-  { code: 'te', name: 'తెలుగు' },
   { code: 'hi', name: 'हिन्दी' },
+  { code: 'bn', name: 'বাংলা' },
+  { code: 'te', name: 'తెలుగు' },
+  { code: 'mr', name: 'मराठी' },
+  { code: 'ta', name: 'தமிழ்' },
+  { code: 'ur', name: 'اردو' },
+  { code: 'gu', name: 'ગુજરાતી' },
+  { code: 'kn', name: 'ಕನ್ನಡ' },
+  { code: 'or', name: 'ଓଡ଼ିଆ' },
+  { code: 'ml', name: 'മലയാളം' },
+  { code: 'pa', name: 'ਪੰਜਾਬੀ' },
+  { code: 'as', name: 'অসমীয়া' },
 ];
 
 export function languageName(code: string | null | undefined): string {

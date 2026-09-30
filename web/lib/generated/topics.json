@@ -15,24 +15,14 @@
   "te": "టెక్"
  },
  {
+  "id": "auto",
+  "en": "Automobile",
+  "te": "ఆటోమొబైల్"
+ },
+ {
   "id": "sports",
   "en": "Sports",
   "te": "క్రీడలు"
- },
- {
-  "id": "farming",
-  "en": "Farming",
-  "te": "వ్యవసాయం"
- },
- {
-  "id": "education",
-  "en": "Education",
-  "te": "విద్య"
- },
- {
-  "id": "health",
-  "en": "Health",
-  "te": "ఆరోగ్యం"
  },
  {
   "id": "cinema",
@@ -40,8 +30,58 @@
   "te": "సినిమా"
  },
  {
+  "id": "lifestyle",
+  "en": "Lifestyle",
+  "te": "జీవనశైలి"
+ },
+ {
+  "id": "fashion",
+  "en": "Fashion",
+  "te": "ఫ్యాషన్"
+ },
+ {
+  "id": "food",
+  "en": "Food",
+  "te": "ఆహారం"
+ },
+ {
+  "id": "travel",
+  "en": "Travel",
+  "te": "ప్రయాణం"
+ },
+ {
+  "id": "health",
+  "en": "Health",
+  "te": "ఆరోగ్యం"
+ },
+ {
+  "id": "education",
+  "en": "Education & jobs",
+  "te": "విద్య & ఉద్యోగాలు"
+ },
+ {
+  "id": "farming",
+  "en": "Farming",
+  "te": "వ్యవసాయం"
+ },
+ {
+  "id": "environment",
+  "en": "Environment & weather",
+  "te": "పర్యావరణం & వాతావరణం"
+ },
+ {
+  "id": "religion",
+  "en": "Religion & festivals",
+  "te": "ఆధ్యాత్మికం & పండుగలు"
+ },
+ {
   "id": "crime",
-  "en": "Crime & accidents",
-  "te": "నేరాలు & ప్రమాదాలు"
+  "en": "Crime",
+  "te": "నేరాలు"
+ },
+ {
+  "id": "accidents",
+  "en": "Accidents",
+  "te": "ప్రమాదాలు"
  }
 ]

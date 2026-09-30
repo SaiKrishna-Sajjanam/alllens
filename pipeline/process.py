@@ -2,7 +2,7 @@
 
     python -m pipeline.process        # also runs automatically after pipeline.collect
 
-1. Tag: places (India / state / district), topics, wire-copy key.
+1. Tag: state (every state/UT alike), topics, wire-copy key.
 2. Embed: headline + snippet -> vector (multilingual in production).
 3. Group: each new article joins the most similar open story (updated in the
    last 72 hours) if it is similar enough (>= threshold) to both the story as a
@@ -246,8 +246,21 @@ def _story_values(rows, sources: dict, gz, now: datetime) -> tuple:
     primary_place = None
     if primaries:
         primary_place = max(primaries.items(), key=lambda pc: (pc[1], gz.specificity(pc[0])))[0]
-    kinds = {gz.places[p]["kind"] for p in places if p in gz.places}
-    scope = "local" if kinds & {"city", "district"} else "state" if "state" in kinds else "national"
+    if not places:
+        # No place named: a story reported mostly (at least half) by one state's own outlets
+        # (sources.csv layer state/local) belongs to that state. The same rule for every state.
+        homes = Counter()
+        for a in arts:
+            src = sources.get(a["source_id"], {})
+            if src.get("layer") in ("state", "local"):
+                home = gz.place_of(src.get("region") or "")
+                if home:
+                    homes[home] += 1
+        if homes:
+            home, c = homes.most_common(1)[0]
+            if c * 2 >= n:
+                places, primary_place = [home], home
+    scope = "state" if places else "national"
     # International: no Indian place named, and at least half the reports come from world-news feeds
     # (sources.csv layer "international"). Mechanical, from the feed each report came from.
     world = sum(1 for a in arts if sources.get(a["source_id"], {}).get("layer") == "international")
@@ -293,16 +306,28 @@ def clear_groups(db: DB) -> int:
     return n
 
 
+def retag_all(db: DB) -> int:
+    """Tag every stored article again (after places.json, topics.json or sources.csv topics change).
+    Stories and follows are kept; each story's places and topics are refreshed."""
+    n = db.fetchall("SELECT COUNT(*) FROM articles WHERE processed_at IS NOT NULL")[0][0]
+    db.execute("UPDATE articles SET processed_at = NULL WHERE processed_at IS NOT NULL")
+    db.commit()
+    return n
+
+
 def main(argv=None) -> int:
     import argparse
 
     ap = argparse.ArgumentParser(description="Tag and group new articles into stories.")
     ap.add_argument("--regroup", action="store_true", help="clear all story groupings first and group again")
+    ap.add_argument("--retag", action="store_true", help="tag every stored article again (stories are kept)")
     args = ap.parse_args(argv)
     db = DB()
     db.init_schema()
     if args.regroup:
         print(f"Cleared {clear_groups(db)} stories; grouping all articles again")
+    if args.retag:
+        print(f"Tagging {retag_all(db)} stored articles again")
     r = run(db)
     db.close()
     print(f"[{r['embedder']}] tagged {r['tagged']}, grouped {r['grouped']}: "

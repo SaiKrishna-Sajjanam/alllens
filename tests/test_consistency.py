@@ -43,11 +43,11 @@ class ConsistencyTests(unittest.TestCase):
         for p in places["places"]:
             for parent in p.get("parents", []):
                 self.assertIn(parent, ids)
-        for loc in places["localities"]:
-            for pid in loc["places"]:
-                self.assertIn(pid, ids)
-        districts = [p for p in places["places"] if p["id"].startswith("tg-")]
-        self.assertEqual(len(districts), 33, "Telangana has 33 districts")
+        # Every state and union territory, treated alike: no district level, 36 entries.
+        self.assertEqual(len(ids), 36)
+        self.assertTrue(all(p["kind"] == "state" for p in places["places"]))
+        for p in places["places"]:
+            self.assertGreaterEqual(len(p["aliases"]), 3, f"{p['id']}: needs its names and main places")
 
     def test_sources_csv_ids_unique(self):
         from pipeline.common import load_sources

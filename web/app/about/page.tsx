@@ -34,7 +34,7 @@ function AboutEn() {
         <li>We keep only the headline, the first few lines the source itself puts in its feed (up to 280 characters), the time and the link. Never the full article, never images.</li>
         <li>A multilingual language model turns each headline into a set of numbers describing its meaning. Reports whose numbers are very close, published within three days of each other, are grouped as one story. The model groups; it never writes anything you see.</li>
         <li>The story is shown under the <em>earliest</em> headline, credited to the source that published it, in your language when one exists.</li>
-        <li>Places (India, state, district) and topics come from fixed word lists, so the same report always gets the same tags. The topics are: {TOPICS.map((t) => t.en).join(', ')}.</li>
+        <li>The state a story is about, and its topics, come from fixed word lists (the same rules for every state), so the same report always gets the same tags. The topics are: {TOPICS.map((t) => t.en).join(', ')}.</li>
       </ol>
 
       <h2>Things we mark, mechanically</h2>

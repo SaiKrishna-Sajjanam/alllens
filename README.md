@@ -2,7 +2,7 @@
 
 **One story, every public version, at your time, so you can judge it yourself.**
 
-All-Lens collects public news feeds (national, Telangana and Hyderabad/district outlets, TV sites, digital outlets, Reddit communities), groups reports of the same incident into one story across English and Telugu, and shows every version side by side with a link to each original. No summaries, no bias labels, no hidden ranking.
+All-Lens collects public news feeds (national and state outlets for every state and union territory, TV sites, digital outlets, official YouTube channels, Reddit communities), groups reports of the same incident into one story across languages, and shows every version side by side with a link to each original. No summaries, no bias labels, no hidden ranking.
 
 - A **website** that also installs on phones as an app (home-screen icon, full screen).
 - A **pipeline** that runs on a schedule: collect → tag places and topics → group into stories → daily emails → 30-day clean-up.
@@ -13,7 +13,7 @@ All-Lens collects public news feeds (national, Telangana and Hyderabad/district 
 | --- | --- |
 | `web/` | The website/app: Next.js (React), signs in with Supabase. Runs on **sample stories** until Supabase is connected. |
 | `pipeline/` | Python jobs: `collect`, `process` (tagging + grouping), `notify` (daily email), `cleanup` (retention), `accounts`, `check_feeds`, `review_groups`. |
-| `pipeline/data/` | Place list (Telangana's 33 districts, all states, Hyderabad localities; English/Telugu/Hindi names) and topic keywords. Edit freely. |
+| `pipeline/data/` | Place list (36 states/UTs, each with its districts and main cities in English and its own script) and topic keywords. Edit freely. |
 | `sources.csv` | Every outlet we collect from. Edit to add or remove sources. |
 | `supabase/migrations/` | Database tables and security rules (who can read/write what). |
 | `.github/workflows/` | Scheduled jobs and automatic tests (CI/CD). |

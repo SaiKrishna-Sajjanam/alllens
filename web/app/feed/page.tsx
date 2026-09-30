@@ -28,7 +28,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
       <FeedView
         lang={lang}
         prefs={prefs}
-        tabs={tabsFor(prefs, lang, { international: t(lang, 'feed.tabInternational'), national: t(lang, 'feed.tabNational') })}
+        tabs={tabsFor(prefs, lang, { international: t(lang, 'feed.tabInternational'), national: t(lang, 'feed.tabNational'), state: t(lang, 'prefs.places') })}
         tab={tab}
         sort={sort}
         showAllTopics={showAllTopics}

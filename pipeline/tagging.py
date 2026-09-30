@@ -108,41 +108,44 @@ class Gazetteer:
                 hits.append((pos, a))
         return hits
 
+    def place_of(self, name: str) -> str | None:
+        """The place a name (e.g. a source's region, "Hyderabad" or "Kerala") belongs to, if exactly one."""
+        n = normalise(name).lower()
+        for a in self.aliases:
+            if not a.ambiguous and a.text.lower() == n and len(a.place_ids) == 1:
+                return a.place_ids[0]
+        return None
+
     def tag(self, title: str, snippet: str = "", source_region: str = "") -> PlaceResult:
         title_n, snippet_n = normalise(title), normalise(snippet)
         title_hits, snippet_hits = self._hits(title_n), self._hits(snippet_n)
 
-        region = (source_region or "").strip().lower()
-        telangana_source = region in {"telangana", "hyderabad"} or region.startswith("tg")
+        # An ambiguous name (an ordinary word, a person's name, or a name found in two states) counts
+        # only when the article also names another place of the same state, or comes from that state's
+        # outlet. The same rule for every state.
+        home = self.place_of(source_region) if source_region else None
+        confident = {pid for _, a in title_hits + snippet_hits if not a.ambiguous for pid in a.place_ids}
+        if home:
+            confident.add(home)
 
-        def usable(hits, other_hits):
-            confident_tg = any(
-                not a.ambiguous and any(pid == "tg" or pid.startswith("tg-") for pid in a.place_ids)
-                for _, a in hits + other_hits
-            )
-            return [(pos, a) for pos, a in hits if not a.ambiguous or confident_tg or telangana_source]
+        def usable(hits):
+            return [(pos, a) for pos, a in hits if not a.ambiguous or confident & set(a.place_ids)]
 
-        title_hits = usable(title_hits, snippet_hits)
-        snippet_hits = usable(snippet_hits, title_hits)
+        title_hits, snippet_hits = usable(title_hits), usable(snippet_hits)
 
         found: list[str] = []
         for _, a in title_hits + snippet_hits:
             for pid in a.place_ids:
-                if pid not in found:
+                if (not a.ambiguous or pid in confident) and pid not in found:
                     found.append(pid)
-
-        if not found and region == "hyderabad":        # a city-desk feed with no place named
-            found = ["tg-hyderabad"]
 
         primary = None
         for hits in (title_hits, snippet_hits):
             if hits:
-                best = max(
-                    ((pos, pid) for pos, a in hits for pid in a.place_ids),
-                    key=lambda pp: (self.specificity(pp[1]), -pp[0]),
-                )
-                primary = best[1]
-                break
+                cands = [(pos, pid) for pos, a in hits for pid in a.place_ids if pid in found]
+                if cands:
+                    primary = max(cands, key=lambda pp: (self.specificity(pp[1]), -pp[0]))[1]
+                    break
         if primary is None and found:
             primary = found[0]
 

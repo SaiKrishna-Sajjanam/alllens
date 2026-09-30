@@ -1,13 +1,12 @@
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
-import { districtsOf } from '../lib/catalog';
-import { DEFAULT_PREFS, MAX_PLACES, cleanPrefs, decodePrefsCookie, encodePrefsCookie, prefsFromProfile, profileFromPrefs } from '../lib/prefs';
+import { LANGUAGES } from '../lib/catalog';
+import { DEFAULT_PREFS, cleanPrefs, decodePrefsCookie, encodePrefsCookie, prefsFromProfile, profileFromPrefs } from '../lib/prefs';
 
 test('unknown or hostile values fall back to safe defaults', () => {
   const p = cleanPrefs({
     topics: ['politics', 'not-a-topic', 42, 'politics'],
-    places: ['tg-warangal', 'tg', 'mars'],
+    state: 'tg-warangal',
     languages: ['xx'],
     uiLanguage: 'fr',
     catchupTime: '25:99',
@@ -17,7 +16,7 @@ test('unknown or hostile values fall back to safe defaults', () => {
     hideCrime: 'yes',
   });
   assert.deepEqual(p.topics, ['politics']);
-  assert.deepEqual(p.places, ['tg-warangal']);
+  assert.equal(p.state, '', 'a district is not a state; no state until the reader picks one');
   assert.deepEqual(p.languages, ['en']);
   assert.equal(p.uiLanguage, 'en');
   assert.equal(p.catchupTime, DEFAULT_PREFS.catchupTime);
@@ -28,30 +27,27 @@ test('unknown or hostile values fall back to safe defaults', () => {
 });
 
 test('cookie and profile round trips keep choices', () => {
-  const p = cleanPrefs({ topics: ['sports'], languages: ['te', 'en'], places: ['tg-hyderabad'], catchupTime: '07:15', uiLanguage: 'te' });
+  const p = cleanPrefs({ topics: ['sports'], languages: ['te', 'en'], state: 'kl', catchupTime: '07:15', uiLanguage: 'te' });
   assert.deepEqual(decodePrefsCookie(encodePrefsCookie(p)), p);
   assert.equal(decodePrefsCookie('%%%not-json'), null);
   const row = profileFromPrefs('u1', p);
   assert.deepEqual(prefsFromProfile({ ...row, catchup_time: '07:15:00' }), p);
 });
 
-test('any state or union territory, with places only from that state; any interface language', () => {
-  const tn = cleanPrefs({ state: 'tn', places: ['tg-hyderabad'], uiLanguage: 'ta' });
+test('any state or union territory, all alike, none by default; any interface language', () => {
+  assert.equal(DEFAULT_PREFS.state, '', 'no state is preferred');
+  const tn = cleanPrefs({ state: 'tn', uiLanguage: 'ta' });
   assert.equal(tn.state, 'tn');
-  assert.deepEqual(tn.places, [], 'a Telangana district is dropped for a Tamil Nadu reader');
   assert.equal(tn.uiLanguage, 'ta');
-  assert.deepEqual(cleanPrefs({ state: 'tn' }).places, [], 'the Hyderabad default belongs to Telangana only');
   assert.equal(cleanPrefs({ state: 'dl' }).state, 'dl');
-  assert.equal(cleanPrefs({ state: 'tg-hyderabad' }).state, 'tg', 'a district is not a state');
-  assert.equal(cleanPrefs({ state: 'atlantis' }).state, 'tg');
+  assert.equal(cleanPrefs({ state: 'atlantis' }).state, '');
   assert.equal(cleanPrefs({ uiLanguage: 'ur' }).uiLanguage, 'ur');
+  assert.ok(!('places' in tn), 'no district level');
+  assert.deepEqual(profileFromPrefs('u1', tn).places, [], 'the old column is kept empty');
 });
 
-test('"All" districts are kept, within the database limit', () => {
-  const all = districtsOf('tg').map((d) => d.id);
-  const p = cleanPrefs({ places: all });
-  assert.deepEqual(p.places, all);
-  assert.deepEqual(decodePrefsCookie(encodePrefsCookie(p))?.places, all);
-  const migration = readFileSync(new URL('../../supabase/migrations/20261001000300_places_limit.sql', import.meta.url), 'utf8');
-  assert.match(migration, new RegExp(`cardinality\\(places\\) <= ${MAX_PLACES}\\b`));
+test('news in every language we collect; "All" keeps them all', () => {
+  const codes = LANGUAGES.map((l) => l.code);
+  assert.ok(codes.length >= 13 && codes[0] === 'en');
+  assert.deepEqual(cleanPrefs({ languages: codes }).languages, codes);
 });

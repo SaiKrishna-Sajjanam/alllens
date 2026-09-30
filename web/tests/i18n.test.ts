@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { districtsOf, groupsOf, PLACES } from '../lib/catalog';
+import { groupsOf, PLACES, STATES } from '../lib/catalog';
 import { formatTime, t } from '../lib/i18n';
 
 test('every English string has a Telugu version with the same placeholders', async () => {
@@ -18,11 +18,10 @@ test('dates show in India time', () => {
   assert.match(formatTime('2026-09-29T15:15:00Z', 'en'), /29 Sept?,? 8:45\s?pm/i);
 });
 
-test('Telangana has 33 districts, Hyderabad listed first', () => {
-  const d = districtsOf('tg');
-  assert.equal(d.length, 33);
-  assert.equal(d[0].id, 'tg-hyderabad');
-  assert.ok(PLACES.every((p) => p.te && p.en));
+test('36 states and union territories, A-Z, none first; no district level', () => {
+  assert.equal(STATES.length, 36);
+  assert.equal(STATES[0], 'an', 'Andaman and Nicobar Islands: plain A-Z');
+  assert.ok(PLACES.every((p) => p.kind === 'state' && p.te && p.en));
 });
 
 test('source kinds', () => {

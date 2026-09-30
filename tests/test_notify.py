@@ -9,7 +9,7 @@ NOW = datetime(2026, 9, 30, 14, 5, tzinfo=timezone.utc)      # 19:35 in India
 
 
 def reader(**kw):
-    base = dict(user_id="u1", email="a@example.com", topics=[], places=["tg-hyderabad"], state="tg",
+    base = dict(user_id="u1", email="a@example.com", topics=[], state="tg",
                 languages=["en", "te"], hide_crime=False, ui="en", catchup=time(19, 30), tz="Asia/Kolkata",
                 notify_followed=True, last_visit=None, last_digest_on=None)
     base.update(kw)
@@ -23,7 +23,7 @@ def story(sid, places, topics, n=2, labels=None, langs=("en",), scope=None):
             "languages": list(langs), "scope": scope}
 
 
-PLACES = {"tg": {"en": "Telangana", "te": "తెలంగాణ"}, "tg-hyderabad": {"en": "Hyderabad", "te": "హైదరాబాద్"}}
+PLACES = {"tg": {"en": "Telangana", "te": "తెలంగాణ"}}
 
 
 class NotifyTests(unittest.TestCase):
@@ -33,22 +33,26 @@ class NotifyTests(unittest.TestCase):
         self.assertFalse(is_due(reader(last_digest_on=date(2026, 9, 30)), NOW))
         self.assertTrue(is_due(reader(last_digest_on=date(2026, 9, 29)), NOW))
 
-    def test_sections_follow_reader_places_and_filters(self):
-        stories = [story("hyd", ["tg", "tg-hyderabad"], ["politics"]),
+    def test_sections_are_state_national_international_and_filters_apply(self):
+        stories = [story("hyd", ["tg"], ["politics"], n=3),
                    story("state", ["tg"], ["crime"]),
+                   story("crash", ["tg"], ["accidents"]),
                    story("india", [], ["sports"], n=5),
                    story("teluguonly", ["tg"], [], langs=("te",)),
                    story("world", [], [], scope="international")]
         d = build_digest(reader(languages=["en"]), stories, [], PLACES)
         heads = {h: [i.story_id for i in items] for h, items in d.sections}
-        self.assertEqual(heads["Hyderabad"], ["hyd"])
-        self.assertEqual(heads["Telangana"], ["state"])
+        self.assertEqual(heads["Telangana"], ["hyd", "state", "crash"])
+        self.assertEqual(list(heads)[0], "Telangana", "no district sections: the state comes first")
         self.assertEqual(heads["National"], ["india"])
         self.assertEqual(heads["International"], ["world"])
         self.assertEqual(list(heads)[-1], "International")
         d2 = build_digest(reader(hide_crime=True, topics=["sports"]), stories, [], PLACES)
         ids = [i.story_id for _, items in d2.sections for i in items]
         self.assertEqual(ids, ["india"])
+        d3 = build_digest(reader(hide_crime=True, languages=["en"]), stories, [], PLACES)
+        ids = {i.story_id for _, items in d3.sections for i in items}
+        self.assertFalse(ids & {"state", "crash"}, "hide crime also hides accidents")
 
     def test_headlines_are_source_words_and_followed_updates_come_first(self):
         labels = {"en": {"title": "Exact English words", "source_name": "ThePrint"},
@@ -68,7 +72,7 @@ class NotifyTests(unittest.TestCase):
         for lang, t in TEXT.items():
             self.assertEqual(set(t), set(TEXT["en"]), f"{lang}: keys differ from English")
         places = {**PLACES, "tn": {"en": "Tamil Nadu", "te": "తమిళనాడు"}}
-        d = build_digest(reader(ui="ta", state="tn", places=[]), [story("chennai", ["tn"], [])], [], places)
+        d = build_digest(reader(ui="ta", state="tn"), [story("chennai", ["tn"], [])], [], places)
         heads = [h for h, _ in d.sections]
         self.assertEqual(heads, ["Tamil Nadu"], "no Tamil place name yet: English, never the code 'tn'")
         self.assertIn("சுருக்கம்", d.subject)

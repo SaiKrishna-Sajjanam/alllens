@@ -1,12 +1,14 @@
 // Pure, mechanical rules for what a reader sees and in what order.
 // No scoring of sources anywhere: only time, counts, the reader's own
 // choices, or random order.
-import { districtsOf, groupsOf, placeName, type SourceGroup } from './catalog';
+import { groupsOf, placeName, type SourceGroup } from './catalog';
 import type { Article, FeedSort, LabelInfo, Lang, Prefs, Story, StorySort } from './types';
 
 export const FEED_DAYS = 7;
 export const ARCHIVE_DAYS = 30;
 export const PAGE_SIZE = 40;
+/** The reader's "hide crime and accidents" choice. */
+export const HIDDEN_BY_HIDE_CRIME = ['crime', 'accidents'];
 
 export const TAB_IDS = ['international', 'national', 'state'] as const;
 export type TabId = (typeof TAB_IDS)[number];
@@ -17,11 +19,11 @@ export interface Tab {
   label: string;
 }
 
-export function tabsFor(prefs: Prefs, lang: Lang, labels: { international: string; national: string }): Tab[] {
+export function tabsFor(prefs: Prefs, lang: Lang, labels: { international: string; national: string; state: string }): Tab[] {
   return [
     { id: 'international', label: labels.international },
     { id: 'national', label: labels.national },
-    { id: 'state', label: placeName(prefs.state, lang) },
+    { id: 'state', label: prefs.state ? placeName(prefs.state, lang) : labels.state },
   ];
 }
 
@@ -30,35 +32,22 @@ export function normaliseTab(tab: string | undefined): TabId {
   return (TAB_IDS as readonly string[]).includes(tab ?? '') ? (tab as TabId) : DEFAULT_TAB;
 }
 
-/**
- * Districts that narrow the State tab: the reader's chosen districts of their state.
- * None chosen, or every one chosen, means the whole state (including state-wide news).
- */
-export function districtFilter(prefs: Prefs): string[] {
-  const all = districtsOf(prefs.state).map((d) => d.id);
-  const chosen = prefs.places.filter((p) => all.includes(p));
-  return chosen.length === all.length ? [] : chosen;
-}
-
 export const isInternational = (story: Story) => story.scope === 'international';
 
 /**
  * International = stories from world-news feeds that name no Indian place.
  * National = every Indian story (central, nationwide and all states, the reader's included).
- * State = the reader's state, narrowed to their chosen districts if any.
+ * State = the reader's state (any state or union territory, all treated alike; none until chosen).
  */
 export function inTab(story: Story, tab: TabId, prefs: Prefs): boolean {
   if (tab === 'international') return isInternational(story);
   if (tab === 'national') return !isInternational(story);
-  const places = story.places ?? [];
-  if (!places.includes(prefs.state)) return false;
-  const districts = districtFilter(prefs);
-  return !districts.length || districts.some((d) => places.includes(d));
+  return !!prefs.state && (story.places ?? []).includes(prefs.state);
 }
 
 export function matchesInterests(story: Story, prefs: Prefs, customStoryIds: Set<string>, showAllTopics: boolean): boolean {
   const topics = story.topics ?? [];
-  if (prefs.hideCrime && topics.includes('crime')) return false;
+  if (prefs.hideCrime && topics.some((t) => HIDDEN_BY_HIDE_CRIME.includes(t))) return false;
   const langs = story.languages ?? [];
   if (langs.length && !langs.some((l) => prefs.languages.includes(l))) return false;
   if (prefs.sourceTypes.length) {

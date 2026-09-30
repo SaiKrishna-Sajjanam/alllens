@@ -5,7 +5,7 @@ import { t } from '@/lib/i18n';
 
 export const metadata = { title: 'Our sources' };
 
-const LAYERS = ['international', 'national', 'state', 'local'] as const;
+const LAYERS = ['international', 'national', 'state'] as const;
 const STATUSES = ['live', 'to_check', 'broken', 'no_feed'] as const;
 const statusOf = (s: string | null) => STATUSES.find((x) => x === s) ?? 'to_check';
 

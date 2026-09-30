@@ -1,21 +1,23 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { districtsOf } from '../lib/catalog';
 import { demoData } from '../lib/demo';
 import {
-  districtFilter, filterArticles, inTab, matchesInterests, normaliseTab, pickLabel, seededShuffle, sortArticles,
+  filterArticles, inTab, matchesInterests, normaliseTab, pickLabel, seededShuffle, sortArticles,
   sortStories, tabsFor, toggleCompare, wireCounts,
 } from '../lib/feed';
 import { DEFAULT_PREFS } from '../lib/prefs';
 import type { Article, Prefs, Story } from '../lib/types';
 
 const { stories, articles } = demoData(Date.parse('2026-10-01T12:00:00Z'));
-const prefs: Prefs = { ...DEFAULT_PREFS, languages: ['en', 'te'], places: ['tg-hyderabad', 'tg-karimnagar'] };
+const prefs: Prefs = { ...DEFAULT_PREFS, languages: ['en', 'te'], state: 'tg' };
 const byId = (id: string) => stories.find((s) => s.id === id)!;
 
-test('tabs: International, National (all India), State narrowed by chosen districts', () => {
+test('tabs: International, National (all India), State (any state, all alike; none until chosen)', () => {
   const world: Story = { ...byId('demo-kohli'), id: 'w', places: [], scope: 'international' };
-  assert.deepEqual(tabsFor(prefs, 'en', { international: 'I', national: 'N' }).map((x) => x.id), ['international', 'national', 'state']);
+  const labels = { international: 'I', national: 'N', state: 'Your state' };
+  assert.deepEqual(tabsFor(prefs, 'en', labels).map((x) => x.id), ['international', 'national', 'state']);
+  assert.equal(tabsFor(prefs, 'en', labels)[2].label, 'Telangana');
+  assert.equal(tabsFor({ ...prefs, state: '' }, 'en', labels)[2].label, 'Your state');
   assert.equal(normaliseTab('india'), 'national', 'old links still work');
   assert.equal(normaliseTab('tg-hyderabad'), 'national', 'districts are no longer tabs');
 
@@ -23,18 +25,13 @@ test('tabs: International, National (all India), State narrowed by chosen distri
   assert.ok(!inTab(world, 'national', prefs) && !inTab(world, 'state', prefs));
   for (const s of stories) assert.ok(inTab(s, 'national', prefs) && !inTab(s, 'international', prefs), `${s.id} is Indian news`);
 
-  // Chosen districts (Hyderabad, Karimnagar) narrow the State tab.
-  assert.ok(inTab(byId('demo-alwal'), 'state', prefs));
-  assert.ok(inTab(byId('demo-cmtour'), 'state', prefs));
-  assert.ok(!inTab(byId('demo-power'), 'state', prefs), 'state-wide story outside the chosen districts');
+  // The whole state, one level only.
+  for (const id of ['demo-alwal', 'demo-cmtour', 'demo-power']) assert.ok(inTab(byId(id), 'state', prefs), id);
   assert.ok(!inTab(byId('demo-kathua'), 'state', prefs));
-  // None chosen, or all chosen: the whole state.
-  const whole = [{ ...prefs, places: [] }, { ...prefs, places: districtsOf('tg').map((d) => d.id) }];
-  for (const p of whole) {
-    assert.deepEqual(districtFilter(p), []);
-    assert.ok(inTab(byId('demo-power'), 'state', p));
-    assert.ok(!inTab(byId('demo-kathua'), 'state', p));
-  }
+  // Switching state switches the tab; no state chosen shows nothing there yet.
+  assert.ok(inTab(byId('demo-kathua'), 'state', { ...prefs, state: 'jk' }));
+  assert.ok(!inTab(byId('demo-alwal'), 'state', { ...prefs, state: 'jk' }));
+  assert.ok(!stories.some((s) => inTab(s, 'state', { ...prefs, state: '' })));
 });
 
 test('interests: topics, own words, languages, crime filter are the reader\'s choice', () => {
@@ -45,6 +42,8 @@ test('interests: topics, own words, languages, crime filter are the reader\'s ch
   assert.ok(matchesInterests(byId('demo-kohli'), politics, custom, true), 'show all topics');
   assert.ok(matchesInterests(byId('demo-kohli'), politics, new Set(['demo-kohli']), false), 'own interest match');
   assert.ok(!matchesInterests(byId('demo-alwal'), { ...prefs, hideCrime: true }, custom, true));
+  const crash = { ...byId('demo-kohli'), topics: ['accidents'] };
+  assert.ok(!matchesInterests(crash, { ...prefs, hideCrime: true }, custom, true), 'hide crime also hides accidents');
   assert.ok(!matchesInterests(byId('demo-alwal'), { ...prefs, languages: ['en'] }, custom, true), 'Telugu-only story, English reader');
   assert.ok(matchesInterests(byId('demo-kathua'), { ...prefs, languages: ['en'] }, custom, true));
   assert.ok(!matchesInterests(byId('demo-kohli'), { ...prefs, sourceTypes: ['newspaper'] }, custom, true));

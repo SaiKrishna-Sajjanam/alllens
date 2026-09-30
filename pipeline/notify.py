@@ -22,6 +22,7 @@ from pipeline.common import DB, as_dict, as_list, to_datetime
 
 SITE_URL = os.environ.get("SITE_URL", "http://localhost:3000").rstrip("/")
 PER_SECTION = 5
+HIDDEN_BY_HIDE_CRIME = {"crime", "accidents"}   # the reader's "hide crime and accidents" choice
 
 TEXT = {
     "en": {
@@ -115,15 +116,11 @@ TEXT = {
     },
 }
 
-PLACE_NAMES = {"tg": {"en": "Telangana", "te": "తెలంగాణ"}}
-
-
 @dataclass
 class Reader:
     user_id: str
     email: str
     topics: list[str]
-    places: list[str]
     state: str
     languages: list[str]
     hide_crime: bool
@@ -173,7 +170,7 @@ def label_for(story: dict, languages: list[str]) -> tuple[str, str]:
 
 def matches(story: dict, r: Reader) -> bool:
     topics = as_list(story.get("topics"))
-    if r.hide_crime and "crime" in topics:
+    if r.hide_crime and set(topics) & HIDDEN_BY_HIDE_CRIME:
         return False
     langs = as_list(story.get("languages"))
     if langs and not set(langs) & set(r.languages):
@@ -195,11 +192,7 @@ def build_digest(r: Reader, stories: list[dict], followed: list[dict], place_nam
         return names.get(r.ui) or names.get("en") or place
 
     sections: list[tuple[str, list[Item]]] = []
-    for place in r.places:
-        chosen = [item(s) for s in fresh if place in as_list(s.get("places"))][:PER_SECTION]
-        sections.append((name(place), chosen))
-    state = [item(s) for s in fresh if r.state in as_list(s.get("places"))
-             and not set(as_list(s.get("places"))) & set(r.places)][:PER_SECTION]
+    state = [item(s) for s in fresh if r.state in as_list(s.get("places"))][:PER_SECTION]
     sections.append((name(r.state), state))
     # In the email, National skips the reader's own state (already listed above) so no headline repeats.
     world = [s for s in fresh if s.get("scope") == "international"]
@@ -259,12 +252,12 @@ def send_email(to: str, subject: str, html_body: str, text_body: str) -> bool:
 
 def load_readers(db: DB) -> list[Reader]:
     rows = db.fetchall(
-        """SELECT p.user_id::text, u.email, p.topics, p.places, p.state, p.languages, p.hide_crime, p.ui_language,
+        """SELECT p.user_id::text, u.email, p.topics, p.state, p.languages, p.hide_crime, p.ui_language,
                   p.catchup_time, p.timezone, p.notify_followed, p.last_visit_at, p.last_digest_on
            FROM public.profiles p JOIN auth.users u ON u.id = p.user_id
            WHERE p.notify_digest AND u.email IS NOT NULL""")
-    return [Reader(r[0], r[1], as_list(r[2]), as_list(r[3]), r[4], as_list(r[5]) or ["en"], bool(r[6]), r[7],
-                   r[8], r[9], bool(r[10]), to_datetime(r[11]), r[12]) for r in rows]
+    return [Reader(r[0], r[1], as_list(r[2]), r[3], as_list(r[4]) or ["en"], bool(r[5]), r[6],
+                   r[7], r[8], bool(r[9]), to_datetime(r[10]), r[11]) for r in rows]
 
 
 STORY_SQL = """SELECT id, label, label_language, label_source_id, labels, source_count, last_article_at,
