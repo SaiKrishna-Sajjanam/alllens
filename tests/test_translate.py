@@ -93,6 +93,24 @@ class TranslateTests(unittest.TestCase):
         translate.run(self.db, Fake(), NOW)
         self.assertEqual(len(self.stored()), 5)
 
+    def test_language_google_refuses_is_detected_instead(self):
+        # Google's Apps Script translator refuses Assamese as a source; one refusal must not
+        # stop the run: the batch is asked again with automatic detection.
+        self.db.execute("INSERT INTO articles (id, source_id, title, url, fetched_at, language, story_id) "
+                        "VALUES ('as1', 'eenadu', 'গুৱাহাটীত প্ৰবল বৰষুণ', 'https://x.test/as1', ?, 'as', 's1')", (NOW,))
+        fake = Fake()
+        inner = fake.__call__
+
+        def refuse_assamese(texts, source, target):
+            if source == "as":
+                raise translate.UnsupportedLanguage("Translation between the given languages is not currently supported.")
+            return inner(texts, source, target)
+
+        result = translate.run(self.db, refuse_assamese, NOW)
+        self.assertIsNone(result["stopped"])
+        self.assertEqual(self.stored()[("as1", "en")], "[en] গুৱাহাটীত প্ৰবল বৰষুণ")
+        self.assertIn(("", "en", ["গুৱাহাটীত প্ৰবল বৰষুণ"]), fake.calls)
+
     def test_card_headlines_go_first(self):
         jobs = translate.pending(self.db, ["ta"], NOW)
         self.assertEqual(jobs[0][0], "a1")          # the story's label article, although older

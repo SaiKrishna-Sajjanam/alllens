@@ -41,6 +41,11 @@ class QuotaExhausted(RuntimeError):
     """Google's daily translation allowance is used up; the rest waits for the next run."""
 
 
+class UnsupportedLanguage(RuntimeError):
+    """Google's Apps Script translator does not take this source language (e.g. Assamese);
+    automatic detection still translates it."""
+
+
 def title_hash(title: str) -> str:
     """Which wording was translated (the website checks it too: web/lib/headlines.ts)."""
     return hashlib.sha256(title.encode("utf-8")).hexdigest()[:12]
@@ -79,6 +84,8 @@ class AppsScriptTranslator:
             msg = str(body["error"])
             if "too many times" in msg.lower():
                 raise QuotaExhausted(msg)
+            if "not currently supported" in msg.lower():
+                raise UnsupportedLanguage(msg)
             raise RuntimeError(f"translator: {msg}")
         return [str(x) for x in body.get("translations", [])]
 
@@ -98,7 +105,14 @@ def translate_batch(fn, texts: list[str], source: str, target: str, budget: Budg
     """One call for the whole batch. If the lines come back misaligned, halve and retry, so a
     headline is never paired with another headline's translation."""
     budget.take()
-    out = fn(texts, source, target)
+    try:
+        out = fn(texts, source, target)
+    except UnsupportedLanguage:
+        if not source:
+            raise
+        budget.take()
+        out = fn(texts, "", target)      # let Google detect the language instead
+        source = ""
     if len(out) == len(texts):
         return [one_line(o)[:400] or None for o in out]
     if len(texts) == 1:

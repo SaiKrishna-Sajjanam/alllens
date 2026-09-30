@@ -28,6 +28,16 @@ export interface Headline {
 const oneLine = (s: string) => s.split(/\s+/).filter(Boolean).join(' ');
 
 async function callTranslator(texts: string[], source: string, target: string): Promise<string[]> {
+  try {
+    return await askTranslator(texts, source, target);
+  } catch (e) {
+    // Google's Apps Script translator refuses a few source languages (e.g. Assamese); detection works.
+    if (source && e instanceof Error && /not currently supported/i.test(e.message)) return askTranslator(texts, '', target);
+    throw e;
+  }
+}
+
+async function askTranslator(texts: string[], source: string, target: string): Promise<string[]> {
   const res = await fetch(TRANSLATE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
