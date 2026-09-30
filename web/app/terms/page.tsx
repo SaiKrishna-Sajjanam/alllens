@@ -9,7 +9,7 @@ export default function TermsPage() {
       <h1>Terms of use</h1>
       <LegalNote />
       <ol>
-        <li>All-Lens groups and links to news that others publish. Each headline, snippet and article belongs to its publisher; follow the link to read the original on their site.</li>
+        <li>Vuaz groups and links to news that others publish. Each headline, snippet and article belongs to its publisher; follow the link to read the original on their site.</li>
         <li>We do not verify, endorse or rate any report. Comparing versions is the point: please read critically.</li>
         <li>Do not use the service to harass anyone, to scrape it at scale, or to break the law.</li>
         <li>Paywalled articles are listed like any other; reading them may require the publisher&rsquo;s subscription.</li>

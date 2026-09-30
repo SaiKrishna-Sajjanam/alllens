@@ -2,7 +2,7 @@
 import type { Key } from '../i18n';
 
 export const kn: Record<Key, string> = {
-  brand: 'All-Lens',
+  brand: 'Vuaz',
   tagline: 'ಪ್ರತಿ ಸುದ್ದಿಯ ಎಲ್ಲಾ ರೂಪಗಳು, ನಿಮ್ಮ ಸಮಯದಲ್ಲಿ',
   'nav.feed': 'ಫೀಡ್',
   'nav.following': 'ಫಾಲೋ',

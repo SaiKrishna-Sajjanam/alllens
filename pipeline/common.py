@@ -27,7 +27,7 @@ SCHEMA_SQL = ROOT / "sql" / "schema.sql"
 
 SNIPPET_MAX = 280          # characters of feed summary we keep
 RETENTION_DAYS = 30        # articles older than this are deleted (counts are kept)
-USER_AGENT = "AllLensNewsBot/0.1 (news aggregator; contact via project site)"
+USER_AGENT = "VuazBot/0.1 (news aggregator; contact via project site)"
 TIMEOUT = 20               # seconds per feed request
 HOST_GAP = 3.0             # seconds between feeds on the same site
 

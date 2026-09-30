@@ -2,7 +2,7 @@
 import type { Key } from '../i18n';
 
 export const ml: Record<Key, string> = {
-  brand: 'All-Lens',
+  brand: 'Vuaz',
   tagline: 'ഓരോ വാർത്തയുടെയും എല്ലാ പതിപ്പുകളും, നിങ്ങളുടെ സമയത്ത്',
   'nav.feed': 'ഫീഡ്',
   'nav.following': 'പിന്തുടരുന്നവ',

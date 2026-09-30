@@ -1,4 +1,4 @@
-# All-Lens News — project guide for Claude Code
+# Vuaz — project guide for Claude Code
 
 ## What this product is
 A news app and website for India. For every news incident it shows **every public version** (newspapers, TV sites, digital outlets, Reddit, community) side by side, with a link to each original, organised by the reader's interests and location (International → National → State; every state and union territory treated alike, no district level). Readers catch up at their own time; there is no breaking-news pressure.

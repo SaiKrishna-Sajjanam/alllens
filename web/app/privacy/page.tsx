@@ -8,7 +8,7 @@ export default function PrivacyPage() {
     <article className="prose">
       <h1>Privacy</h1>
       <LegalNote />
-      <p>You can read everything on All-Lens without an account. An account only saves your choices across devices.</p>
+      <p>You can read everything on Vuaz without an account. An account only saves your choices across devices.</p>
       <h2>What we store</h2>
       <ul>
         <li><strong>Without an account:</strong> your choices and the time of your last visit, in a cookie on your device.</li>

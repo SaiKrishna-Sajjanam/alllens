@@ -1,5 +1,5 @@
 [Unit]
-Description=All-Lens: nightly clean-up (30-day retention, inactive accounts)
+Description=Vuaz: nightly clean-up (30-day retention, inactive accounts)
 
 [Timer]
 OnCalendar=*-*-* 20:37:00 UTC

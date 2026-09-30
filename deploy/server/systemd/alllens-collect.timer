@@ -1,5 +1,5 @@
 [Unit]
-Description=All-Lens: collect, tag and group news every 3 hours
+Description=Vuaz: collect, tag and group news every 3 hours
 
 [Timer]
 OnCalendar=*-*-* 00/3:07:00 UTC

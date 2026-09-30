@@ -1,5 +1,5 @@
 [Unit]
-Description=All-Lens job: %i
+Description=Vuaz job: %i
 After=network-online.target
 Wants=network-online.target
 

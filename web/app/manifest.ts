@@ -3,8 +3,8 @@ import type { MetadataRoute } from 'next';
 /** Lets phones install the website as an app (home-screen icon, full screen). */
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: 'All-Lens News',
-    short_name: 'All-Lens',
+    name: 'Vuaz',
+    short_name: 'Vuaz',
     description: 'Every public version of the news, side by side, at your time.',
     start_url: '/feed',
     display: 'standalone',

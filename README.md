@@ -1,8 +1,8 @@
-# All-Lens News
+# Vuaz
 
 **One story, every public version, at your time, so you can judge it yourself.**
 
-All-Lens collects public news feeds (national and state outlets for every state and union territory, TV sites, digital outlets, official YouTube channels, Reddit communities), groups reports of the same incident into one story across languages, and shows every version side by side with a link to each original. No summaries, no bias labels, no hidden ranking.
+Vuaz collects public news feeds (national and state outlets for every state and union territory, TV sites, digital outlets, official YouTube channels, Reddit communities), groups reports of the same incident into one story across languages, and shows every version side by side with a link to each original. No summaries, no bias labels, no hidden ranking.
 
 - A **website** that also installs on phones as an app (home-screen icon, full screen).
 - A **pipeline** that runs on a schedule: collect → tag places and topics → group into stories → 30-day clean-up. The app never sends email.

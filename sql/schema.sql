@@ -1,4 +1,4 @@
--- All-Lens News: pipeline tables.
+-- Vuaz: pipeline tables.
 -- Portable: runs on Postgres (Supabase) and, for local tests, on SQLite
 -- (the loader maps TEXT[] and JSONB to TEXT there).
 -- On Supabase the migrations in supabase/migrations/ create these same tables

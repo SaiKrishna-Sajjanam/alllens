@@ -9,7 +9,7 @@ export default function GrievancePage() {
       <h1>Grievances and takedown requests</h1>
       <LegalNote />
       <p>
-        All-Lens shows headlines, short opening text and links that news outlets and public communities publish in
+        Vuaz shows headlines, short opening text and links that news outlets and public communities publish in
         their own feeds. We do not write, edit or host full articles. If something shown here is unlawful, infringes
         your rights, or you are a publisher who wants your outlet removed, contact our Grievance Officer.
       </p>
@@ -21,7 +21,7 @@ export default function GrievancePage() {
       </ul>
       <h2>What to include</h2>
       <ul>
-        <li>The link to the story page on All-Lens and the specific item (outlet and headline).</li>
+        <li>The link to the story page on Vuaz and the specific item (outlet and headline).</li>
         <li>Why you believe it should be removed, and your relationship to it (for example, the publisher or the person concerned).</li>
         <li>Your name and a way to contact you.</li>
       </ul>

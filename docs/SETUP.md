@@ -13,7 +13,7 @@ About 1.5 to 2 hours the first time. Every account here has a free tier that cov
    ```bash
    git init
    git add .
-   git commit -m "All-Lens: pipeline, grouping and web app"
+   git commit -m "Vuaz: pipeline, grouping and web app"
    git branch -M main
    git remote add origin https://github.com/<your-username>/alllens.git
    git push -u origin main
@@ -71,7 +71,7 @@ Every push to `main` now redeploys automatically; every pull request gets a prev
 Readers sign in with Google only; the app never sends email. Reading needs no account at all (guest choices stay in the browser); an account keeps choices and follows across devices.
 
 1. Supabase → **Authentication → URL Configuration:** Site URL = your Vercel address. Redirect URLs: add `https://<your-site>/**` and `http://localhost:3000/**`.
-2. Google Cloud Console (free) → APIs & Services → **OAuth consent screen**: External, app name All-Lens, your support email. Then **Credentials → Create OAuth client ID** (Web application). Authorised redirect URI: the callback URL shown in Supabase → Authentication → Providers → Google. Paste the client ID and secret into that Supabase page and enable it.
+2. Google Cloud Console (free) → APIs & Services → **OAuth consent screen**: External, app name Vuaz, your support email. Then **Credentials → Create OAuth client ID** (Web application). Authorised redirect URI: the callback URL shown in Supabase → Authentication → Providers → Google. Paste the client ID and secret into that Supabase page and enable it.
 3. Supabase → Authentication → Providers → **Email**: turn it off, so no sign-in email is ever sent.
 
 **Check:** on the site, Sign in → Continue with Google → you land on your feed; your choices are kept; Follow works; Settings shows your Google email.

@@ -2,7 +2,7 @@
 import type { Key } from '../i18n';
 
 export const pa: Record<Key, string> = {
-  brand: 'All-Lens',
+  brand: 'Vuaz',
   tagline: 'ਹਰ ਖ਼ਬਰ ਦੇ ਸਾਰੇ ਰੂਪ, ਤੁਹਾਡੇ ਸਮੇਂ ਤੇ',
   'nav.feed': 'ਫੀਡ',
   'nav.following': 'ਫ਼ਾਲੋ',

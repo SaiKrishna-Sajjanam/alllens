@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# One-time setup of the All-Lens jobs on an Ubuntu 24.04 server (Oracle Cloud Always Free).
+# One-time setup of the Vuaz jobs on an Ubuntu 24.04 server (Oracle Cloud Always Free).
 # See docs/SERVER.md. Run as the server's normal user (ubuntu), after cloning the repo to ~/alllens:
 #     bash ~/alllens/deploy/server/setup.sh
 set -euo pipefail

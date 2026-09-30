@@ -2,7 +2,7 @@
 import type { Key } from '../i18n';
 
 export const gu: Record<Key, string> = {
-  brand: 'All-Lens',
+  brand: 'Vuaz',
   tagline: 'દરેક સમાચારના બધા રૂપ, તમારા સમયે',
   'nav.feed': 'ફીડ',
   'nav.following': 'ફૉલો',

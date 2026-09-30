@@ -31,7 +31,7 @@ export const UI_LANGUAGES: { code: Lang; name: string; locale: string; rtl?: boo
 ];
 
 const en = {
-  brand: 'All-Lens',
+  brand: 'Vuaz',
   tagline: 'Every version of the news, at your time',
   'nav.feed': 'Feed',
   'nav.following': 'Following',
@@ -217,7 +217,7 @@ const en = {
 export type Key = keyof typeof en;
 
 const te: Record<Key, string> = {
-  brand: 'All-Lens',
+  brand: 'Vuaz',
   tagline: 'ప్రతి వార్త, అన్ని వెర్షన్లు, మీకు వీలైన సమయంలో',
   'nav.feed': 'ఫీడ్',
   'nav.following': 'ఫాలో',

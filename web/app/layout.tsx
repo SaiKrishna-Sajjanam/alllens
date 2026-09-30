@@ -27,10 +27,10 @@ const fonts = [serif, sans, telugu, deva, bengali, tamil, kannada, malayalam, gu
   .map((f) => f.variable).join(' ');
 
 export const metadata: Metadata = {
-  title: { default: 'All-Lens News', template: '%s · All-Lens' },
+  title: { default: 'Vuaz', template: '%s · Vuaz' },
   description: 'Every public version of the news, side by side, with a link to each original. No summaries, no rankings.',
-  applicationName: 'All-Lens',
-  appleWebApp: { capable: true, title: 'All-Lens', statusBarStyle: 'default' },
+  applicationName: 'Vuaz',
+  appleWebApp: { capable: true, title: 'Vuaz', statusBarStyle: 'default' },
   formatDetection: { telephone: false },
 };
 

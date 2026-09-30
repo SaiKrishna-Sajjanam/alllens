@@ -12,10 +12,10 @@ export default async function AboutPage() {
 function AboutEn() {
   return (
     <article className="prose">
-      <h1>How All-Lens works</h1>
+      <h1>How Vuaz works</h1>
       <p>
         When you hear a story from one source, you tend to believe that version. When you see many versions side by
-        side, you start comparing and reading between the lines. All-Lens puts every public version of a story in one
+        side, you start comparing and reading between the lines. Vuaz puts every public version of a story in one
         place so you can judge it yourself.
       </p>
 
@@ -63,10 +63,10 @@ function AboutEn() {
 function AboutTe() {
   return (
     <article className="prose" lang="te">
-      <h1>All-Lens ఎలా పనిచేస్తుంది</h1>
+      <h1>Vuaz ఎలా పనిచేస్తుంది</h1>
       <p>
         ఒక వార్తను ఒకే వనరు నుంచి విన్నప్పుడు ఆ వెర్షన్‌నే నమ్ముతాం. అదే వార్తకు చాలా వెర్షన్లు పక్కపక్కన చూస్తే
-        పోల్చి, లోతుగా ఆలోచిస్తాం. ప్రతి వార్తకు ఉన్న అన్ని పబ్లిక్ వెర్షన్లను ఒకే చోట చూపించి, మీరే నిర్ణయించుకునేలా చేయడమే All-Lens లక్ష్యం.
+        పోల్చి, లోతుగా ఆలోచిస్తాం. ప్రతి వార్తకు ఉన్న అన్ని పబ్లిక్ వెర్షన్లను ఒకే చోట చూపించి, మీరే నిర్ణయించుకునేలా చేయడమే Vuaz లక్ష్యం.
       </p>
 
       <h2>మా ఐదు నియమాలు</h2>
