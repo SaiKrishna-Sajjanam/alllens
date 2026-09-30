@@ -13,7 +13,7 @@ Purpose: one version makes people believe; many versions make them think.
 5. **Every lens included.** National and local, big and small, all languages we can reach; the source list is public.
 
 ## Hard technical rules
-- Store only: headline, short snippet (max 280 chars, HTML stripped), link, publish time, source metadata. **Never** full article text (`content:encoded`) or images.
+- Store only: headline, short snippet (max 280 chars, HTML stripped), link, publish time, source metadata, and the **link** to the picture the outlet itself attaches in its feed (`image_url`; https only). **Never** full article text (`content:encoded`) or image files. Pictures load from the outlet's site, credited ("Picture: {source}"); a story's picture is the earliest report that has one (mechanical, like the label). Video = official YouTube channel feeds (`sources.csv` type `*_video`), never scraping.
 - Collect only through RSS/Atom feeds and official APIs. No scraping of sites that forbid it.
 - Retention: feed days 0–7, archive days 8–30, article records deleted after 30 days; only text-free `coverage_counts` kept.
 - **Never commit secrets.** `DATABASE_URL`, API keys: GitHub Actions secrets, Vercel env vars, local `.env` / `web/.env.local` only.

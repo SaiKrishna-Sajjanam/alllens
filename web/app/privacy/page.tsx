@@ -35,6 +35,7 @@ export default function PrivacyPage() {
       <h2>Services we use</h2>
       <ul>
         <li>Supabase (database and sign-in), Vercel (website hosting), GitHub (scheduled collection), and an email provider for the daily reminder.</li>
+        <li>Pictures and video thumbnails are loaded directly from each outlet&rsquo;s own site (or YouTube), so those sites can see your IP address when you view them, as when you visit them. We send them no information about you. &ldquo;Translate&rdquo; opens Google Translate with the article link only.</li>
       </ul>
     </article>
   );

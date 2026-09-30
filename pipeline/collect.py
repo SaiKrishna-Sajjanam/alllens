@@ -43,12 +43,12 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
     stored = dict(db.fetch_in("SELECT id, title FROM articles WHERE id IN ({ids})", fresh))
 
     new = [(aid, src.id, it.title, make_snippet(it.summary), normalise_url(it.url),
-            it.published_at, now, src.language, src.region, it.categories)
+            it.published_at, now, src.language, src.region, it.categories, it.image_url or None)
            for aid, it in fresh.items() if aid not in stored]
     db.executemany(
         """INSERT INTO articles (id, source_id, title, snippet, url, published_at, fetched_at,
-                                 language, region, categories)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                                 language, region, categories, image_url)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT (id) DO NOTHING""",
         new,
     )

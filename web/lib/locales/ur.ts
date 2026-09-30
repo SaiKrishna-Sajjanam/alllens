@@ -81,6 +81,8 @@ export const ur: Record<Key, string> = {
   'story.sort': 'ترتیب',
   'story.orderNote': 'ہم ذرائع کو درجہ یا ریٹنگ نہیں دیتے۔ جب تک آپ نہ بدلیں، ترتیب وقت کے مطابق ہے۔',
   'story.read': '{source} پر پڑھیں',
+  'story.watch': '{source} پر دیکھیں',
+  'story.pictureBy': 'تصویر: {source}',
   'story.translate': 'ترجمہ کریں',
   'story.translateNote': 'اصل مضمون Google Translate میں کھلتا ہے۔ ترجمہ Google کا ہے، ذریعے کے الفاظ نہیں۔',
   'story.compare': 'موازنہ',
@@ -182,6 +184,7 @@ export const ur: Record<Key, string> = {
   'group.community': 'کمیونٹی',
   'group.government': 'حکومت',
   'group.international': 'بین الاقوامی',
+  'group.video': 'ویڈیو',
 
   'footer.rule': 'ہم کبھی ذرائع کو درجہ، ریٹنگ نہیں دیتے اور نہ دوبارہ لکھتے ہیں۔',
   'footer.about': 'یہ کیسے کام کرتا ہے',

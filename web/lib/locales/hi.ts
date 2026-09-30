@@ -81,6 +81,8 @@ export const hi: Record<Key, string> = {
   'story.sort': 'क्रम',
   'story.orderNote': 'हम स्रोतों को रैंक या रेट नहीं करते। जब तक आप न बदलें, क्रम समय के अनुसार है।',
   'story.read': '{source} पर पढ़ें',
+  'story.watch': '{source} पर देखें',
+  'story.pictureBy': 'तस्वीर: {source}',
   'story.translate': 'अनुवाद करें',
   'story.translateNote': 'मूल लेख Google Translate में खुलता है। अनुवाद Google का है, स्रोत के शब्द नहीं।',
   'story.compare': 'तुलना',
@@ -182,6 +184,7 @@ export const hi: Record<Key, string> = {
   'group.community': 'समुदाय',
   'group.government': 'सरकार',
   'group.international': 'अंतरराष्ट्रीय',
+  'group.video': 'वीडियो',
 
   'footer.rule': 'हम स्रोतों को कभी रैंक, रेट या दोबारा नहीं लिखते।',
   'footer.about': 'यह कैसे काम करता है',

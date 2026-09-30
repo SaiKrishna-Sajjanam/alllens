@@ -81,6 +81,8 @@ export const or: Record<Key, string> = {
   'story.sort': 'କ୍ରମ',
   'story.orderNote': 'ଆମେ ଉତ୍ସକୁ ର‍୍ୟାଙ୍କ ବା ରେଟିଂ ଦେଉ ନାହିଁ। ଆପଣ ନ ବଦଳାଇବା ପର୍ଯ୍ୟନ୍ତ କ୍ରମ ସମୟ ଅନୁସାରେ।',
   'story.read': '{source}ରେ ପଢ଼ନ୍ତୁ',
+  'story.watch': '{source}ରେ ଦେଖନ୍ତୁ',
+  'story.pictureBy': 'ଛବି: {source}',
   'story.translate': 'ଅନୁବାଦ କରନ୍ତୁ',
   'story.translateNote': 'ମୂଳ ଲେଖା Google Translateରେ ଖୋଲେ। ଅନୁବାଦ Googleର, ଉତ୍ସର ଶବ୍ଦ ନୁହେଁ।',
   'story.compare': 'ତୁଳନା',
@@ -182,6 +184,7 @@ export const or: Record<Key, string> = {
   'group.community': 'ସମୁଦାୟ',
   'group.government': 'ସରକାର',
   'group.international': 'ଆନ୍ତର୍ଜାତୀୟ',
+  'group.video': 'ଭିଡିଓ',
 
   'footer.rule': 'ଆମେ କେବେ ଉତ୍ସକୁ ର‍୍ୟାଙ୍କ, ରେଟିଂ ଦେଉ ନାହିଁ କିମ୍ବା ପୁଣି ଲେଖୁ ନାହିଁ।',
   'footer.about': 'ଏହା କିପରି କାମ କରେ',

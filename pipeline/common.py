@@ -112,6 +112,10 @@ class DB:
         if self.kind == "sqlite":
             text = SCHEMA_SQL.read_text(encoding="utf-8").replace("TEXT[]", "TEXT").replace("JSONB", "TEXT")
             self.conn.executescript(text)
+            # SQLite has no "add column if not exists": upgrade an older local.db by hand.
+            for table, column in (("articles", "image_url"), ("stories", "image_url"), ("stories", "image_source")):
+                if column not in {r[1] for r in self.conn.execute(f"PRAGMA table_info({table})")}:
+                    self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} TEXT")
         else:
             with self.conn.cursor() as cur:
                 for f in sorted(MIGRATIONS.glob("*.sql")):
@@ -234,6 +238,7 @@ class Item:
     summary: str
     published_at: datetime | None
     categories: list[str] = field(default_factory=list)
+    image_url: str = ""         # link to the outlet's own picture; the image itself is never stored
 
 
 class NotAFeed(ValueError):
@@ -278,6 +283,24 @@ def parse_date(value: str) -> datetime | None:
     return dt.astimezone(timezone.utc)
 
 
+_IMG_SRC = re.compile(r"""<img\b[^>]*?\bsrc\s*=\s*["'](https://[^"'\s]+)["']""", re.I)
+
+
+def _image_url(e: ET.Element, summary: str) -> str:
+    """The picture the outlet itself attaches to the item: media:thumbnail, media:content or an
+    image enclosure (also inside media:group, as YouTube does), else an <img> in the short
+    summary. Only https links; the full-text field is still never read."""
+    for c in e.iter():
+        tag, url = _local(c.tag), (c.get("url") or "").strip()
+        if not url.startswith("https://") or len(url) > 1000:
+            continue
+        kind = (c.get("type") or "").lower()
+        if tag == "thumbnail" or (tag in ("content", "enclosure") and (c.get("medium") == "image" or kind.startswith("image/"))):
+            return url
+    m = _IMG_SRC.search(summary or "")
+    return m.group(1) if m and len(m.group(1)) <= 1000 else ""
+
+
 # Control characters XML 1.0 never allows; some feeds leak them (e.g. inside full-text fields we don't read).
 _XML_ILLEGAL = re.compile(rb"[\x00-\x08\x0b\x0c\x0e-\x1f]")
 
@@ -309,6 +332,9 @@ def parse_feed(body: bytes) -> list[Item]:
                 url = (guid.text or "").strip()
         # Deliberately NOT reading content:encoded -- that is the full article.
         summary = _child_text(e, "description", "summary")
+        if not summary and kind == "feed":      # YouTube keeps the video description in media:group
+            group = next((c for c in e if _local(c.tag) == "group"), None)
+            summary = _child_text(group, "description") if group is not None else ""
         published = parse_date(_child_text(e, "pubdate", "published", "updated", "date"))
         categories = []
         for c in e:
@@ -318,7 +344,8 @@ def parse_feed(body: bytes) -> list[Item]:
                     categories.append(strip_html(label))
         if title and url:
             items.append(Item(title=clean_title(title), url=url, summary=summary,
-                              published_at=published, categories=categories[:10]))
+                              published_at=published, categories=categories[:10],
+                              image_url=_image_url(e, summary)))
     return items
 
 

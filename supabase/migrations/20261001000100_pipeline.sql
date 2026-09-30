@@ -32,6 +32,8 @@ create table if not exists public.stories (
     primary_place       text,
     scope               text,
     topics              text[],
+    image_url           text,
+    image_source        text,
     created_at          timestamptz not null,
     updated_at          timestamptz not null
 );
@@ -53,6 +55,7 @@ create table if not exists public.articles (
     topics            text[],
     wire_key          text,
     processed_at      timestamptz,
+    image_url         text,
     story_id          text references public.stories(id) on delete set null
 );
 
@@ -64,6 +67,10 @@ alter table public.articles add column if not exists primary_place text;
 alter table public.articles add column if not exists topics text[];
 alter table public.articles add column if not exists wire_key text;
 alter table public.articles add column if not exists processed_at timestamptz;
+-- Link to the outlet's own picture for a report (never the image itself), and the story's.
+alter table public.articles add column if not exists image_url text;
+alter table public.stories add column if not exists image_url text;
+alter table public.stories add column if not exists image_source text;
 do $$
 begin
     if not exists (select 1 from pg_constraint where conname = 'articles_story_id_fkey') then

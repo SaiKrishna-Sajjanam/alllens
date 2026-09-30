@@ -43,6 +43,9 @@ export interface Story {
   primary_place: string | null;
   scope: string | null;
   topics: string[] | null;
+  /** Link to the earliest report's own picture (never a copy), and that outlet's name. */
+  image_url?: string | null;
+  image_source?: string | null;
 }
 
 export interface Source {
@@ -68,6 +71,7 @@ export interface Article {
   language: string | null;
   wire_key: string | null;
   primary_place: string | null;
+  image_url?: string | null;
   story_id?: string | null;
   sources: Pick<Source, 'id' | 'name' | 'type' | 'language' | 'region' | 'layer'> | null;
 }

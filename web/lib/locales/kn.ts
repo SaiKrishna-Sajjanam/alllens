@@ -81,6 +81,8 @@ export const kn: Record<Key, string> = {
   'story.sort': 'ಕ್ರಮ',
   'story.orderNote': 'ನಾವು ಮೂಲಗಳಿಗೆ ಶ್ರೇಣಿ ಅಥವಾ ರೇಟಿಂಗ್ ನೀಡುವುದಿಲ್ಲ. ನೀವು ಬದಲಾಯಿಸದಿದ್ದರೆ ಸಮಯದ ಕ್ರಮ.',
   'story.read': '{source} ನಲ್ಲಿ ಓದಿ',
+  'story.watch': '{source} ನಲ್ಲಿ ನೋಡಿ',
+  'story.pictureBy': 'ಚಿತ್ರ: {source}',
   'story.translate': 'ಅನುವಾದಿಸಿ',
   'story.translateNote': 'ಮೂಲ ಲೇಖನವನ್ನು Google Translate ನಲ್ಲಿ ತೆರೆಯುತ್ತದೆ. ಅನುವಾದ Google ನದು, ಮೂಲದ ಪದಗಳಲ್ಲ.',
   'story.compare': 'ಹೋಲಿಸಿ',
@@ -182,6 +184,7 @@ export const kn: Record<Key, string> = {
   'group.community': 'ಸಮುದಾಯ',
   'group.government': 'ಸರ್ಕಾರ',
   'group.international': 'ಅಂತರರಾಷ್ಟ್ರೀಯ',
+  'group.video': 'ವೀಡಿಯೊ',
 
   'footer.rule': 'ನಾವು ಮೂಲಗಳಿಗೆ ಶ್ರೇಣಿ, ರೇಟಿಂಗ್ ನೀಡುವುದಿಲ್ಲ, ಅವುಗಳನ್ನು ಬದಲಿಸಿ ಬರೆಯುವುದಿಲ್ಲ.',
   'footer.about': 'ಇದು ಹೇಗೆ ಕೆಲಸ ಮಾಡುತ್ತದೆ',

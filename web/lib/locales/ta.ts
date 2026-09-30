@@ -81,6 +81,8 @@ export const ta: Record<Key, string> = {
   'story.sort': 'வரிசை',
   'story.orderNote': 'நாங்கள் ஆதாரங்களுக்குத் தரவரிசையோ மதிப்பீடோ தருவதில்லை. நீங்கள் மாற்றாவிட்டால் நேர வரிசை.',
   'story.read': '{source} இல் படிக்கவும்',
+  'story.watch': '{source} இல் பாருங்கள்',
+  'story.pictureBy': 'படம்: {source}',
   'story.translate': 'மொழிபெயர்',
   'story.translateNote': 'மூலக் கட்டுரையை Google Translate இல் திறக்கும். மொழிபெயர்ப்பு Google உடையது, ஆதாரத்தின் சொற்கள் அல்ல.',
   'story.compare': 'ஒப்பிடு',
@@ -182,6 +184,7 @@ export const ta: Record<Key, string> = {
   'group.community': 'சமூகம்',
   'group.government': 'அரசு',
   'group.international': 'சர்வதேசம்',
+  'group.video': 'வீடியோ',
 
   'footer.rule': 'நாங்கள் ஆதாரங்களுக்குத் தரவரிசை, மதிப்பீடு தருவதில்லை, அவற்றை மாற்றி எழுதுவதில்லை.',
   'footer.about': 'இது எப்படி வேலை செய்கிறது',

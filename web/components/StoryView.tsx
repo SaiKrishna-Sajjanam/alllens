@@ -11,6 +11,7 @@ import type { Article, Lang, Story, StorySort } from '@/lib/types';
 import AskAI from './AskAI';
 import FollowButton from './FollowButton';
 import { BackIcon, ExternalIcon } from './Icons';
+import RemoteImage from './RemoteImage';
 
 interface Props {
   story: Story;
@@ -109,8 +110,15 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
           const name = a.sources?.name ?? a.source_id;
           const lang2 = a.language ?? undefined;
           const checked = selected.includes(a.id);
+          const video = groupsOf(a.sources?.type).includes('video');
           return (
             <article key={a.id} className="card article">
+              {a.image_url && (
+                <a href={a.url} target="_blank" rel="noopener noreferrer" className={video ? 'report-pic video' : 'report-pic'}
+                  tabIndex={-1} aria-hidden="true">
+                  <RemoteImage src={a.image_url} />
+                </a>
+              )}
               <div className="spread" style={{ alignItems: 'baseline' }}>
                 <div className="stack" style={{ gap: 0 }}>
                   <span className="source">{name}</span>
@@ -131,7 +139,7 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
               {wires.get(a.id) ? <p className="small muted">{t(lang, 'story.wire', { n: wires.get(a.id)! })}</p> : null}
               <div className="actions">
                 <a className="btn btn-primary btn-small" href={a.url} target="_blank" rel="noopener noreferrer">
-                  {t(lang, 'story.read', { source: name })}
+                  {t(lang, video ? 'story.watch' : 'story.read', { source: name })}
                   <ExternalIcon />
                 </a>
                 {translateUrl(a.url, a.language, lang) && (

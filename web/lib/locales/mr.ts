@@ -81,6 +81,8 @@ export const mr: Record<Key, string> = {
   'story.sort': 'क्रम',
   'story.orderNote': 'आम्ही स्रोतांना क्रमांक किंवा रेटिंग देत नाही. तुम्ही बदलेपर्यंत क्रम वेळेनुसार आहे.',
   'story.read': '{source} वर वाचा',
+  'story.watch': '{source} वर पाहा',
+  'story.pictureBy': 'छायाचित्र: {source}',
   'story.translate': 'भाषांतर करा',
   'story.translateNote': 'मूळ लेख Google Translate मध्ये उघडतो. भाषांतर Google चे आहे, स्रोताचे शब्द नाहीत.',
   'story.compare': 'तुलना',
@@ -182,6 +184,7 @@ export const mr: Record<Key, string> = {
   'group.community': 'समुदाय',
   'group.government': 'सरकार',
   'group.international': 'आंतरराष्ट्रीय',
+  'group.video': 'व्हिडिओ',
 
   'footer.rule': 'आम्ही स्रोतांना कधीही क्रमांक, रेटिंग देत नाही किंवा त्यांचे शब्द बदलत नाही.',
   'footer.about': 'हे कसे काम करते',

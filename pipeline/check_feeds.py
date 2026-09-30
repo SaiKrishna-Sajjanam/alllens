@@ -12,7 +12,7 @@ import csv
 import sys
 from datetime import datetime, timedelta, timezone
 
-from pipeline.common import ROOT, NotAFeed, fetch, load_sources, map_by_host, save_sources, parse_feed
+from pipeline.common import RETENTION_DAYS, ROOT, NotAFeed, fetch, load_sources, map_by_host, save_sources, parse_feed
 
 STALE_DAYS = 7
 # "Slow down", not "gone": leave the source's status as it is and check again later.
@@ -36,8 +36,13 @@ def check(src, fetcher=fetch) -> dict:
         else:
             newest = max(dates) if dates else None
             row["newest_item"] = newest.isoformat() if newest else ""
-            stale = newest and newest < datetime.now(timezone.utc) - timedelta(days=STALE_DAYS)
-            row["result"] = "stale" if stale else "ok"
+            now = datetime.now(timezone.utc)
+            if newest and newest < now - timedelta(days=RETENTION_DAYS):
+                # Nothing it offers is recent enough to keep: as good as broken.
+                row["result"], row["detail"] = "abandoned", f"newest item {newest.date()}"
+            else:
+                stale = newest and newest < now - timedelta(days=STALE_DAYS)
+                row["result"] = "stale" if stale else "ok"
     except NotAFeed as e:
         row["result"], row["detail"] = "not_a_feed", str(e)[:200]
     except Exception as e:

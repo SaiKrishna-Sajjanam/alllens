@@ -15,9 +15,9 @@ import { createClient } from './supabase/server';
 import type { Article, FeedSort, FollowedStory, Prefs, Source, Story, Viewer } from './types';
 
 const STORY_COLS =
-  'id,label,label_source_id,label_language,labels,first_published_at,last_article_at,article_count,source_count,languages,source_types,places,primary_place,scope,topics';
+  'id,label,label_source_id,label_language,labels,first_published_at,last_article_at,article_count,source_count,languages,source_types,places,primary_place,scope,topics,image_url,image_source';
 const ARTICLE_COLS =
-  'id,source_id,title,snippet,url,published_at,fetched_at,title_updated_at,language,wire_key,primary_place,story_id,sources(id,name,type,language,region,layer)';
+  'id,source_id,title,snippet,url,published_at,fetched_at,title_updated_at,language,wire_key,primary_place,image_url,story_id,sources(id,name,type,language,region,layer)';
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 

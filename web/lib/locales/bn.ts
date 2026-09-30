@@ -81,6 +81,8 @@ export const bn: Record<Key, string> = {
   'story.sort': 'ক্রম',
   'story.orderNote': 'আমরা সূত্রকে র‍্যাঙ্ক বা রেটিং দিই না। আপনি না বদলালে ক্রম সময় অনুযায়ী।',
   'story.read': '{source}-এ পড়ুন',
+  'story.watch': '{source}-এ দেখুন',
+  'story.pictureBy': 'ছবি: {source}',
   'story.translate': 'অনুবাদ করুন',
   'story.translateNote': 'মূল লেখাটি Google Translate-এ খোলে। অনুবাদটি Google-এর, সূত্রের শব্দ নয়।',
   'story.compare': 'তুলনা',
@@ -182,6 +184,7 @@ export const bn: Record<Key, string> = {
   'group.community': 'কমিউনিটি',
   'group.government': 'সরকার',
   'group.international': 'আন্তর্জাতিক',
+  'group.video': 'ভিডিও',
 
   'footer.rule': 'আমরা কখনও সূত্রকে র‍্যাঙ্ক, রেটিং দিই না বা নতুন করে লিখি না।',
   'footer.about': 'এটি কীভাবে কাজ করে',

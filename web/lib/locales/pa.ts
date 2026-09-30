@@ -81,6 +81,8 @@ export const pa: Record<Key, string> = {
   'story.sort': 'ਕ੍ਰਮ',
   'story.orderNote': 'ਅਸੀਂ ਸਰੋਤਾਂ ਨੂੰ ਰੈਂਕ ਜਾਂ ਰੇਟਿੰਗ ਨਹੀਂ ਦਿੰਦੇ। ਜਦ ਤੱਕ ਤੁਸੀਂ ਨਾ ਬਦਲੋ, ਕ੍ਰਮ ਸਮੇਂ ਅਨੁਸਾਰ ਹੈ।',
   'story.read': '{source} ਤੇ ਪੜ੍ਹੋ',
+  'story.watch': '{source} ਤੇ ਦੇਖੋ',
+  'story.pictureBy': 'ਤਸਵੀਰ: {source}',
   'story.translate': 'ਅਨੁਵਾਦ ਕਰੋ',
   'story.translateNote': 'ਮੂਲ ਲੇਖ Google Translate ਵਿੱਚ ਖੁੱਲ੍ਹਦਾ ਹੈ। ਅਨੁਵਾਦ Google ਦਾ ਹੈ, ਸਰੋਤ ਦੇ ਸ਼ਬਦ ਨਹੀਂ।',
   'story.compare': 'ਤੁਲਨਾ',
@@ -182,6 +184,7 @@ export const pa: Record<Key, string> = {
   'group.community': 'ਭਾਈਚਾਰਾ',
   'group.government': 'ਸਰਕਾਰ',
   'group.international': 'ਅੰਤਰਰਾਸ਼ਟਰੀ',
+  'group.video': 'ਵੀਡੀਓ',
 
   'footer.rule': 'ਅਸੀਂ ਕਦੇ ਸਰੋਤਾਂ ਨੂੰ ਰੈਂਕ, ਰੇਟਿੰਗ ਨਹੀਂ ਦਿੰਦੇ ਜਾਂ ਦੁਬਾਰਾ ਨਹੀਂ ਲਿਖਦੇ।',
   'footer.about': 'ਇਹ ਕਿਵੇਂ ਕੰਮ ਕਰਦਾ ਹੈ',

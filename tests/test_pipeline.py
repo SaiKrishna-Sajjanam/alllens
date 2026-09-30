@@ -64,6 +64,40 @@ class ParsingTests(unittest.TestCase):
         body = RSS.replace(b"<channel>", b"<channel><!-- \x1d -->", 1)
         self.assertEqual([i.title for i in parse_feed(body)], [i.title for i in parse_feed(RSS)])
 
+    def test_youtube_feed_video_description_and_thumbnail(self):
+        yt = b"""<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns:yt="http://www.youtube.com/xml/schemas/2015" xmlns:media="http://search.yahoo.com/mrss/" xmlns="http://www.w3.org/2005/Atom">
+ <title>NTV Telugu</title>
+ <entry>
+  <id>yt:video:abc123</id><yt:videoId>abc123</yt:videoId>
+  <title>Hyderabad rains: roads flooded | NTV</title>
+  <link rel="alternate" href="https://www.youtube.com/watch?v=abc123"/>
+  <published>2026-09-30T06:00:00+00:00</published>
+  <media:group>
+   <media:title>Hyderabad rains: roads flooded | NTV</media:title>
+   <media:content url="https://www.youtube.com/v/abc123?version=3" type="application/x-shockwave-flash" width="640" height="390"/>
+   <media:thumbnail url="https://i2.ytimg.com/vi/abc123/hqdefault.jpg" width="480" height="360"/>
+   <media:description>Heavy rain in Hyderabad flooded several roads on Tuesday.</media:description>
+  </media:group>
+ </entry>
+</feed>"""
+        (item,) = parse_feed(yt)
+        self.assertEqual(item.url, "https://www.youtube.com/watch?v=abc123")
+        self.assertEqual(item.image_url, "https://i2.ytimg.com/vi/abc123/hqdefault.jpg")   # not the player link
+        self.assertIn("Heavy rain", item.summary)
+        self.assertEqual(normalise_url(item.url), "https://www.youtube.com/watch?v=abc123")
+
+    def test_rss_picture_link_only_https(self):
+        rss = b"""<rss version="2.0" xmlns:media="http://search.yahoo.com/mrss/"><channel><title>x</title>
+<item><title>With media</title><link>https://a.test/1</link><media:content medium="image" url="https://a.test/1.jpg"/></item>
+<item><title>With enclosure</title><link>https://a.test/2</link><enclosure type="image/jpeg" url="https://a.test/2.jpg" length="1"/></item>
+<item><title>Img in summary</title><link>https://a.test/3</link><description>&lt;img src="https://a.test/3.png"&gt; Text</description></item>
+<item><title>Plain http picture</title><link>https://a.test/4</link><media:thumbnail url="http://a.test/4.jpg"/></item>
+<item><title>No picture</title><link>https://a.test/5</link><description>Just words</description></item>
+</channel></rss>"""
+        pics = [i.image_url for i in parse_feed(rss)]
+        self.assertEqual(pics, ["https://a.test/1.jpg", "https://a.test/2.jpg", "https://a.test/3.png", "", ""])
+
     def test_not_a_feed(self):
         with self.assertRaises(ValueError):
             parse_feed(b"<html><body>nope</body></html>")
@@ -137,7 +171,12 @@ class CheckFeedsTests(unittest.TestCase):
         results = {s.id: check_feeds.check(s, fetcher=fake_fetch)["result"] for s in SOURCES if s.feed_url}
         self.assertEqual(results["down_outlet"], "network_error")
         self.assertEqual(results["html_outlet"], "not_a_feed")
-        self.assertIn(results["te_outlet"], ("ok", "stale"))
+        self.assertIn(results["te_outlet"], ("ok", "stale", "abandoned"))
+        old = b"""<rss version="2.0"><channel><title>x</title><item><title>Old news</title><link>https://old.test/1</link>
+<pubDate>Sat, 17 Jun 2023 10:19:24 +0000</pubDate></item></channel></rss>"""
+        row = check_feeds.check(Source("old", "", "state", "newspaper", "te", "", "https://old.test/feed", "live"),
+                                fetcher=lambda u: (200, old))
+        self.assertEqual(row["result"], "abandoned", "a feed last updated years ago is not live")
 
     def test_same_site_feeds_fetched_one_at_a_time(self):
         import threading

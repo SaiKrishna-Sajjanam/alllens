@@ -95,6 +95,7 @@ Supabase → **Authentication**:
 - [ ] Ask a native speaker to read the Telugu interface text (`web/lib/i18n.ts`).
 - [ ] Fill the grievance officer and contact emails; read Privacy/Terms/Grievance pages and have a lawyer review before public launch.
 - [ ] Check each source's terms of use (some feeds are "personal, non-commercial use"). Ask publishers where needed.
+- [ ] Have a lawyer confirm showing outlets' feed pictures and YouTube thumbnails (linked from their sites, credited, never copied) before public launch; news photos are often agency-owned (PTI, AP, Getty).
 - [ ] Optional: buy a domain, add it in Vercel, then update `SITE_URL` (GitHub secret), `NEXT_PUBLIC_SITE_URL` (Vercel) and the Supabase Site URL.
 
 ## When something goes wrong

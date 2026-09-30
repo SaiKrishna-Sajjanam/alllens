@@ -50,3 +50,32 @@ hindustantimes_world,Hindustan Times (World),international,newspaper,en,World,ht
 theprint_world,ThePrint (World),international,digital,en,World,https://theprint.in/category/world/feed/,live
 bbchindi_world,BBC News Hindi (World),international,international,hi,World,https://feeds.bbci.co.uk/hindi/international/rss.xml,live
 ntvtelugu_world,NTV Telugu (International),international,tv,te,World,https://ntvtelugu.com/international-news/feed,live
+yt_ntvtelugu,NTV Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCumtYpCY26F6Jr3satUgMvA,live
+yt_tv9telugu,TV9 Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCPXTXMecYqnRKNdqdVOGSFg,live
+yt_v6news,V6 News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCDCMjD1XIAsCZsYHNMGVcog,live
+yt_etvtelangana,ETV Telangana (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UC6ickpgDIsltU_-8CbZaksQ,live
+yt_etvap,ETV Andhra Pradesh (YouTube),state,tv_video,te,Andhra Pradesh,https://www.youtube.com/feeds/videos.xml?channel_id=UCJi8M0hRKjz8SLPvJKEVTOg,live
+yt_sakshitv,Sakshi TV (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCZ9m4KOh8Ei60428xeGYDCQ,live
+yt_abntelugu,ABN Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UC_2irx_BQR7RsBKmUV9fePQ,live
+yt_10tv,10TV News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCfymZbh17_3T_UhgjkQ9fRQ,live
+yt_tnews,T News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCu6edg8_eu3-A8ylgaWereA,live
+yt_mahaanews,Mahaa News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCDKjhgRoPF1CQk7HluMz23A,live
+yt_bbctelugu,BBC News Telugu (YouTube),state,international_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCiTCB-B_weEmwHk7ifNobQw,live
+yt_ndtv,NDTV (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCZFMm1mMw0F81Z37aaEzTUA,live
+yt_indiatoday,India Today (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCYPvAwZP8pZhSMW8qs7cVCw,live
+yt_timesnow,Times Now (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UC6RJ7-PaXg6TIH2BzZfTV7w,live
+yt_mirrornow,Mirror Now (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCWCEYVwSqr7Epo6sSCfUgiw,live
+yt_thehindu,The Hindu (YouTube),national,newspaper_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UC3njZ48-FDxLleBYaP0SZIg,live
+yt_indianexpress,The Indian Express (YouTube),national,newspaper_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCJEDFSxHHOW1PpBccdSxOTA,live
+yt_theprint,ThePrint (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCuyRsHZILrU7ZDIAbGASHdA,live
+yt_thewire,The Wire (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UChWtJey46brNr7qHQpN6KLQ,live
+yt_thenewsminute,The News Minute (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCspQie3i29iIFbCgfGisO9Q,live
+yt_mojostory,Mojo Story (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCrdPiSPVW0rtRsI002BX8iw,live
+yt_aajtak,Aaj Tak (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCt4t-jeY85JegMlZ-E5UWtA,live
+yt_abpnews,ABP News (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCRWFSbif-RFENbBrSiez1DA,live
+yt_zeenews,Zee News (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCIvaYmXn910QMdemBG3v1pQ,live
+yt_bbchindi,BBC News Hindi (YouTube),national,international_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCN7B-QD0Qgn2boVH5Q0pOWg,live
+yt_ddnews,DD News (YouTube),national,government_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCKwucPzHZ7zCUIf7If-Wo1g,live
+yt_sansadtv,Sansad TV (YouTube),national,government_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCISgnSNwqQ2i8lhCun3KtQg,live
+yt_pibindia,PIB India (YouTube),national,government_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCGn6a5SI8SNlj7WylmPD6GQ,live
+yt_wion,WION (YouTube),international,tv_video,en,World,https://www.youtube.com/feeds/videos.xml?channel_id=UC_gUM8rL-Lrg6O3adPW9K1g,live

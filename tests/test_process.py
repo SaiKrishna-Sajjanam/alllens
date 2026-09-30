@@ -86,6 +86,22 @@ class GroupingTests(unittest.TestCase):
         self.assertEqual(src, "theprint")
         self.assertEqual(as_dict(labels)["en"]["source_name"], "ThePrint")
 
+    def test_story_picture_is_the_earliest_report_that_has_one(self):
+        srcs = {s.id: s for s in sources()}
+        sid = self.story["kathua_print"]
+        (image,), = self.db.fetchall("SELECT image_url FROM stories WHERE id = ?", (sid,))
+        self.assertIsNone(image, "no report has a picture yet")
+        pic = Item(title="4 CISF personnel killed after Head Constable opens fire at colleagues in Kathua",
+                   url="https://hindustantimes.test/kathua_pic", summary="", published_at=DAY + timedelta(hours=18),
+                   image_url="https://hindustantimes.test/kathua.jpg")
+        store_items(self.db, srcs["hindustantimes"], [pic], self.now + timedelta(hours=1))
+        self.db.commit()
+        process.run(self.db, embedder=LexicalEmbedder(), now=self.now + timedelta(hours=1))
+        self.assertEqual(story_of(self.db)["kathua_pic"], sid)
+        (image, credit), = self.db.fetchall("SELECT image_url, image_source FROM stories WHERE id = ?", (sid,))
+        self.assertEqual(image, "https://hindustantimes.test/kathua.jpg")
+        self.assertEqual(credit, SOURCE_META["hindustantimes"][0])
+
     def test_places_and_scope(self):
         rows = {sid: (as_list(p), scope) for sid, p, scope in
                 self.db.fetchall("SELECT id, places, scope FROM stories")}

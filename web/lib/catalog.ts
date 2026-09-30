@@ -87,15 +87,16 @@ export function languageName(code: string | null | undefined): string {
 }
 
 /** Sources carry raw types like "tv_digital"; readers filter by these broad groups. */
-export const SOURCE_GROUPS = ['newspaper', 'tv', 'digital', 'community', 'government', 'international'] as const;
+export const SOURCE_GROUPS = ['newspaper', 'tv', 'digital', 'video', 'community', 'government', 'international'] as const;
 export type SourceGroup = (typeof SOURCE_GROUPS)[number];
 
 export function groupsOf(type: string | null | undefined): SourceGroup[] {
   const t = (type || '').toLowerCase();
   const out: SourceGroup[] = [];
   if (t.includes('newspaper')) out.push('newspaper');
-  if (t.includes('tv') || t.includes('video')) out.push('tv');
+  if (t.includes('tv')) out.push('tv');
   if (t.includes('digital') || t.includes('business')) out.push('digital');
+  if (t.includes('video')) out.push('video');       // official YouTube channels (sources.csv type "..._video")
   if (t.includes('community')) out.push('community');
   if (t.includes('government')) out.push('government');
   if (t.includes('international')) out.push('international');

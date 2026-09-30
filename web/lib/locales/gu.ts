@@ -81,6 +81,8 @@ export const gu: Record<Key, string> = {
   'story.sort': 'ક્રમ',
   'story.orderNote': 'અમે સ્ત્રોતોને રેન્ક કે રેટિંગ આપતા નથી. તમે ન બદલો ત્યાં સુધી ક્રમ સમય પ્રમાણે છે.',
   'story.read': '{source} પર વાંચો',
+  'story.watch': '{source} પર જુઓ',
+  'story.pictureBy': 'તસવીર: {source}',
   'story.translate': 'અનુવાદ કરો',
   'story.translateNote': 'મૂળ લેખ Google Translate માં ખૂલે છે. અનુવાદ Google નો છે, સ્ત્રોતના શબ્દો નહીં.',
   'story.compare': 'સરખામણી',
@@ -182,6 +184,7 @@ export const gu: Record<Key, string> = {
   'group.community': 'સમુદાય',
   'group.government': 'સરકાર',
   'group.international': 'આંતરરાષ્ટ્રીય',
+  'group.video': 'વીડિયો',
 
   'footer.rule': 'અમે ક્યારેય સ્ત્રોતોને રેન્ક, રેટિંગ આપતા નથી કે ફરીથી લખતા નથી.',
   'footer.about': 'આ કેવી રીતે કામ કરે છે',

@@ -193,7 +193,7 @@ def group_articles(db: DB, embedder, now: datetime) -> dict:
 STORY_UPDATE = """UPDATE stories SET label = ?, label_article_id = ?, label_source_id = ?, label_language = ?,
        labels = ?, first_published_at = ?, last_article_at = ?, article_count = ?, source_count = ?,
        languages = ?, source_types = ?, places = ?, primary_place = ?, scope = ?, topics = ?,
-       updated_at = ?
+       image_url = ?, image_source = ?, updated_at = ?
    WHERE id = ?"""
 
 
@@ -203,7 +203,8 @@ def refresh_stories(db: DB, story_ids, sources: dict, now: datetime) -> int:
     gz = gazetteer()
     by_story: dict[str, list] = {sid: [] for sid in story_ids}
     for row in db.fetch_in(
-            """SELECT story_id, id, source_id, title, language, published_at, fetched_at, primary_place, topics
+            """SELECT story_id, id, source_id, title, language, published_at, fetched_at, primary_place, topics,
+                      image_url
                FROM articles WHERE story_id IN ({ids})""", by_story):
         by_story[row[0]].append(row[1:])
     empty = [(sid,) for sid, rows in by_story.items() if not rows]
@@ -220,10 +221,10 @@ def refresh_story(db: DB, story_id: str, sources: dict, now: datetime) -> bool:
 
 def _story_values(rows, sources: dict, gz, now: datetime) -> tuple:
     arts = []
-    for aid, sid, title, lang, pub, fetched, primary, topics in rows:
+    for aid, sid, title, lang, pub, fetched, primary, topics, image in rows:
         arts.append({"id": aid, "source_id": sid, "title": title, "language": lang or "",
                      "time": _time(pub, fetched), "fetched": to_datetime(fetched),
-                     "primary": primary, "topics": as_list(topics)})
+                     "primary": primary, "topics": as_list(topics), "image": image})
     arts.sort(key=lambda a: (a["time"], a["id"]))
     n = len(arts)
     first = arts[0]
@@ -255,12 +256,17 @@ def _story_values(rows, sources: dict, gz, now: datetime) -> tuple:
     topic_counts = Counter(t for a in arts for t in a["topics"])
     topics = sorted(t for t, c in topic_counts.items() if c >= max(1, math.ceil(0.3 * n)))
 
+    # Picture: the earliest report that has one (same mechanical rule as the label), linked, not copied.
+    pictured = next((a for a in arts if a["image"]), None)
+    image = pictured["image"] if pictured else None
+    image_source = sources.get(pictured["source_id"], {}).get("name", pictured["source_id"]) if pictured else None
+
     source_ids = {a["source_id"] for a in arts}
     return (first["title"], first["id"], first["source_id"], first["language"],
             labels, first["time"], max(a["fetched"] for a in arts), n, len(source_ids),
             sorted({a["language"] for a in arts if a["language"]}),
             sorted({sources.get(s, {}).get("type") or "other" for s in source_ids}),
-            places, primary_place, scope, topics, now)
+            places, primary_place, scope, topics, image, image_source, now)
 
 
 def run(db: DB, embedder=None, now: datetime | None = None) -> dict:

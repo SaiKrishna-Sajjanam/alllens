@@ -29,5 +29,7 @@ test('source kinds', () => {
   assert.deepEqual(groupsOf('tv_digital'), ['tv', 'digital']);
   assert.deepEqual(groupsOf('newspaper_tv'), ['newspaper', 'tv']);
   assert.deepEqual(groupsOf('community'), ['community']);
+  assert.deepEqual(groupsOf('tv_video'), ['tv', 'video'], 'a TV channel on YouTube');
+  assert.deepEqual(groupsOf('government_video'), ['video', 'government']);
   assert.deepEqual(groupsOf(null), ['digital']);
 });

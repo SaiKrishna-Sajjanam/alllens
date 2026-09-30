@@ -20,7 +20,7 @@ flowchart LR
 
 ## Data flow
 
-1. **Collect** (`pipeline/collect.py`): read each feed in `sources.csv`; store headline, up to 280 characters of the feed's own summary, link, time, feed categories. Full-text fields are never read. A re-worded headline replaces the old one and is marked with `title_updated_at`.
+1. **Collect** (`pipeline/collect.py`): read each feed in `sources.csv` (news sites, Reddit, and official YouTube channel feeds for video); store headline, up to 280 characters of the feed's own summary, link, time, feed categories, and the link to the outlet's own picture if the feed gives one (never the image). Full-text fields are never read. A re-worded headline replaces the old one and is marked with `title_updated_at`.
 2. **Tag** (`pipeline/tagging.py`): places from `pipeline/data/places.json` (whole-word English, substring Telugu/Hindi so suffixes like -లో still match; ambiguous names only count with Telangana context), topics from `topics.json` plus the feed's own category, a wire-copy key from the opening text.
 3. **Embed** (`pipeline/embed.py`): `intfloat/multilingual-e5-small` (100 languages incl. Telugu and Hindi). Fallback: character n-grams, same-language only.
 4. **Group** (`pipeline/process.py`): each new article joins the most similar story updated within 72 hours if its cosine similarity to both the story's running mean and the story's first report is ≥ threshold (0.905 multilingual, 0.52 lexical), else starts a new one. The first-report check stops a story's mean drifting towards "news in general" and swallowing unrelated reports. After changing the rule, run Collect news with **regroup** ticked (articles are kept, stories rebuilt).

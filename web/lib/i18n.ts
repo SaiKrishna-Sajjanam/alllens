@@ -110,6 +110,8 @@ const en = {
   'story.sort': 'Order',
   'story.orderNote': 'We never rank or rate sources. Order is by time unless you change it.',
   'story.read': 'Read at {source}',
+  'story.watch': 'Watch on {source}',
+  'story.pictureBy': 'Picture: {source}',
   'story.translate': 'Translate',
   'story.translateNote': 'Opens the original in Google Translate. The translation is Google\'s, not the source\'s words.',
   'story.compare': 'Compare',
@@ -211,6 +213,7 @@ const en = {
   'group.community': 'Community',
   'group.government': 'Government',
   'group.international': 'International',
+  'group.video': 'Video',
 
   'footer.rule': 'We never rank, rate or rewrite sources.',
   'footer.about': 'How it works',
@@ -309,6 +312,8 @@ const te: Record<Key, string> = {
   'story.sort': 'క్రమం',
   'story.orderNote': 'మేము వనరులకు ర్యాంకులు, రేటింగ్‌లు ఇవ్వం. మీరు మార్చకపోతే సమయం ప్రకారం క్రమం.',
   'story.read': '{source}లో చదవండి',
+  'story.watch': '{source}లో చూడండి',
+  'story.pictureBy': 'చిత్రం: {source}',
   'story.translate': 'అనువదించు',
   'story.translateNote': 'అసలు కథనాన్ని Google Translateలో తెరుస్తుంది. అనువాదం Googleది, వనరు మాటలు కావు.',
   'story.compare': 'పోల్చు',
@@ -410,6 +415,7 @@ const te: Record<Key, string> = {
   'group.community': 'కమ్యూనిటీ',
   'group.government': 'ప్రభుత్వం',
   'group.international': 'అంతర్జాతీయ',
+  'group.video': 'వీడియో',
 
   'footer.rule': 'మేము వనరులకు ర్యాంకులు, రేటింగ్‌లు ఇవ్వం, వాటి మాటలు మార్చం.',
   'footer.about': 'ఇది ఎలా పనిచేస్తుంది',

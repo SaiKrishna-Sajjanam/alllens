@@ -81,6 +81,8 @@ export const ml: Record<Key, string> = {
   'story.sort': 'ക്രമം',
   'story.orderNote': 'ഞങ്ങൾ ഉറവിടങ്ങൾക്ക് റാങ്കോ റേറ്റിംഗോ നൽകുന്നില്ല. നിങ്ങൾ മാറ്റിയില്ലെങ്കിൽ സമയക്രമത്തിൽ.',
   'story.read': '{source} ൽ വായിക്കുക',
+  'story.watch': '{source} ൽ കാണുക',
+  'story.pictureBy': 'ചിത്രം: {source}',
   'story.translate': 'വിവർത്തനം ചെയ്യുക',
   'story.translateNote': 'യഥാർത്ഥ ലേഖനം Google Translate ൽ തുറക്കുന്നു. വിവർത്തനം Google ന്റേതാണ്, ഉറവിടത്തിന്റെ വാക്കുകളല്ല.',
   'story.compare': 'താരതമ്യം',
@@ -182,6 +184,7 @@ export const ml: Record<Key, string> = {
   'group.community': 'സമൂഹം',
   'group.government': 'സർക്കാർ',
   'group.international': 'അന്താരാഷ്ട്രം',
+  'group.video': 'വീഡിയോ',
 
   'footer.rule': 'ഞങ്ങൾ ഉറവിടങ്ങൾക്ക് റാങ്കോ റേറ്റിംഗോ നൽകുകയോ അവ മാറ്റിയെഴുതുകയോ ചെയ്യുന്നില്ല.',
   'footer.about': 'ഇത് എങ്ങനെ പ്രവർത്തിക്കുന്നു',

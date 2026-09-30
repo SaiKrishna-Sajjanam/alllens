@@ -34,6 +34,8 @@ CREATE TABLE IF NOT EXISTS stories (
     primary_place       TEXT,
     scope               TEXT,
     topics              TEXT[],
+    image_url           TEXT,
+    image_source        TEXT,
     created_at          TIMESTAMPTZ NOT NULL,
     updated_at          TIMESTAMPTZ NOT NULL
 );
@@ -55,6 +57,7 @@ CREATE TABLE IF NOT EXISTS articles (
     topics            TEXT[],
     wire_key          TEXT,
     processed_at      TIMESTAMPTZ,
+    image_url         TEXT,
     story_id          TEXT REFERENCES stories(id) ON DELETE SET NULL
 );
 

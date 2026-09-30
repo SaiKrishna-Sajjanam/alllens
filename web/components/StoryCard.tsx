@@ -3,6 +3,7 @@ import { groupsOf, languageName, mostSpecific, placeName } from '@/lib/catalog';
 import { isNewSince, pickLabel } from '@/lib/feed';
 import { formatDay, t } from '@/lib/i18n';
 import type { Lang, Story } from '@/lib/types';
+import RemoteImage from './RemoteImage';
 
 interface Props {
   story: Story;
@@ -22,6 +23,12 @@ export default function StoryCard({ story, lang, readLanguages, lastVisit, extra
   const fresh = isNewSince(story, lastVisit);
   return (
     <Link href={`/story/${story.id}`} className="card story-card">
+      {story.image_url && (
+        <figure className="story-pic">
+          <RemoteImage src={story.image_url} />
+          {story.image_source && <figcaption>{t(lang, 'story.pictureBy', { source: story.image_source })}</figcaption>}
+        </figure>
+      )}
       <div className="spread">
         <span className="small muted">
           {place ? `${placeName(place, lang)} · ` : ''}
