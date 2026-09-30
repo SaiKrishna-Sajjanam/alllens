@@ -40,7 +40,9 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
     """
     cutoff = now - timedelta(days=RETENTION_DAYS)
     fresh = {article_id(it.url): it for it in items if not (it.published_at and it.published_at < cutoff)}
-    stored = dict(db.fetch_in("SELECT id, title FROM articles WHERE id IN ({ids})", fresh))
+    rows = db.fetch_in("SELECT id, title, image_url FROM articles WHERE id IN ({ids})", fresh)
+    stored = {aid: title for aid, title, _ in rows}
+    no_picture = {aid for aid, _, image in rows if not image}
 
     new = [(aid, src.id, it.title, make_snippet(it.summary), normalise_url(it.url),
             it.published_at, now, src.language, src.region, it.categories, it.image_url or None)
@@ -58,6 +60,9 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
         "UPDATE articles SET title = ?, title_updated_at = ?, processed_at = NULL WHERE id = ?",
         reworded,
     )
+    # A stored report that now comes with a picture link gets it (processed_at reset so its story picks it up).
+    pictured = [(it.image_url, aid) for aid, it in fresh.items() if aid in no_picture and it.image_url]
+    db.executemany("UPDATE articles SET image_url = ?, processed_at = NULL WHERE id = ?", pictured)
     return len(new), len(reworded)
 
 

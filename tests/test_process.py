@@ -102,6 +102,17 @@ class GroupingTests(unittest.TestCase):
         self.assertEqual(image, "https://hindustantimes.test/kathua.jpg")
         self.assertEqual(credit, SOURCE_META["hindustantimes"][0])
 
+        # An earlier report, stored before pictures were collected, shows up in its feed again with one:
+        # it gets the link, and being earliest, its picture becomes the story's.
+        first = next(a for a in ARTICLES if a["key"] == "kathua_print")
+        again = Item(title=first["title"], url="https://theprint.test/kathua_print", summary=first["snippet"],
+                     published_at=DAY + timedelta(hours=first["hour"]), image_url="https://theprint.test/k.jpg")
+        store_items(self.db, srcs["theprint"], [again], self.now + timedelta(hours=2))
+        self.db.commit()
+        process.run(self.db, embedder=LexicalEmbedder(), now=self.now + timedelta(hours=2))
+        (image, credit), = self.db.fetchall("SELECT image_url, image_source FROM stories WHERE id = ?", (sid,))
+        self.assertEqual((image, credit), ("https://theprint.test/k.jpg", SOURCE_META["theprint"][0]))
+
     def test_places_and_scope(self):
         rows = {sid: (as_list(p), scope) for sid, p, scope in
                 self.db.fetchall("SELECT id, places, scope FROM stories")}
