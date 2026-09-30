@@ -1,0 +1,4 @@
+# Multilingual story grouping (production). CPU-only PyTorch keeps the install small.
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2
+sentence-transformers>=3.0

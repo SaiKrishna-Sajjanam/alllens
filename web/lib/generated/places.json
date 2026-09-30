@@ -1,0 +1,551 @@
+[
+ {
+  "id": "tg",
+  "kind": "state",
+  "en": "Telangana",
+  "te": "తెలంగాణ",
+  "parents": []
+ },
+ {
+  "id": "tg-adilabad",
+  "kind": "district",
+  "en": "Adilabad",
+  "te": "ఆదిలాబాద్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-bhadradri-kothagudem",
+  "kind": "district",
+  "en": "Bhadradri Kothagudem",
+  "te": "భద్రాద్రి కొత్తగూడెం",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-hanumakonda",
+  "kind": "district",
+  "en": "Hanumakonda",
+  "te": "హనుమకొండ",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-hyderabad",
+  "kind": "city",
+  "en": "Hyderabad",
+  "te": "హైదరాబాద్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-jagtial",
+  "kind": "district",
+  "en": "Jagtial",
+  "te": "జగిత్యాల",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-jangaon",
+  "kind": "district",
+  "en": "Jangaon",
+  "te": "జనగామ",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-jayashankar-bhupalpally",
+  "kind": "district",
+  "en": "Jayashankar Bhupalpally",
+  "te": "జయశంకర్ భూపాలపల్లి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-jogulamba-gadwal",
+  "kind": "district",
+  "en": "Jogulamba Gadwal",
+  "te": "జోగులాంబ గద్వాల",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-kamareddy",
+  "kind": "district",
+  "en": "Kamareddy",
+  "te": "కామారెడ్డి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-karimnagar",
+  "kind": "district",
+  "en": "Karimnagar",
+  "te": "కరీంనగర్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-khammam",
+  "kind": "district",
+  "en": "Khammam",
+  "te": "ఖమ్మం",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-kumuram-bheem-asifabad",
+  "kind": "district",
+  "en": "Kumuram Bheem Asifabad",
+  "te": "కుమురం భీం ఆసిఫాబాద్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-mahabubabad",
+  "kind": "district",
+  "en": "Mahabubabad",
+  "te": "మహబూబాబాద్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-mahabubnagar",
+  "kind": "district",
+  "en": "Mahabubnagar",
+  "te": "మహబూబ్‌నగర్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-mancherial",
+  "kind": "district",
+  "en": "Mancherial",
+  "te": "మంచిర్యాల",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-medak",
+  "kind": "district",
+  "en": "Medak",
+  "te": "మెదక్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-medchal-malkajgiri",
+  "kind": "district",
+  "en": "Medchal–Malkajgiri",
+  "te": "మేడ్చల్ మల్కాజిగిరి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-mulugu",
+  "kind": "district",
+  "en": "Mulugu",
+  "te": "ములుగు",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-nagarkurnool",
+  "kind": "district",
+  "en": "Nagarkurnool",
+  "te": "నాగర్‌కర్నూల్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-nalgonda",
+  "kind": "district",
+  "en": "Nalgonda",
+  "te": "నల్గొండ",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-narayanpet",
+  "kind": "district",
+  "en": "Narayanpet",
+  "te": "నారాయణపేట",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-nirmal",
+  "kind": "district",
+  "en": "Nirmal",
+  "te": "నిర్మల్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-nizamabad",
+  "kind": "district",
+  "en": "Nizamabad",
+  "te": "నిజామాబాద్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-peddapalli",
+  "kind": "district",
+  "en": "Peddapalli",
+  "te": "పెద్దపల్లి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-rajanna-sircilla",
+  "kind": "district",
+  "en": "Rajanna Sircilla",
+  "te": "రాజన్న సిరిసిల్ల",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-rangareddy",
+  "kind": "district",
+  "en": "Rangareddy",
+  "te": "రంగారెడ్డి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-sangareddy",
+  "kind": "district",
+  "en": "Sangareddy",
+  "te": "సంగారెడ్డి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-siddipet",
+  "kind": "district",
+  "en": "Siddipet",
+  "te": "సిద్దిపేట",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-suryapet",
+  "kind": "district",
+  "en": "Suryapet",
+  "te": "సూర్యాపేట",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-vikarabad",
+  "kind": "district",
+  "en": "Vikarabad",
+  "te": "వికారాబాద్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-wanaparthy",
+  "kind": "district",
+  "en": "Wanaparthy",
+  "te": "వనపర్తి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-warangal",
+  "kind": "district",
+  "en": "Warangal",
+  "te": "వరంగల్",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "tg-yadadri-bhuvanagiri",
+  "kind": "district",
+  "en": "Yadadri Bhuvanagiri",
+  "te": "యాదాద్రి భువనగిరి",
+  "parents": [
+   "tg"
+  ]
+ },
+ {
+  "id": "ap",
+  "kind": "state",
+  "en": "Andhra Pradesh",
+  "te": "ఆంధ్రప్రదేశ్",
+  "parents": []
+ },
+ {
+  "id": "ar",
+  "kind": "state",
+  "en": "Arunachal Pradesh",
+  "te": "అరుణాచల్ ప్రదేశ్",
+  "parents": []
+ },
+ {
+  "id": "as",
+  "kind": "state",
+  "en": "Assam",
+  "te": "అస్సాం",
+  "parents": []
+ },
+ {
+  "id": "br",
+  "kind": "state",
+  "en": "Bihar",
+  "te": "బీహార్",
+  "parents": []
+ },
+ {
+  "id": "cg",
+  "kind": "state",
+  "en": "Chhattisgarh",
+  "te": "ఛత్తీస్‌గఢ్",
+  "parents": []
+ },
+ {
+  "id": "ga",
+  "kind": "state",
+  "en": "Goa",
+  "te": "గోవా",
+  "parents": []
+ },
+ {
+  "id": "gj",
+  "kind": "state",
+  "en": "Gujarat",
+  "te": "గుజరాత్",
+  "parents": []
+ },
+ {
+  "id": "hr",
+  "kind": "state",
+  "en": "Haryana",
+  "te": "హర్యానా",
+  "parents": []
+ },
+ {
+  "id": "hp",
+  "kind": "state",
+  "en": "Himachal Pradesh",
+  "te": "హిమాచల్ ప్రదేశ్",
+  "parents": []
+ },
+ {
+  "id": "jh",
+  "kind": "state",
+  "en": "Jharkhand",
+  "te": "జార్ఖండ్",
+  "parents": []
+ },
+ {
+  "id": "ka",
+  "kind": "state",
+  "en": "Karnataka",
+  "te": "కర్ణాటక",
+  "parents": []
+ },
+ {
+  "id": "kl",
+  "kind": "state",
+  "en": "Kerala",
+  "te": "కేరళ",
+  "parents": []
+ },
+ {
+  "id": "mp",
+  "kind": "state",
+  "en": "Madhya Pradesh",
+  "te": "మధ్యప్రదేశ్",
+  "parents": []
+ },
+ {
+  "id": "mh",
+  "kind": "state",
+  "en": "Maharashtra",
+  "te": "మహారాష్ట్ర",
+  "parents": []
+ },
+ {
+  "id": "mn",
+  "kind": "state",
+  "en": "Manipur",
+  "te": "మణిపూర్",
+  "parents": []
+ },
+ {
+  "id": "ml",
+  "kind": "state",
+  "en": "Meghalaya",
+  "te": "మేఘాలయ",
+  "parents": []
+ },
+ {
+  "id": "mz",
+  "kind": "state",
+  "en": "Mizoram",
+  "te": "మిజోరం",
+  "parents": []
+ },
+ {
+  "id": "nl",
+  "kind": "state",
+  "en": "Nagaland",
+  "te": "నాగాలాండ్",
+  "parents": []
+ },
+ {
+  "id": "od",
+  "kind": "state",
+  "en": "Odisha",
+  "te": "ఒడిశా",
+  "parents": []
+ },
+ {
+  "id": "pb",
+  "kind": "state",
+  "en": "Punjab",
+  "te": "పంజాబ్",
+  "parents": []
+ },
+ {
+  "id": "rj",
+  "kind": "state",
+  "en": "Rajasthan",
+  "te": "రాజస్థాన్",
+  "parents": []
+ },
+ {
+  "id": "sk",
+  "kind": "state",
+  "en": "Sikkim",
+  "te": "సిక్కిం",
+  "parents": []
+ },
+ {
+  "id": "tn",
+  "kind": "state",
+  "en": "Tamil Nadu",
+  "te": "తమిళనాడు",
+  "parents": []
+ },
+ {
+  "id": "tr",
+  "kind": "state",
+  "en": "Tripura",
+  "te": "త్రిపుర",
+  "parents": []
+ },
+ {
+  "id": "up",
+  "kind": "state",
+  "en": "Uttar Pradesh",
+  "te": "ఉత్తరప్రదేశ్",
+  "parents": []
+ },
+ {
+  "id": "uk",
+  "kind": "state",
+  "en": "Uttarakhand",
+  "te": "ఉత్తరాఖండ్",
+  "parents": []
+ },
+ {
+  "id": "wb",
+  "kind": "state",
+  "en": "West Bengal",
+  "te": "పశ్చిమ బెంగాల్",
+  "parents": []
+ },
+ {
+  "id": "an",
+  "kind": "state",
+  "en": "Andaman and Nicobar Islands",
+  "te": "అండమాన్ నికోబార్",
+  "parents": []
+ },
+ {
+  "id": "ch",
+  "kind": "state",
+  "en": "Chandigarh",
+  "te": "చండీగఢ్",
+  "parents": []
+ },
+ {
+  "id": "dn",
+  "kind": "state",
+  "en": "Dadra and Nagar Haveli and Daman and Diu",
+  "te": "దాద్రా నగర్ హవేలీ, డామన్ డయ్యూ",
+  "parents": []
+ },
+ {
+  "id": "dl",
+  "kind": "state",
+  "en": "Delhi",
+  "te": "ఢిల్లీ",
+  "parents": []
+ },
+ {
+  "id": "jk",
+  "kind": "state",
+  "en": "Jammu and Kashmir",
+  "te": "జమ్మూ కాశ్మీర్",
+  "parents": []
+ },
+ {
+  "id": "la",
+  "kind": "state",
+  "en": "Ladakh",
+  "te": "లడఖ్",
+  "parents": []
+ },
+ {
+  "id": "ld",
+  "kind": "state",
+  "en": "Lakshadweep",
+  "te": "లక్షద్వీప్",
+  "parents": []
+ },
+ {
+  "id": "py",
+  "kind": "state",
+  "en": "Puducherry",
+  "te": "పుదుచ్చేరి",
+  "parents": []
+ }
+]

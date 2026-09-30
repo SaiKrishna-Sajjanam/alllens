@@ -1,0 +1,12 @@
+local.db
+feed_report.csv
+group_review.csv
+__pycache__/
+.env
+.env.*
+!.env.example
+.venv/
+node_modules/
+.next/
+*.tsbuildinfo
+.claude/

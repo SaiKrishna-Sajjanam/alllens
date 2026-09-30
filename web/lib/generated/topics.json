@@ -1,0 +1,47 @@
+[
+ {
+  "id": "politics",
+  "en": "Politics",
+  "te": "రాజకీయాలు"
+ },
+ {
+  "id": "business",
+  "en": "Business",
+  "te": "వ్యాపారం"
+ },
+ {
+  "id": "tech",
+  "en": "Tech",
+  "te": "టెక్"
+ },
+ {
+  "id": "sports",
+  "en": "Sports",
+  "te": "క్రీడలు"
+ },
+ {
+  "id": "farming",
+  "en": "Farming",
+  "te": "వ్యవసాయం"
+ },
+ {
+  "id": "education",
+  "en": "Education",
+  "te": "విద్య"
+ },
+ {
+  "id": "health",
+  "en": "Health",
+  "te": "ఆరోగ్యం"
+ },
+ {
+  "id": "cinema",
+  "en": "Cinema",
+  "te": "సినిమా"
+ },
+ {
+  "id": "crime",
+  "en": "Crime & accidents",
+  "te": "నేరాలు & ప్రమాదాలు"
+ }
+]

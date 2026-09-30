@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>Sample Atom Outlet</title>
+  <entry>
+    <title type="html">Budget session opens &lt;b&gt;today&lt;/b&gt;</title>
+    <link rel="alternate" href="https://example-atom.test/budget"/>
+    <link rel="self" href="https://example-atom.test/budget.atom"/>
+    <published>2026-09-29T10:00:00Z</published>
+    <summary>Parliament begins the session with the finance bill.</summary>
+  </entry>
+</feed>

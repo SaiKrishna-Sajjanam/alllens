@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+<channel>
+  <title>Sample Telugu Outlet</title>
+  <link>https://example-te.test</link>
+  <item>
+    <title><![CDATA[హైదరాబాద్‌లో భారీ వర్షం &amp; ట్రాఫిక్]]></title>
+    <link>https://example-te.test/news/rain-1.html?utm_source=rss#publisher=newsstand</link>
+    <pubDate>Tue, 29 Sep 2026 21:35:25 +0530</pubDate>
+    <description><![CDATA[<p>నగరంలో కురిసిన భారీ వర్షానికి పలు ప్రాంతాల్లో ట్రాఫిక్ నిలిచిపోయింది. అధికారులు అప్రమత్తంగా ఉన్నారు. [&#8230;]</p>]]></description>
+    <content:encoded><![CDATA[<p>FULL ARTICLE TEXT THAT MUST NEVER BE STORED.</p>]]></content:encoded>
+  </item>
+  <item>
+    <title>Second item with a very long summary</title>
+    <link>https://example-te.test/news/long-2.html</link>
+    <pubDate>Tue, 29 Sep 2026 20:00:00 +0530</pubDate>
+    <description>Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.</description>
+  </item>
+  <item>
+    <title>Very old item beyond retention</title>
+    <link>https://example-te.test/news/old-3.html</link>
+    <pubDate>Mon, 01 Jun 2026 10:00:00 +0530</pubDate>
+    <description>Old.</description>
+  </item>
+  <item>
+    <title>Item missing a link is skipped</title>
+    <description>No link.</description>
+  </item>
+</channel>
+</rss>

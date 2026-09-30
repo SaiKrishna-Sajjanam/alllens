@@ -1,0 +1,265 @@
+"""Tag new articles and group them into stories (roadmap step 4).
+
+    python -m pipeline.process        # also runs automatically after pipeline.collect
+
+1. Tag: places (India / state / district), topics, wire-copy key.
+2. Embed: headline + snippet -> vector (multilingual in production).
+3. Group: each new article joins the most similar open story (updated in the
+   last 72 hours) if similarity >= threshold, otherwise it starts a new story.
+4. Refresh each touched story: label = earliest headline (per language too),
+   counts, languages, places, topics.
+
+No text is written by us: a story's label is always a source's own headline.
+"""
+from __future__ import annotations
+
+import json
+import math
+import sys
+import uuid
+from collections import Counter
+from datetime import datetime, timedelta, timezone
+
+import numpy as np
+
+from pipeline.common import DB, as_list, to_datetime
+from pipeline.embed import article_text, get_embedder
+from pipeline.tagging import gazetteer, topic_tagger, wire_key
+
+WINDOW = timedelta(hours=72)     # a story stays open for new reports this long after its latest one
+BATCH = 64
+
+
+def _time(published, fetched) -> datetime:
+    return to_datetime(published) or to_datetime(fetched)
+
+
+def _sources(db: DB) -> dict:
+    return {sid: {"name": name, "type": typ, "region": region, "language": lang, "layer": layer}
+            for sid, name, typ, region, lang, layer in
+            db.fetchall("SELECT id, name, type, region, language, layer FROM sources")}
+
+
+# --------------------------------------------------------------------------
+# 1. Tagging
+# --------------------------------------------------------------------------
+
+def tag_articles(db: DB, sources: dict, now: datetime) -> tuple[int, set[str]]:
+    gz, tt = gazetteer(), topic_tagger()
+    rows = db.fetchall(
+        "SELECT id, source_id, title, snippet, categories, story_id FROM articles WHERE processed_at IS NULL")
+    dirty: set[str] = set()
+    for aid, sid, title, snippet, categories, story_id in rows:
+        region = sources.get(sid, {}).get("region", "")
+        p = gz.tag(title, snippet or "", region)
+        topics = tt.tag(title, snippet or "", as_list(categories))
+        db.execute(
+            """UPDATE articles SET places = ?, primary_place = ?, topics = ?, wire_key = ?, processed_at = ?
+               WHERE id = ?""",
+            (p.places, p.primary, topics, wire_key(snippet or ""), now, aid),
+        )
+        if story_id:
+            dirty.add(story_id)
+    db.commit()
+    return len(rows), dirty
+
+
+# --------------------------------------------------------------------------
+# 2. Embedding
+# --------------------------------------------------------------------------
+
+def embed_articles(db: DB, embedder) -> int:
+    rows = db.fetchall(
+        """SELECT a.id, a.title, a.snippet FROM articles a
+           LEFT JOIN article_vectors v ON v.article_id = a.id AND v.model = ?
+           WHERE a.story_id IS NULL AND v.article_id IS NULL""",
+        (embedder.name,),
+    )
+    for i in range(0, len(rows), BATCH):
+        chunk = rows[i:i + BATCH]
+        vectors = embedder.embed([article_text(t, s) for _, t, s in chunk])
+        for (aid, _, _), vec in zip(chunk, vectors):
+            db.execute(
+                """INSERT INTO article_vectors (article_id, model, vector) VALUES (?, ?, ?)
+                   ON CONFLICT (article_id) DO UPDATE SET model = excluded.model, vector = excluded.vector""",
+                (aid, embedder.name, json.dumps([round(x, 5) for x in vec])),
+            )
+        db.commit()
+    return len(rows)
+
+
+# --------------------------------------------------------------------------
+# 3. Grouping
+# --------------------------------------------------------------------------
+
+def group_articles(db: DB, embedder, now: datetime) -> dict:
+    pending = db.fetchall(
+        """SELECT a.id, a.title, a.published_at, a.fetched_at, v.vector FROM articles a
+           JOIN article_vectors v ON v.article_id = a.id AND v.model = ?
+           WHERE a.story_id IS NULL""",
+        (embedder.name,),
+    )
+    if not pending:
+        return {"grouped": 0, "new_stories": 0, "joined": 0, "dirty": set()}
+    pending.sort(key=lambda r: _time(r[2], r[3]))
+    earliest = _time(pending[0][2], pending[0][3])
+
+    open_rows = db.fetchall(
+        """SELECT s.id, s.last_article_at, sv.vector, sv.n FROM stories s
+           JOIN story_vectors sv ON sv.story_id = s.id AND sv.model = ?
+           WHERE s.last_article_at >= ?""",
+        (embedder.name, earliest - WINDOW),
+    )
+    ids = [r[0] for r in open_rows]
+    last = [to_datetime(r[1]) for r in open_rows]
+    counts = [int(r[3]) for r in open_rows]
+    sums = [np.asarray(json.loads(r[2]), dtype=np.float32) * r[3] for r in open_rows]   # running sums
+    matrix = np.vstack([s / (np.linalg.norm(s) or 1) for s in sums]) if sums else None
+    touched: set[str] = set()
+    new_ids: set[str] = set()
+    joined = 0
+
+    for aid, title, published, fetched, vec_json in pending:
+        vec = np.asarray(json.loads(vec_json), dtype=np.float32)
+        t = _time(published, fetched)
+        best, best_sim = None, -1.0
+        if matrix is not None and len(ids):
+            sims = matrix @ vec
+            for idx in np.argsort(-sims):
+                if sims[idx] < embedder.threshold:
+                    break
+                if abs(t - last[idx]) <= WINDOW:
+                    best, best_sim = int(idx), float(sims[idx])
+                    break
+
+        if best is None:
+            sid = str(uuid.uuid4())
+            db.execute(
+                """INSERT INTO stories (id, label, article_count, source_count, created_at, updated_at, last_article_at)
+                   VALUES (?, ?, 1, 1, ?, ?, ?)""",
+                (sid, title, now, now, to_datetime(fetched)),
+            )
+            ids.append(sid)
+            last.append(t)
+            counts.append(1)
+            sums.append(vec.copy())
+            row = (vec / (np.linalg.norm(vec) or 1))[None, :]
+            matrix = row if matrix is None else np.vstack([matrix, row])
+            new_ids.add(sid)
+        else:
+            sid = ids[best]
+            counts[best] += 1
+            sums[best] = sums[best] + vec
+            matrix[best] = sums[best] / (np.linalg.norm(sums[best]) or 1)
+            last[best] = max(last[best], t)
+            if sid not in new_ids:
+                joined += 1
+        db.execute("UPDATE articles SET story_id = ? WHERE id = ?", (sid, aid))
+        touched.add(sid)
+
+    for sid in touched:
+        i = ids.index(sid)
+        centroid = sums[i] / (np.linalg.norm(sums[i]) or 1)
+        db.execute(
+            """INSERT INTO story_vectors (story_id, model, vector, n) VALUES (?, ?, ?, ?)
+               ON CONFLICT (story_id) DO UPDATE SET model = excluded.model, vector = excluded.vector, n = excluded.n""",
+            (sid, embedder.name, json.dumps([round(float(x), 5) for x in centroid]), counts[i]),
+        )
+    db.commit()
+    return {"grouped": len(pending), "new_stories": len(new_ids), "joined": joined, "dirty": touched}
+
+
+# --------------------------------------------------------------------------
+# 4. Story aggregates
+# --------------------------------------------------------------------------
+
+def refresh_story(db: DB, story_id: str, sources: dict, now: datetime) -> bool:
+    """Recompute a story from its articles. Deletes the story if it has none left."""
+    gz = gazetteer()
+    rows = db.fetchall(
+        """SELECT id, source_id, title, language, published_at, fetched_at, primary_place, topics
+           FROM articles WHERE story_id = ?""",
+        (story_id,),
+    )
+    if not rows:
+        db.execute("DELETE FROM stories WHERE id = ?", (story_id,))
+        return False
+
+    arts = []
+    for aid, sid, title, lang, pub, fetched, primary, topics in rows:
+        arts.append({"id": aid, "source_id": sid, "title": title, "language": lang or "",
+                     "time": _time(pub, fetched), "fetched": to_datetime(fetched),
+                     "primary": primary, "topics": as_list(topics)})
+    arts.sort(key=lambda a: (a["time"], a["id"]))
+    n = len(arts)
+    first = arts[0]
+
+    labels = {}
+    for a in arts:                                   # earliest headline per language
+        if a["language"] not in labels:
+            labels[a["language"]] = {
+                "title": a["title"], "article_id": a["id"], "source_id": a["source_id"],
+                "source_name": sources.get(a["source_id"], {}).get("name", a["source_id"]),
+                "published_at": a["time"].isoformat(),
+            }
+
+    primaries = Counter(a["primary"] for a in arts if a["primary"])
+    need = max(1, math.ceil(0.4 * n))
+    chosen = [p for p, c in primaries.items() if c >= need]
+    places = gz.with_parents(chosen)
+    primary_place = None
+    if primaries:
+        primary_place = max(primaries.items(), key=lambda pc: (pc[1], gz.specificity(pc[0])))[0]
+    kinds = {gz.places[p]["kind"] for p in places if p in gz.places}
+    scope = "local" if kinds & {"city", "district"} else "state" if "state" in kinds else "national"
+    # International: no Indian place named, and at least half the reports come from world-news feeds
+    # (sources.csv layer "international"). Mechanical, from the feed each report came from.
+    world = sum(1 for a in arts if sources.get(a["source_id"], {}).get("layer") == "international")
+    if not places and world * 2 >= n:
+        scope = "international"
+
+    topic_counts = Counter(t for a in arts for t in a["topics"])
+    topics = sorted(t for t, c in topic_counts.items() if c >= max(1, math.ceil(0.3 * n)))
+
+    source_ids = {a["source_id"] for a in arts}
+    db.execute(
+        """UPDATE stories SET label = ?, label_article_id = ?, label_source_id = ?, label_language = ?,
+               labels = ?, first_published_at = ?, last_article_at = ?, article_count = ?, source_count = ?,
+               languages = ?, source_types = ?, places = ?, primary_place = ?, scope = ?, topics = ?,
+               updated_at = ?
+           WHERE id = ?""",
+        (first["title"], first["id"], first["source_id"], first["language"],
+         labels, first["time"], max(a["fetched"] for a in arts), n, len(source_ids),
+         sorted({a["language"] for a in arts if a["language"]}),
+         sorted({sources.get(s, {}).get("type") or "other" for s in source_ids}),
+         places, primary_place, scope, topics, now, story_id),
+    )
+    return True
+
+
+def run(db: DB, embedder=None, now: datetime | None = None) -> dict:
+    now = now or datetime.now(timezone.utc)
+    embedder = embedder or get_embedder()
+    sources = _sources(db)
+    tagged, dirty = tag_articles(db, sources, now)
+    embed_articles(db, embedder)
+    g = group_articles(db, embedder, now)
+    for sid in dirty | g["dirty"]:
+        refresh_story(db, sid, sources, now)
+    db.commit()
+    return {"tagged": tagged, "grouped": g["grouped"], "new_stories": g["new_stories"],
+            "joined": g["joined"], "embedder": embedder.name}
+
+
+def main() -> int:
+    db = DB()
+    db.init_schema()
+    r = run(db)
+    db.close()
+    print(f"[{r['embedder']}] tagged {r['tagged']}, grouped {r['grouped']}: "
+          f"{r['new_stories']} new stories, {r['joined']} joined existing ones")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())
