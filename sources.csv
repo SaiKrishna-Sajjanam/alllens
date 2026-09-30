@@ -1,81 +1,129 @@
-id,name,layer,type,language,region,feed_url,status
-ndtv,NDTV,national,tv_digital,en,India,https://feeds.feedburner.com/ndtvnews-india-news,live
-thehindu,The Hindu,national,newspaper,en,India,https://www.thehindu.com/news/national/feeder/default.rss,live
-toi,Times of India,national,newspaper,en,India,https://timesofindia.indiatimes.com/rssfeedstopstories.cms,live
-indianexpress,Indian Express,national,newspaper,en,India,https://indianexpress.com/section/india/feed/,live
-hindustantimes,Hindustan Times,national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml,live
-indiatoday,India Today,national,tv_digital,en,India,https://www.indiatoday.in/rss/1206514,live
-theprint,ThePrint,national,digital,en,India,https://theprint.in/category/india/feed/,live
-thewire,The Wire,national,digital,en,India,https://cms.thewire.in/rss,live
-scroll,Scroll,national,digital,en,India,https://feeds.feedburner.com/ScrollinArticles.rss,live
-mint,Mint,national,business,en,India,https://www.livemint.com/rss/news,live
-economictimes,Economic Times,national,business,en,India,https://economictimes.indiatimes.com/rssfeedstopstories.cms,live
-bbchindi,BBC News Hindi,national,international,hi,India,https://feeds.bbci.co.uk/hindi/rss.xml,live
-theprinthindi,ThePrint Hindi,national,digital,hi,India,https://hindi.theprint.in/feed/,live
-pib,Press Information Bureau,national,government,en,India,,to_check
-ntvtelugu,NTV Telugu,state,tv,te,Telangana,https://ntvtelugu.com/feed,live
-v6velugu,V6 Velugu,state,tv_newspaper,te,Telangana,https://www.v6velugu.com/feed/,live
-namasthetelangana,Namasthe Telangana,state,newspaper,te,Telangana,https://www.ntnews.com/news/feed,live
-andhrajyothy,Andhra Jyothy (ABN),state,newspaper_tv,te,Telangana,https://www.andhrajyothy.com/rss/feed.xml,broken
-10tv,10TV,state,tv,te,Telangana,https://10tv.in/latest/feed,live
-manatelangana,Mana Telangana,state,newspaper,te,Telangana,https://www.manatelangana.news/feed/,broken
-navatelangana,Nava Telangana,state,newspaper,te,Telangana,https://navatelangana.com/feed/,broken
-prajatantra,Prajatantra,state,newspaper,te,Telangana,https://www.prajatantranews.com/feed/,live
-vaartha,Vaartha,state,newspaper,te,Telangana,https://vaartha.com/feed/,live
-telugupost,Telugu Post,state,digital,te,Telangana,https://www.telugupost.com/latest-news/feed,broken
-telanganatoday,Telangana Today,state,newspaper,en,Telangana,https://telanganatoday.com/feed,live
-eenadu,Eenadu,state,newspaper,te,Telangana,,no_feed
-sakshi,Sakshi,state,newspaper_tv,te,Telangana,,no_feed
-samayamtelugu,Samayam Telugu,state,digital,te,Telangana,,no_feed
-news18telugu,News18 Telugu,state,digital,te,Telangana,,no_feed
-tv5news,TV5 News,state,tv,te,Telangana,,no_feed
-asianettelugu,Asianet News Telugu,state,digital,te,Telangana,,no_feed
-bbctelugu,BBC News Telugu,state,international,te,Telangana,,no_feed
-thehindu_hyd,The Hindu (Hyderabad),local,newspaper,en,Hyderabad,https://www.thehindu.com/news/cities/Hyderabad/feeder/default.rss,live
-toi_hyd,Times of India (Hyderabad),local,newspaper,en,Hyderabad,https://timesofindia.indiatimes.com/rssfeeds/-2128816011.cms,live
-siasat,Siasat,local,newspaper,en,Hyderabad,https://www.siasat.com/feed/,live
-deccanchronicle,Deccan Chronicle,local,newspaper,en,Hyderabad,,no_feed
-hansindia,The Hans India,local,newspaper,en,Hyderabad,,no_feed
-ntvtelugu_telangana,NTV Telugu (Telangana section),local,tv,te,Telangana,https://ntvtelugu.com/telangana-news/feed,live
-ntnews_telangana,Namasthe Telangana (Telangana section),local,newspaper,te,Telangana,https://www.ntnews.com/telangana/feed,live
-reddit_hyderabad,r/hyderabad (Reddit),local,community,en,Hyderabad,https://www.reddit.com/r/hyderabad/.rss,live
-reddit_telangana,r/telangana (Reddit),state,community,en,Telangana,https://www.reddit.com/r/telangana/.rss,to_check
-reddit_india,r/india (Reddit),national,community,en,India,https://www.reddit.com/r/india/.rss,to_check
-reddit_indianews,r/IndiaNews (Reddit),national,community,en,India,https://www.reddit.com/r/IndiaNews/.rss,to_check
-thehindu_world,The Hindu (World),international,newspaper,en,World,https://www.thehindu.com/news/international/feeder/default.rss,live
-ndtv_world,NDTV (World),international,tv_digital,en,World,https://feeds.feedburner.com/ndtvnews-world-news,live
-toi_world,Times of India (World),international,newspaper,en,World,https://timesofindia.indiatimes.com/rssfeeds/296589292.cms,live
-indianexpress_world,Indian Express (World),international,newspaper,en,World,https://indianexpress.com/section/world/feed/,live
-hindustantimes_world,Hindustan Times (World),international,newspaper,en,World,https://www.hindustantimes.com/feeds/rss/world-news/rssfeed.xml,live
-theprint_world,ThePrint (World),international,digital,en,World,https://theprint.in/category/world/feed/,live
-bbchindi_world,BBC News Hindi (World),international,international,hi,World,https://feeds.bbci.co.uk/hindi/international/rss.xml,live
-ntvtelugu_world,NTV Telugu (International),international,tv,te,World,https://ntvtelugu.com/international-news/feed,live
-yt_ntvtelugu,NTV Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCumtYpCY26F6Jr3satUgMvA,live
-yt_tv9telugu,TV9 Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCPXTXMecYqnRKNdqdVOGSFg,live
-yt_v6news,V6 News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCDCMjD1XIAsCZsYHNMGVcog,live
-yt_etvtelangana,ETV Telangana (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UC6ickpgDIsltU_-8CbZaksQ,live
-yt_etvap,ETV Andhra Pradesh (YouTube),state,tv_video,te,Andhra Pradesh,https://www.youtube.com/feeds/videos.xml?channel_id=UCJi8M0hRKjz8SLPvJKEVTOg,live
-yt_sakshitv,Sakshi TV (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCZ9m4KOh8Ei60428xeGYDCQ,live
-yt_abntelugu,ABN Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UC_2irx_BQR7RsBKmUV9fePQ,live
-yt_10tv,10TV News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCfymZbh17_3T_UhgjkQ9fRQ,live
-yt_tnews,T News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCu6edg8_eu3-A8ylgaWereA,live
-yt_mahaanews,Mahaa News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCDKjhgRoPF1CQk7HluMz23A,live
-yt_bbctelugu,BBC News Telugu (YouTube),state,international_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCiTCB-B_weEmwHk7ifNobQw,live
-yt_ndtv,NDTV (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCZFMm1mMw0F81Z37aaEzTUA,live
-yt_indiatoday,India Today (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCYPvAwZP8pZhSMW8qs7cVCw,live
-yt_timesnow,Times Now (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UC6RJ7-PaXg6TIH2BzZfTV7w,live
-yt_mirrornow,Mirror Now (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCWCEYVwSqr7Epo6sSCfUgiw,live
-yt_thehindu,The Hindu (YouTube),national,newspaper_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UC3njZ48-FDxLleBYaP0SZIg,live
-yt_indianexpress,The Indian Express (YouTube),national,newspaper_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCJEDFSxHHOW1PpBccdSxOTA,live
-yt_theprint,ThePrint (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCuyRsHZILrU7ZDIAbGASHdA,live
-yt_thewire,The Wire (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UChWtJey46brNr7qHQpN6KLQ,live
-yt_thenewsminute,The News Minute (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCspQie3i29iIFbCgfGisO9Q,live
-yt_mojostory,Mojo Story (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCrdPiSPVW0rtRsI002BX8iw,live
-yt_aajtak,Aaj Tak (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCt4t-jeY85JegMlZ-E5UWtA,live
-yt_abpnews,ABP News (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCRWFSbif-RFENbBrSiez1DA,live
-yt_zeenews,Zee News (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCIvaYmXn910QMdemBG3v1pQ,live
-yt_bbchindi,BBC News Hindi (YouTube),national,international_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCN7B-QD0Qgn2boVH5Q0pOWg,live
-yt_ddnews,DD News (YouTube),national,government_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCKwucPzHZ7zCUIf7If-Wo1g,live
-yt_sansadtv,Sansad TV (YouTube),national,government_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCISgnSNwqQ2i8lhCun3KtQg,live
-yt_pibindia,PIB India (YouTube),national,government_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCGn6a5SI8SNlj7WylmPD6GQ,live
-yt_wion,WION (YouTube),international,tv_video,en,World,https://www.youtube.com/feeds/videos.xml?channel_id=UC_gUM8rL-Lrg6O3adPW9K1g,live
+id,name,layer,type,language,region,feed_url,status,topics
+ndtv,NDTV,national,tv_digital,en,India,https://feeds.feedburner.com/ndtvnews-india-news,live,
+thehindu,The Hindu,national,newspaper,en,India,https://www.thehindu.com/news/national/feeder/default.rss,live,
+toi,Times of India,national,newspaper,en,India,https://timesofindia.indiatimes.com/rssfeedstopstories.cms,live,
+indianexpress,Indian Express,national,newspaper,en,India,https://indianexpress.com/section/india/feed/,live,
+hindustantimes,Hindustan Times,national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/india-news/rssfeed.xml,live,
+indiatoday,India Today,national,tv_digital,en,India,https://www.indiatoday.in/rss/1206514,live,
+theprint,ThePrint,national,digital,en,India,https://theprint.in/category/india/feed/,live,
+thewire,The Wire,national,digital,en,India,https://cms.thewire.in/rss,live,
+scroll,Scroll,national,digital,en,India,https://feeds.feedburner.com/ScrollinArticles.rss,live,
+mint,Mint,national,business,en,India,https://www.livemint.com/rss/news,live,
+economictimes,Economic Times,national,business,en,India,https://economictimes.indiatimes.com/rssfeedstopstories.cms,live,
+bbchindi,BBC News Hindi,national,international,hi,India,https://feeds.bbci.co.uk/hindi/rss.xml,live,
+theprinthindi,ThePrint Hindi,national,digital,hi,India,https://hindi.theprint.in/feed/,live,
+pib,Press Information Bureau,national,government,en,India,,to_check,
+ntvtelugu,NTV Telugu,state,tv,te,Telangana,https://ntvtelugu.com/feed,live,
+v6velugu,V6 Velugu,state,tv_newspaper,te,Telangana,https://www.v6velugu.com/feed/,live,
+namasthetelangana,Namasthe Telangana,state,newspaper,te,Telangana,https://www.ntnews.com/news/feed,live,
+andhrajyothy,Andhra Jyothy (ABN),state,newspaper_tv,te,Telangana,https://www.andhrajyothy.com/rss/feed.xml,broken,
+10tv,10TV,state,tv,te,Telangana,https://10tv.in/latest/feed,live,
+manatelangana,Mana Telangana,state,newspaper,te,Telangana,https://www.manatelangana.news/feed/,broken,
+navatelangana,Nava Telangana,state,newspaper,te,Telangana,https://navatelangana.com/feed/,broken,
+prajatantra,Prajatantra,state,newspaper,te,Telangana,https://www.prajatantranews.com/feed/,live,
+vaartha,Vaartha,state,newspaper,te,Telangana,https://vaartha.com/feed/,live,
+telugupost,Telugu Post,state,digital,te,Telangana,https://www.telugupost.com/latest-news/feed,broken,
+telanganatoday,Telangana Today,state,newspaper,en,Telangana,https://telanganatoday.com/feed,live,
+eenadu,Eenadu,state,newspaper,te,Telangana,,no_feed,
+sakshi,Sakshi,state,newspaper_tv,te,Telangana,,no_feed,
+samayamtelugu,Samayam Telugu,state,digital,te,Telangana,,no_feed,
+news18telugu,News18 Telugu,state,digital,te,Telangana,,no_feed,
+tv5news,TV5 News,state,tv,te,Telangana,,no_feed,
+asianettelugu,Asianet News Telugu,state,digital,te,Telangana,,no_feed,
+bbctelugu,BBC News Telugu,state,international,te,Telangana,,no_feed,
+thehindu_hyd,The Hindu (Hyderabad),local,newspaper,en,Hyderabad,https://www.thehindu.com/news/cities/Hyderabad/feeder/default.rss,live,
+toi_hyd,Times of India (Hyderabad),local,newspaper,en,Hyderabad,https://timesofindia.indiatimes.com/rssfeeds/-2128816011.cms,live,
+siasat,Siasat,local,newspaper,en,Hyderabad,https://www.siasat.com/feed/,live,
+deccanchronicle,Deccan Chronicle,local,newspaper,en,Hyderabad,,no_feed,
+hansindia,The Hans India,local,newspaper,en,Hyderabad,,no_feed,
+ntvtelugu_telangana,NTV Telugu (Telangana section),local,tv,te,Telangana,https://ntvtelugu.com/telangana-news/feed,live,
+ntnews_telangana,Namasthe Telangana (Telangana section),local,newspaper,te,Telangana,https://www.ntnews.com/telangana/feed,live,
+reddit_hyderabad,r/hyderabad (Reddit),local,community,en,Hyderabad,https://www.reddit.com/r/hyderabad/.rss,live,
+reddit_telangana,r/telangana (Reddit),state,community,en,Telangana,https://www.reddit.com/r/telangana/.rss,to_check,
+reddit_india,r/india (Reddit),national,community,en,India,https://www.reddit.com/r/india/.rss,to_check,
+reddit_indianews,r/IndiaNews (Reddit),national,community,en,India,https://www.reddit.com/r/IndiaNews/.rss,to_check,
+thehindu_world,The Hindu (World),international,newspaper,en,World,https://www.thehindu.com/news/international/feeder/default.rss,live,
+ndtv_world,NDTV (World),international,tv_digital,en,World,https://feeds.feedburner.com/ndtvnews-world-news,live,
+toi_world,Times of India (World),international,newspaper,en,World,https://timesofindia.indiatimes.com/rssfeeds/296589292.cms,live,
+indianexpress_world,Indian Express (World),international,newspaper,en,World,https://indianexpress.com/section/world/feed/,live,
+hindustantimes_world,Hindustan Times (World),international,newspaper,en,World,https://www.hindustantimes.com/feeds/rss/world-news/rssfeed.xml,live,
+theprint_world,ThePrint (World),international,digital,en,World,https://theprint.in/category/world/feed/,live,
+bbchindi_world,BBC News Hindi (World),international,international,hi,World,https://feeds.bbci.co.uk/hindi/international/rss.xml,live,
+ntvtelugu_world,NTV Telugu (International),international,tv,te,World,https://ntvtelugu.com/international-news/feed,live,
+yt_ntvtelugu,NTV Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCumtYpCY26F6Jr3satUgMvA,live,
+yt_tv9telugu,TV9 Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCPXTXMecYqnRKNdqdVOGSFg,live,
+yt_v6news,V6 News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCDCMjD1XIAsCZsYHNMGVcog,live,
+yt_etvtelangana,ETV Telangana (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UC6ickpgDIsltU_-8CbZaksQ,live,
+yt_etvap,ETV Andhra Pradesh (YouTube),state,tv_video,te,Andhra Pradesh,https://www.youtube.com/feeds/videos.xml?channel_id=UCJi8M0hRKjz8SLPvJKEVTOg,live,
+yt_sakshitv,Sakshi TV (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCZ9m4KOh8Ei60428xeGYDCQ,live,
+yt_abntelugu,ABN Telugu (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UC_2irx_BQR7RsBKmUV9fePQ,live,
+yt_10tv,10TV News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCfymZbh17_3T_UhgjkQ9fRQ,live,
+yt_tnews,T News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCu6edg8_eu3-A8ylgaWereA,live,
+yt_mahaanews,Mahaa News (YouTube),state,tv_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCDKjhgRoPF1CQk7HluMz23A,live,
+yt_bbctelugu,BBC News Telugu (YouTube),state,international_video,te,Telangana,https://www.youtube.com/feeds/videos.xml?channel_id=UCiTCB-B_weEmwHk7ifNobQw,live,
+yt_ndtv,NDTV (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCZFMm1mMw0F81Z37aaEzTUA,live,
+yt_indiatoday,India Today (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCYPvAwZP8pZhSMW8qs7cVCw,live,
+yt_timesnow,Times Now (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UC6RJ7-PaXg6TIH2BzZfTV7w,live,
+yt_mirrornow,Mirror Now (YouTube),national,tv_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCWCEYVwSqr7Epo6sSCfUgiw,live,
+yt_thehindu,The Hindu (YouTube),national,newspaper_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UC3njZ48-FDxLleBYaP0SZIg,live,
+yt_indianexpress,The Indian Express (YouTube),national,newspaper_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCJEDFSxHHOW1PpBccdSxOTA,live,
+yt_theprint,ThePrint (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCuyRsHZILrU7ZDIAbGASHdA,live,
+yt_thewire,The Wire (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UChWtJey46brNr7qHQpN6KLQ,live,
+yt_thenewsminute,The News Minute (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCspQie3i29iIFbCgfGisO9Q,live,
+yt_mojostory,Mojo Story (YouTube),national,digital_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCrdPiSPVW0rtRsI002BX8iw,live,
+yt_aajtak,Aaj Tak (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCt4t-jeY85JegMlZ-E5UWtA,live,
+yt_abpnews,ABP News (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCRWFSbif-RFENbBrSiez1DA,live,
+yt_zeenews,Zee News (YouTube),national,tv_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCIvaYmXn910QMdemBG3v1pQ,live,
+yt_bbchindi,BBC News Hindi (YouTube),national,international_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCN7B-QD0Qgn2boVH5Q0pOWg,live,
+yt_ddnews,DD News (YouTube),national,government_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCKwucPzHZ7zCUIf7If-Wo1g,live,
+yt_sansadtv,Sansad TV (YouTube),national,government_video,hi,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCISgnSNwqQ2i8lhCun3KtQg,live,
+yt_pibindia,PIB India (YouTube),national,government_video,en,India,https://www.youtube.com/feeds/videos.xml?channel_id=UCGn6a5SI8SNlj7WylmPD6GQ,live,
+yt_wion,WION (YouTube),international,tv_video,en,World,https://www.youtube.com/feeds/videos.xml?channel_id=UC_gUM8rL-Lrg6O3adPW9K1g,live,
+123telugu,123telugu.com,state,digital,en,Telangana,https://www.123telugu.com/feed,live,cinema
+gulte_te,Gulte (Telugu),state,digital,te,Telangana,https://telugu.gulte.com/feed,live,
+greatandhra,Great Andhra,state,digital,en,Andhra Pradesh,https://www.greatandhra.com/feed,live,
+filmibeat_te,Filmibeat Telugu,state,digital,te,Telangana,https://telugu.filmibeat.com/rss/filmibeat-telugu-fb.xml,live,cinema
+filmyfocus_te,FilmyFocus (Telugu),state,digital,te,Telangana,https://telugu.filmyfocus.com/feed,live,cinema
+filmyfocus,FilmyFocus,state,digital,en,Telangana,https://www.filmyfocus.com/feed,live,cinema
+telugu360,Telugu360,state,digital,en,Telangana,https://www.telugu360.com/feed,live,
+mirchi9,Mirchi9,state,digital,en,Telangana,https://www.mirchi9.com/feed,live,
+tv9telugu_ent,TV9 Telugu (Entertainment),state,tv,te,Telangana,https://tv9telugu.com/entertainment/feed,live,cinema
+abpdesam_ent,ABP Desam (Entertainment),state,tv_digital,te,Telangana,https://telugu.abplive.com/entertainment/feed,live,cinema
+oneindia_te,Oneindia Telugu,state,digital,te,Telangana,https://telugu.oneindia.com/rss/telugu-news-fb.xml,live,
+telanganatoday_ent,Telangana Today (Entertainment),state,newspaper,en,Telangana,https://telanganatoday.com/entertainment/feed,live,cinema
+reddit_tollywoodgossips,r/TollywoodGossips (Reddit),state,community,en,Telangana,https://www.reddit.com/r/TollywoodGossips/.rss,to_check,cinema
+reddit_tollywood,r/tollywood (Reddit),state,community,en,Telangana,https://www.reddit.com/r/tollywood/.rss,to_check,cinema
+thehindu_movies,The Hindu (Movies),national,newspaper,en,India,https://www.thehindu.com/entertainment/movies/feeder/default.rss,live,cinema
+toi_ent,Times of India (Entertainment),national,newspaper,en,India,https://timesofindia.indiatimes.com/rssfeeds/1081479906.cms,live,cinema
+hindustantimes_ent,Hindustan Times (Entertainment),national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/entertainment/rssfeed.xml,live,cinema
+ndtv_movies,NDTV (Movies),national,tv_digital,en,India,https://feeds.feedburner.com/ndtvmovies-latest,live,cinema
+indiatoday_movies,India Today (Movies),national,tv_digital,en,India,https://www.indiatoday.in/rss/1206533,live,cinema
+bollywoodhungama,Bollywood Hungama,national,digital,en,India,https://www.bollywoodhungama.com/feed/,live,cinema
+pinkvilla,Pinkvilla,national,digital,en,India,https://www.pinkvilla.com/rss.xml,live,cinema
+koimoi,Koimoi,national,digital,en,India,https://www.koimoi.com/feed/,live,cinema
+cinemaexpress,Cinema Express,national,digital,en,India,https://www.cinemaexpress.com/stories.rss,live,cinema
+onmanorama_ent,Onmanorama (Entertainment),state,digital,en,Kerala,https://www.onmanorama.com/entertainment.feeds.onmrss.xml,live,cinema
+amarujala_ent,Amar Ujala (Entertainment),national,newspaper,hi,India,https://www.amarujala.com/rss/entertainment.xml,live,cinema
+reddit_bollywood,r/bollywood (Reddit),national,community,en,India,https://www.reddit.com/r/bollywood/.rss,to_check,cinema
+reddit_kollywood,r/kollywood (Reddit),national,community,en,India,https://www.reddit.com/r/kollywood/.rss,to_check,cinema
+espncricinfo,ESPNcricinfo,national,digital,en,India,https://www.espncricinfo.com/rss/content/story/feeds/0.xml,live,sports
+sportstar,Sportstar,national,digital,en,India,https://sportstar.thehindu.com/feeder/default.rss,live,sports
+thehindu_sport,The Hindu (Sport),national,newspaper,en,India,https://www.thehindu.com/sport/feeder/default.rss,live,sports
+toi_sports,Times of India (Sports),national,newspaper,en,India,https://timesofindia.indiatimes.com/rssfeeds/4719148.cms,live,sports
+ndtv_sports,NDTV (Sports),national,tv_digital,en,India,https://feeds.feedburner.com/ndtvsports-latest,live,sports
+hindustantimes_cricket,Hindustan Times (Cricket),national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/cricket/rssfeed.xml,live,sports
+reddit_cricket,r/Cricket (Reddit),international,community,en,World,https://www.reddit.com/r/Cricket/.rss,to_check,sports
+businessline,BusinessLine,national,business,en,India,https://www.thehindubusinessline.com/feeder/default.rss,live,business
+mint_markets,Mint (Markets),national,business,en,India,https://www.livemint.com/rss/markets,live,business
+gadgets360,Gadgets 360,national,digital,en,India,https://feeds.feedburner.com/gadgets360-latest,live,tech
+inc42,Inc42,national,digital,en,India,https://inc42.com/feed/,live,tech;business
+yourstory,YourStory,national,digital,en,India,https://yourstory.com/feed,live,tech;business
+medianama,MediaNama,national,digital,en,India,https://www.medianama.com/feed/,live,tech
+thehindu_scitech,The Hindu (Sci-Tech),national,newspaper,en,India,https://www.thehindu.com/sci-tech/feeder/default.rss,live,tech
+hindustantimes_education,Hindustan Times (Education),national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/education/rssfeed.xml,live,education
+thehindu_education,The Hindu (Education),national,newspaper,en,India,https://www.thehindu.com/education/feeder/default.rss,live,education
+thehindu_health,The Hindu (Health),national,newspaper,en,India,https://www.thehindu.com/sci-tech/health/feeder/default.rss,live,health
+hindustantimes_health,Hindustan Times (Health),national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/lifestyle/health/rssfeed.xml,live,health
+krishijagran,Krishi Jagran,national,digital,en,India,https://krishijagran.com/feeds/rss,live,farming
+thehindu_agri,The Hindu (Agri-business),national,newspaper,en,India,https://www.thehindu.com/business/agri-business/feeder/default.rss,live,farming;business
+mongabay_india,Mongabay India,national,digital,en,India,https://india.mongabay.com/feed/,live,

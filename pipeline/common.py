@@ -113,7 +113,8 @@ class DB:
             text = SCHEMA_SQL.read_text(encoding="utf-8").replace("TEXT[]", "TEXT").replace("JSONB", "TEXT")
             self.conn.executescript(text)
             # SQLite has no "add column if not exists": upgrade an older local.db by hand.
-            for table, column in (("articles", "image_url"), ("stories", "image_url"), ("stories", "image_source")):
+            for table, column in (("articles", "image_url"), ("stories", "image_url"), ("stories", "image_source"),
+                                  ("sources", "topics")):
                 if column not in {r[1] for r in self.conn.execute(f"PRAGMA table_info({table})")}:
                     self.conn.execute(f"ALTER TABLE {table} ADD COLUMN {column} TEXT")
         else:
@@ -164,6 +165,11 @@ class Source:
     region: str
     feed_url: str
     status: str
+    topics: str = ""            # "cinema" or "sports;business": a section feed's own subject, given to every report
+
+    @property
+    def topic_list(self) -> list[str]:
+        return [t.strip() for t in self.topics.split(";") if t.strip()]
 
 
 def load_sources(path: Path = SOURCES_CSV) -> list[Source]:
@@ -172,7 +178,7 @@ def load_sources(path: Path = SOURCES_CSV) -> list[Source]:
 
 
 def save_sources(sources: list[Source], path: Path = SOURCES_CSV) -> None:
-    fields = ["id", "name", "layer", "type", "language", "region", "feed_url", "status"]
+    fields = ["id", "name", "layer", "type", "language", "region", "feed_url", "status", "topics"]
     with open(path, "w", newline="", encoding="utf-8") as f:
         w = csv.DictWriter(f, fieldnames=fields)
         w.writeheader()
@@ -183,12 +189,14 @@ def save_sources(sources: list[Source], path: Path = SOURCES_CSV) -> None:
 def sync_sources(db: DB, sources: list[Source]) -> None:
     now = datetime.now(timezone.utc)
     db.executemany(
-        """INSERT INTO sources (id, name, layer, type, language, region, feed_url, status, updated_at)
-           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """INSERT INTO sources (id, name, layer, type, language, region, feed_url, status, topics, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
            ON CONFLICT (id) DO UPDATE SET name = excluded.name, layer = excluded.layer,
              type = excluded.type, language = excluded.language, region = excluded.region,
-             feed_url = excluded.feed_url, status = excluded.status, updated_at = excluded.updated_at""",
-        [(s.id, s.name, s.layer, s.type, s.language, s.region, s.feed_url or None, s.status, now) for s in sources],
+             feed_url = excluded.feed_url, status = excluded.status, topics = excluded.topics,
+             updated_at = excluded.updated_at""",
+        [(s.id, s.name, s.layer, s.type, s.language, s.region, s.feed_url or None, s.status, s.topic_list, now)
+         for s in sources],
     )
     db.commit()
 

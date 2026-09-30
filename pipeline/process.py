@@ -39,9 +39,10 @@ def _time(published, fetched) -> datetime:
 
 
 def _sources(db: DB) -> dict:
-    return {sid: {"name": name, "type": typ, "region": region, "language": lang, "layer": layer}
-            for sid, name, typ, region, lang, layer in
-            db.fetchall("SELECT id, name, type, region, language, layer FROM sources")}
+    return {sid: {"name": name, "type": typ, "region": region, "language": lang, "layer": layer,
+                  "topics": as_list(topics)}
+            for sid, name, typ, region, lang, layer, topics in
+            db.fetchall("SELECT id, name, type, region, language, layer, topics FROM sources")}
 
 
 # --------------------------------------------------------------------------
@@ -55,9 +56,9 @@ def tag_articles(db: DB, sources: dict, now: datetime) -> tuple[int, set[str]]:
     dirty: set[str] = set()
     updates = []
     for aid, sid, title, snippet, categories, story_id in rows:
-        region = sources.get(sid, {}).get("region", "")
-        p = gz.tag(title, snippet or "", region)
-        topics = tt.tag(title, snippet or "", as_list(categories))
+        src = sources.get(sid, {})
+        p = gz.tag(title, snippet or "", src.get("region", ""))
+        topics = tt.tag(title, snippet or "", as_list(categories), src.get("topics", ()))
         updates.append((p.places, p.primary, topics, wire_key(snippet or ""), now, aid))
         if story_id:
             dirty.add(story_id)

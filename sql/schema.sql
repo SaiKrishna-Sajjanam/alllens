@@ -14,6 +14,7 @@ CREATE TABLE IF NOT EXISTS sources (
     region      TEXT,
     feed_url    TEXT,
     status      TEXT,
+    topics      TEXT[],
     updated_at  TIMESTAMPTZ
 );
 

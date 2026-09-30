@@ -139,6 +139,19 @@ class GroupingTests(unittest.TestCase):
         self.assertIn("sports", topics[self.story["kohli_ndtv"]])
         self.assertIn("politics", topics[self.story["cm_ntv"]])
 
+    def test_section_feed_gives_its_subject(self):
+        # A film site's headline often names only the star; the source's `topics` still makes it Cinema.
+        film = Source("filmsite", "Film Site", "state", "digital", "te", "Telangana",
+                      "https://filmsite.test/feed", "live", "cinema")
+        sync_sources(self.db, sources() + [film])
+        item = Item(title="Mahesh Babu praises Fahadh Faasil", url="https://filmsite.test/mb",
+                    summary="", published_at=self.now)
+        store_items(self.db, film, [item], self.now)
+        self.db.commit()
+        process.run(self.db, embedder=LexicalEmbedder(), now=self.now)
+        (topics,), = self.db.fetchall("SELECT topics FROM articles WHERE url = 'https://filmsite.test/mb'")
+        self.assertEqual(as_list(topics), ["cinema"])
+
     def test_rerun_is_idempotent(self):
         before = self.db.fetchall("SELECT COUNT(*) FROM stories")[0][0]
         again = process.run(self.db, embedder=LexicalEmbedder(), now=self.now)

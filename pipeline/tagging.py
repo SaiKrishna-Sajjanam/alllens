@@ -166,12 +166,14 @@ class TopicTagger:
             cats = {normalise(c).lower() for c in t.get("categories", [])}
             self._rules.append((t["id"], matchers, cats))
 
-    def tag(self, title: str, snippet: str = "", categories=()) -> list[str]:
+    def tag(self, title: str, snippet: str = "", categories=(), source_topics=()) -> list[str]:
+        """source_topics: the subject of a section feed (sources.csv `topics`), e.g. every
+        report from a film site is Cinema even when its headline names only the star."""
         text = normalise(f"{title} {snippet}")
         cats = {normalise(c).lower() for c in categories or []}
         out = []
         for tid, matchers, tcats in self._rules:
-            if cats & tcats or any(
+            if tid in source_topics or cats & tcats or any(
                 (m.search(text) if isinstance(m, re.Pattern) else m in text) for m in matchers
             ):
                 out.append(tid)

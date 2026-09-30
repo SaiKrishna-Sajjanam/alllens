@@ -12,6 +12,7 @@ create table if not exists public.sources (
     region      text,
     feed_url    text,
     status      text,
+    topics      text[],
     updated_at  timestamptz
 );
 
@@ -71,6 +72,7 @@ alter table public.articles add column if not exists processed_at timestamptz;
 alter table public.articles add column if not exists image_url text;
 alter table public.stories add column if not exists image_url text;
 alter table public.stories add column if not exists image_source text;
+alter table public.sources add column if not exists topics text[];
 do $$
 begin
     if not exists (select 1 from pg_constraint where conname = 'articles_story_id_fkey') then

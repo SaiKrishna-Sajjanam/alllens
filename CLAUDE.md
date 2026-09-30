@@ -20,6 +20,7 @@ Purpose: one version makes people believe; many versions make them think.
 - Every table the app can reach has row-level security; change `supabase/migrations/` (idempotent SQL) and extend `supabase/tests/rls_test.sql`.
 - Keep `sql/schema.sql` (SQLite tests) and `supabase/migrations/20261001000100_pipeline.sql` in step; `tests/test_consistency.py` checks.
 - After editing `pipeline/data/places.json` or `topics.json`, run `python -m pipeline.export_web_data`.
+- `sources.csv` column `topics` (e.g. `cinema`, `tech;business`) is only for section/specialist feeds whose every report is on that subject; general outlets leave it empty.
 
 ## Layout
 - `pipeline/`: collect, process (tagging.py, embed.py, grouping), notify, cleanup, accounts, check_feeds, review_groups, export_web_data
