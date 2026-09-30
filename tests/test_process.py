@@ -149,6 +149,44 @@ class GroupingTests(unittest.TestCase):
         self.assertGreater(self.db.fetchall("SELECT COUNT(*) FROM coverage_counts")[0][0], 0)
 
 
+class RotatingEmbedder:
+    """Headline 'step k' -> a unit vector turned k * 10 degrees: each report is close to
+    the previous one, but the first and last are unrelated (90 degrees apart)."""
+    name = "rotating-test"
+    threshold = 0.9                                   # ~26 degrees
+
+    def embed(self, texts):
+        import math
+        import re
+        out = []
+        for t in texts:
+            a = math.radians(10 * int(re.search(r"step (\d+)", t).group(1)))
+            out.append([math.cos(a), math.sin(a), 0.0])
+        return out
+
+
+class DriftTests(unittest.TestCase):
+    def test_story_cannot_snowball_into_unrelated_reports(self):
+        # Seen in production: a story's running average drifted towards "news in general"
+        # and swallowed 400+ unrelated reports. Joining also needs the story's first report.
+        tmp, db = make_db()
+        steps = [dict(ARTICLES[0], key=f"s{k}", title=f"step {k}", snippet="", hour=k) for k in range(10)]
+        load(db, steps, DAY + timedelta(hours=12))
+        process.run(db, embedder=RotatingEmbedder(), now=DAY + timedelta(hours=12))
+        story = story_of(db)
+        self.assertNotEqual(story["s0"], story["s9"])
+        members = [k for k in range(10) if story[f"s{k}"] == story["s0"]]
+        self.assertEqual(members, [0, 1, 2], "only reports within the threshold of the first one")
+
+        # --regroup: clear the groupings and group again; articles are kept.
+        self.assertEqual(process.clear_groups(db), len(set(story.values())))
+        again = process.run(db, embedder=RotatingEmbedder(), now=DAY + timedelta(hours=12))
+        self.assertEqual(again["grouped"], 10)
+        self.assertEqual(len(set(story_of(db).values())), len(set(story.values())))
+        db.close()
+        tmp.cleanup()
+
+
 class WireCopyTests(unittest.TestCase):
     def test_identical_wire_text_gets_same_key(self):
         tmp, db = make_db()

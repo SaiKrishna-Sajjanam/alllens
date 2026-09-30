@@ -5,8 +5,8 @@
 
 Open the CSV in Excel / Google Sheets, fill the 'correct?' column (y/n) and
 note which articles do not belong. If many stories wrongly merge, raise
-GROUP_THRESHOLD a little (e.g. 0.88 -> 0.90); if the same incident is split,
-lower it. Then re-run grouping on fresh data.
+GROUP_THRESHOLD a little (e.g. 0.905 -> 0.915); if the same incident is split,
+lower it. Then run Collect news with "regroup" ticked to group existing articles again.
 """
 from __future__ import annotations
 

@@ -52,7 +52,9 @@ class MultilingualEmbedder:
     """intfloat/multilingual-e5-small: ~120M parameters, 100 languages incl. Telugu and Hindi."""
 
     dims = 384
-    threshold = 0.88
+    # Measured on 2,485 real headlines (30 Sep 2026): unrelated pairs score ~0.79 (median) to
+    # 0.90 (top 0.1 %), so 0.88 merged unrelated reports; at 0.905 sampled groups were ~9/10 right.
+    threshold = 0.905
 
     def __init__(self, model_name: str = MODEL_NAME):
         from sentence_transformers import SentenceTransformer  # heavy import, only in production

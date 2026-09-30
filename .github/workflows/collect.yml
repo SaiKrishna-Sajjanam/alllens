@@ -3,7 +3,12 @@ name: Collect news
 on:
   schedule:
     - cron: "7 */2 * * *"   # every 2 hours, at 7 past (UTC)
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      regroup:
+        description: "Clear all story groupings and group every article again (articles are kept; follows of old stories are lost)"
+        type: boolean
+        default: false
 
 concurrency:
   group: collect
@@ -16,7 +21,7 @@ jobs:
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       EMBEDDER: multilingual
-      GROUP_THRESHOLD: ${{ vars.GROUP_THRESHOLD }}   # optional repository variable; default 0.88
+      GROUP_THRESHOLD: ${{ vars.GROUP_THRESHOLD }}   # optional repository variable; default 0.905
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -29,4 +34,4 @@ jobs:
           key: hf-multilingual-e5-small
       - run: pip install -r requirements.txt -r requirements-ml.txt
       - name: Collect, tag and group into stories
-        run: python -m pipeline.collect
+        run: python -m pipeline.collect ${{ inputs.regroup && '--regroup' || '' }}

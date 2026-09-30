@@ -5,7 +5,11 @@
 1. Tag: places (India / state / district), topics, wire-copy key.
 2. Embed: headline + snippet -> vector (multilingual in production).
 3. Group: each new article joins the most similar open story (updated in the
-   last 72 hours) if similarity >= threshold, otherwise it starts a new story.
+   last 72 hours) if it is similar enough (>= threshold) to both the story as a
+   whole and the story's first report, otherwise it starts a new story.
+
+    python -m pipeline.process --regroup   # clear all story groupings and group again
+                                           # (articles are kept; follows of old stories are lost)
 4. Refresh each touched story: label = earliest headline (per language too),
    counts, languages, places, topics.
 
@@ -106,16 +110,20 @@ def group_articles(db: DB, embedder, now: datetime) -> dict:
     earliest = _time(pending[0][2], pending[0][3])
 
     open_rows = db.fetchall(
-        """SELECT s.id, s.last_article_at, sv.vector, sv.n FROM stories s
+        """SELECT s.id, s.last_article_at, sv.vector, sv.n, av.vector FROM stories s
            JOIN story_vectors sv ON sv.story_id = s.id AND sv.model = ?
+           LEFT JOIN article_vectors av ON av.article_id = s.label_article_id AND av.model = ?
            WHERE s.last_article_at >= ?""",
-        (embedder.name, earliest - WINDOW),
+        (embedder.name, embedder.name, earliest - WINDOW),
     )
     ids = [r[0] for r in open_rows]
     last = [to_datetime(r[1]) for r in open_rows]
     counts = [int(r[3]) for r in open_rows]
     sums = [np.asarray(json.loads(r[2]), dtype=np.float32) * r[3] for r in open_rows]   # running sums
     matrix = np.vstack([s / (np.linalg.norm(s) or 1) for s in sums]) if sums else None
+    # A story's first report never moves, so comparing with it stops a story's average
+    # drifting towards "news in general" and swallowing unrelated reports.
+    first = np.vstack([np.asarray(json.loads(r[4] or r[2]), dtype=np.float32) for r in open_rows]) if open_rows else None
     touched: set[str] = set()
     new_ids: set[str] = set()
     new_rows, assign = [], []
@@ -127,10 +135,11 @@ def group_articles(db: DB, embedder, now: datetime) -> dict:
         best, best_sim = None, -1.0
         if matrix is not None and len(ids):
             sims = matrix @ vec
+            first_sims = first @ vec
             for idx in np.argsort(-sims):
                 if sims[idx] < embedder.threshold:
                     break
-                if abs(t - last[idx]) <= WINDOW:
+                if first_sims[idx] >= embedder.threshold and abs(t - last[idx]) <= WINDOW:
                     best, best_sim = int(idx), float(sims[idx])
                     break
 
@@ -143,6 +152,7 @@ def group_articles(db: DB, embedder, now: datetime) -> dict:
             sums.append(vec.copy())
             row = (vec / (np.linalg.norm(vec) or 1))[None, :]
             matrix = row if matrix is None else np.vstack([matrix, row])
+            first = row.copy() if first is None else np.vstack([first, row])   # own copy: matrix rows change
             new_ids.add(sid)
         else:
             sid = ids[best]
@@ -266,9 +276,26 @@ def run(db: DB, embedder=None, now: datetime | None = None) -> dict:
             "joined": g["joined"], "embedder": embedder.name}
 
 
-def main() -> int:
+def clear_groups(db: DB) -> int:
+    """Forget every story grouping so all articles are grouped again with the current rule.
+    Articles and their vectors are kept; stories (and follows of them) are removed."""
+    n = db.fetchall("SELECT COUNT(*) FROM stories")[0][0]
+    db.execute("UPDATE articles SET story_id = NULL WHERE story_id IS NOT NULL")
+    db.execute("DELETE FROM stories")
+    db.commit()
+    return n
+
+
+def main(argv=None) -> int:
+    import argparse
+
+    ap = argparse.ArgumentParser(description="Tag and group new articles into stories.")
+    ap.add_argument("--regroup", action="store_true", help="clear all story groupings first and group again")
+    args = ap.parse_args(argv)
     db = DB()
     db.init_schema()
+    if args.regroup:
+        print(f"Cleared {clear_groups(db)} stories; grouping all articles again")
     r = run(db)
     db.close()
     print(f"[{r['embedder']}] tagged {r['tagged']}, grouped {r['grouped']}: "

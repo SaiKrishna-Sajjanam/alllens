@@ -95,10 +95,16 @@ def main(argv=None) -> int:
 
     ap = argparse.ArgumentParser(description="Collect feeds, then tag and group new articles into stories.")
     ap.add_argument("--no-process", action="store_true", help="only collect; skip tagging and grouping")
+    ap.add_argument("--regroup", action="store_true",
+                    help="clear all story groupings and group every article again (articles are kept)")
     args = ap.parse_args(argv)
 
     db = DB()
     db.init_schema()
+    if args.regroup:
+        from pipeline import process
+
+        print(f"Cleared {process.clear_groups(db)} stories; every article will be grouped again")
     summary = run(db, load_sources())
     print(f"Feeds OK: {summary['feeds_ok']}  failed: {summary['feeds_failed']}  "
           f"new articles: {summary['new_articles']}  re-worded headlines: {summary['updated_headlines']}")

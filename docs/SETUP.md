@@ -91,7 +91,7 @@ Supabase → **Authentication**:
 
 ## 7. Before inviting the 20 pilot users
 
-- [ ] Run **Review story grouping** (Actions) after a day of collection; mark 50 stories right/wrong in the CSV. Aim for 8 of 10 correct. Too many wrong merges: raise `GROUP_THRESHOLD` (default 0.88) a little, set as a repository **variable** under Settings → Secrets and variables → Actions → Variables; too many splits: lower it.
+- [ ] Run **Review story grouping** (Actions) after a day of collection; mark 50 stories right/wrong in the CSV. Aim for 8 of 10 correct. Too many wrong merges: raise `GROUP_THRESHOLD` (default 0.905) a little, set as a repository **variable** under Settings → Secrets and variables → Actions → Variables; too many splits: lower it. Then run **Collect news** with **regroup** ticked so existing articles are grouped again with the new value.
 - [ ] Ask a native speaker to read the Telugu interface text (`web/lib/i18n.ts`).
 - [ ] Fill the grievance officer and contact emails; read Privacy/Terms/Grievance pages and have a lawyer review before public launch.
 - [ ] Check each source's terms of use (some feeds are "personal, non-commercial use"). Ask publishers where needed.
