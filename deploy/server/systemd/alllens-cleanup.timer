@@ -1,0 +1,10 @@
+[Unit]
+Description=All-Lens: nightly clean-up (30-day retention, inactive accounts)
+
+[Timer]
+OnCalendar=*-*-* 20:37:00 UTC
+Persistent=true
+Unit=alllens@cleanup.service
+
+[Install]
+WantedBy=timers.target

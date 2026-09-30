@@ -28,7 +28,8 @@ Purpose: one version makes people believe; many versions make them think.
 - `web/`: Next.js 15 App Router + Supabase (`@supabase/ssr`). `lib/` holds pure logic (feed.ts, prefs.ts, ai.ts, i18n.ts, catalog.ts) with tests in `web/tests`; `lib/data.ts` is the only data access layer and falls back to `lib/demo.ts` sample data when Supabase env vars are missing.
 - `supabase/migrations/`, `supabase/tests/`
 - `.github/workflows/`: tests (Python + Postgres + RLS + web build), collect (2 h), cleanup (daily), notify (hourly), check_feeds, review_groups (manual)
-- `docs/SETUP.md` (accounts and deployment), `docs/ARCHITECTURE.md`
+- `deploy/server/`: the scheduled jobs on a free Oracle Cloud server (setup.sh, run.sh, systemd timers; guide in docs/SERVER.md). The repo stays private; set repository variable `SCHEDULE_ON_GITHUB=off` so GitHub skips its own scheduled runs
+- `docs/SETUP.md` (accounts and deployment), `docs/SERVER.md` (free server for scheduled jobs), `docs/ARCHITECTURE.md`
 
 ## Stack
 Python 3.11 (requests, psycopg, numpy; sentence-transformers for multilingual grouping) · Supabase (Postgres + Auth) · GitHub Actions · Next.js/React on Vercel · Resend for email · VS Code + Claude Code.

@@ -1,0 +1,10 @@
+[Unit]
+Description=All-Lens: daily catch-up emails (checked hourly; one email a day per reader)
+
+[Timer]
+OnCalendar=*-*-* *:05:00 UTC
+Persistent=true
+Unit=alllens@notify.service
+
+[Install]
+WantedBy=timers.target

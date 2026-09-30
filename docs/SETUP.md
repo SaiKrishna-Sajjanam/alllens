@@ -46,6 +46,8 @@ Then Actions → **Collect news** → Run workflow. The first run takes ~5 minut
 
 From now on collection runs every 2 hours and clean-up every night, by themselves.
 
+**Keep it free and private:** a private repository gets 2,000 GitHub Actions minutes a month, which the collect and email schedules outgrow as sources are added. Move the scheduled jobs to a free Oracle Cloud server with `docs/SERVER.md` (about 45 minutes, once); GitHub then only runs Tests.
+
 ## 4. Vercel: put the website online (10 min)
 
 1. vercel.com → sign in with GitHub → **Add New → Project** → pick the `alllens` repo.

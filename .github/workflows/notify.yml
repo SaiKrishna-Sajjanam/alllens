@@ -11,6 +11,9 @@ concurrency:
 
 jobs:
   notify:
+    # Scheduled runs move to the free server (docs/SERVER.md): set the repository variable
+    # SCHEDULE_ON_GITHUB=off to stop them here. "Run workflow" by hand always works.
+    if: github.event_name != 'schedule' || vars.SCHEDULE_ON_GITHUB != 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
