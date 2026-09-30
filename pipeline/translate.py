@@ -22,6 +22,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import sys
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -34,6 +35,7 @@ UI_LANGUAGES = ("en", "hi", "bn", "mr", "te", "ta", "gu", "ur", "kn", "or", "ml"
 FEED_DAYS = 7          # the feed shows a week; older translations are removed by cleanup
 BATCH_LINES = 40       # headlines per call (one call = one of Google's 5,000 a day)
 BATCH_CHARS = 3500
+PARAGRAPH = "\n\n"   # between headlines in one call (see AppsScriptTranslator)
 WORKERS = 4
 
 
@@ -71,9 +73,12 @@ class AppsScriptTranslator:
         self.session.headers["User-Agent"] = USER_AGENT
 
     def __call__(self, texts: list[str], source: str, target: str) -> list[str]:
+        # Headlines go as one text separated by blank lines: translating into Telugu (and other
+        # scripts) Google merges or splits single lines, but keeps blank-line paragraphs, so the
+        # answers stay paired with their headlines and a batch costs one call.
         # Apps Script answers a POST with a redirect to the result, which requests follows.
         r = self.session.post(self.url, json={"token": self.token, "source": source, "target": target,
-                                              "texts": texts}, timeout=90)
+                                              "texts": [PARAGRAPH.join(texts)]}, timeout=90)
         r.raise_for_status()
         try:
             body = r.json()
@@ -87,7 +92,8 @@ class AppsScriptTranslator:
             if "not currently supported" in msg.lower():
                 raise UnsupportedLanguage(msg)
             raise RuntimeError(f"translator: {msg}")
-        return [str(x) for x in body.get("translations", [])]
+        joined = "\n".join(str(x) for x in body.get("translations", []))
+        return re.split(r"\n\s*\n", joined.strip())
 
 
 class Budget:

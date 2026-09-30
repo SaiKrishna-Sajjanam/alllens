@@ -41,15 +41,18 @@ async function askTranslator(texts: string[], source: string, target: string): P
   const res = await fetch(TRANSLATE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: TRANSLATE_TOKEN, source, target, texts }),
+    // One text, headlines separated by blank lines: translating into Telugu and other scripts Google
+    // merges or splits single lines but keeps blank-line paragraphs (pipeline/translate.py does the same).
+    body: JSON.stringify({ token: TRANSLATE_TOKEN, source, target, texts: [texts.join('\n\n')] }),
     redirect: 'follow',       // Apps Script answers with a redirect to the result
     signal: AbortSignal.timeout(8000),
   });
   const body = (await res.json()) as { translations?: unknown[]; error?: string };
-  if (!Array.isArray(body.translations) || body.translations.length !== texts.length) {
+  const parts = Array.isArray(body.translations) ? body.translations.map(String).join('\n').trim().split(/\n\s*\n/) : [];
+  if (parts.length !== texts.length) {
     throw new Error(body.error ?? 'translator answer did not match');   // thrown, so never cached
   }
-  return body.translations.map((x) => oneLine(String(x)).slice(0, 400));
+  return parts.map((x) => oneLine(x).slice(0, 400));
 }
 
 const cachedTranslate = unstable_cache(callTranslator, ['headline-translation-v1'], { revalidate: 7 * 86_400 });

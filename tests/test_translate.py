@@ -111,6 +111,29 @@ class TranslateTests(unittest.TestCase):
         self.assertEqual(self.stored()[("as1", "en")], "[en] গুৱাহাটীত প্ৰবল বৰষুণ")
         self.assertIn(("", "en", ["গুৱাহাটীত প্ৰবল বৰষুণ"]), fake.calls)
 
+    def test_headlines_travel_as_blank_line_paragraphs(self):
+        # Translating into Telugu, Google splits or merges single lines but keeps blank-line
+        # paragraphs, so one call must still give one answer per headline.
+        sent = {}
+
+        class Answer:
+            def raise_for_status(self):
+                pass
+
+            def json(self):
+                return {"translations": ["మొదటి శీర్షిక", "రెండో భాగం", "", "రెండవ శీర్షిక"]}
+
+        class Session:
+            def post(self, url, json, timeout):
+                sent.update(json)
+                return Answer()
+
+        t = translate.AppsScriptTranslator("https://example.test/exec", "secret")
+        t.session = Session()
+        out = translate.translate_batch(t, ["First headline", "Second headline"], "en", "te", translate.Budget(1))
+        self.assertEqual(sent["texts"], ["First headline\n\nSecond headline"])
+        self.assertEqual(out, ["మొదటి శీర్షిక రెండో భాగం", "రెండవ శీర్షిక"])
+
     def test_card_headlines_go_first(self):
         jobs = translate.pending(self.db, ["ta"], NOW)
         self.assertEqual(jobs[0][0], "a1")          # the story's label article, although older
