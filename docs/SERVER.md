@@ -93,6 +93,10 @@ Fill in the value between the single quotes:
 
 - `DATABASE_URL`: Supabase → **Connect** → *Session pooler* URI, with your database password in
   it (GitHub secrets can't be read back, so copy it from Supabase again).
+- `TRANSLATE_URL` and `TRANSLATE_TOKEN`: the same values as in your `web/.env.local`
+  (docs/TRANSLATE.md). Without them the server's collect runs skip translation.
+- `TRANSLATE_LANGS`: remove the `#` at the start of the line if you use that GitHub variable
+  (e.g. `'te'`).
 
 Save: **Ctrl+O**, **Enter**, then **Ctrl+X**. The file is readable only by you on the server.
 
