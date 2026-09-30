@@ -1,9 +1,9 @@
 # Headlines in every reader's language (one-time setup, about 10 minutes)
 
-A reader who uses Vuaz in Tamil sees every headline in Tamil, whatever language the outlet
-wrote it in, marked **"Translated by Google · show the original"**. Only headlines are
-translated. Opening text stays as the outlet wrote it, and every link opens the original
-article or video; readers use their own phone's translator for those.
+A reader who uses Vuaz in Tamil sees every headline and snippet (the short opening text) in
+Tamil, whatever language the outlet wrote it in, marked **"Translated by Google · show the
+original"**. Articles are never translated: every link opens the original article or video,
+and readers use their own phone's translator for it.
 
 The translation is Google's free translator, reached through a small **Google Apps Script**
 that lives in your own Google account. No card and no cost. A normal Gmail account allows

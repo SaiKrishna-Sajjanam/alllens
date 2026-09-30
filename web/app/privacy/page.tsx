@@ -13,7 +13,7 @@ export default function PrivacyPage() {
       <ul>
         <li><strong>Without an account:</strong> your choices and the time of your last visit, in a cookie on your device.</li>
         <li><strong>With an account:</strong> the email address and name Google shares when you sign in with Google (used only to identify your account; we never send you email), your choices (state, app language, whether to hide crime and accident stories, feed order, preferred AI assistant), the stories you follow, source suggestions you send, and when you last visited.</li>
-        <li><strong>Translated headlines:</strong> to show headlines in your app language, the headline text (nothing about you) is sent to Google&rsquo;s translator through our own Google Apps Script. Articles you open are not translated by us; your phone&rsquo;s own translator works on your device.</li>
+        <li><strong>Translated headlines:</strong> to show headlines and opening text in your app language, that news text (nothing about you) is sent to Google&rsquo;s translator through our own Google Apps Script. Articles you open are not translated by us; your phone&rsquo;s own translator works on your device.</li>
         <li><strong>We do not store</strong> which articles you open, your location, or anything you ask an AI assistant. &ldquo;Ask your AI&rdquo; opens the assistant you choose directly; what you do there is between you and that service.</li>
       </ul>
       <h2>What we never do</h2>

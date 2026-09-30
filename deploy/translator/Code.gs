@@ -4,7 +4,7 @@
  *
  * Receives a few headlines, returns Google's translation of each, line for line. Uses
  * Google's built-in LanguageApp (free; about 5,000 calls a day on a normal Google account).
- * Only headline text is sent: nothing about readers, and nothing is stored here.
+ * Only news text is sent (headlines and short snippets): nothing about readers, and nothing is stored here.
  *
  * Request (POST, JSON): {"token": "...", "source": "te" or "" (detect), "target": "ta", "texts": ["...", ...]}
  * Answer (JSON):        {"translations": ["...", ...]}  or  {"error": "..."}

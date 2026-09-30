@@ -24,6 +24,32 @@ export function Translated({ as: Tag, className, original, originalLang, transla
   );
 }
 
+/** One report on a story page: headline and snippet in the reader's language (Google's
+ *  translation where it exists, marked), with a single toggle showing the source's own words. */
+export function ReportText({ title, snippet, originalLang, translatedTitle, translatedSnippet, lang }: {
+  title: string;
+  snippet: string | null;
+  originalLang: string | null | undefined;
+  translatedTitle: string | undefined;
+  translatedSnippet: string | undefined;
+  lang: Lang;
+}) {
+  const ol = originalLang ?? undefined;
+  return (
+    <div className="translated">
+      <h2 className="headline" lang={translatedTitle ? lang : ol}>{translatedTitle ?? title}</h2>
+      {snippet && <p className="snippet" lang={translatedSnippet ? lang : ol}>{translatedSnippet ?? snippet}</p>}
+      {(translatedTitle || translatedSnippet) && (
+        <details className="original small">
+          <summary>{t(lang, 'tr.showOriginal', { language: languageName(originalLang) })}</summary>
+          <p lang={ol}><strong>{title}</strong></p>
+          {snippet && <p lang={ol}>{snippet}</p>}
+        </details>
+      )}
+    </div>
+  );
+}
+
 /** Links open the original article or video. When it is in another language, say so, and point
  *  to the reader's own phone translator: the app never translates articles. */
 export function OwnTranslatorNote({ articleLang, lang }: { articleLang: string | null | undefined; lang: Lang }) {

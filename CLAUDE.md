@@ -8,7 +8,7 @@ Purpose: one version makes people believe; many versions make them think.
 ## The five product rules (every change must pass all five)
 1. **No judgement.** No bias labels, reliability scores or ratings of sources.
 2. **No voice of our own.** No summaries, captions, commentary or AI-written text shown to users. ("Ask your AI" only passes the article link to an assistant the user picks; never add a prompt.) The one machine-made text allowed is rule 3's headline translation.
-3. **No changed words.** Headlines and snippets appear exactly as the source published them, with the original link. Exception (owner's decision, 2026-10-01): **headlines only** are also shown in the reader's app language as Google's machine translation, always marked "Translated by Google · show the original", with the source's own words one tap away; a source's own headline in that language is used first. Snippets and articles are never translated; links open the original, with a note to use the phone's own translator.
+3. **No changed words.** Headlines and snippets appear exactly as the source published them, with the original link. Exception (owner's decision, 2026-10-01): **headlines and snippets** are also shown in the reader's app language as Google's machine translation, always marked "Translated by Google · show the original", with the source's own words one tap away; a source's own headline in that language is used first. Articles are never translated; links open the original, with a note to use the phone's own translator.
 4. **No hidden ranking.** Order is mechanical (time, number of sources, or random) and the user can change it.
 5. **Every lens included.** National and local, big and small, all languages we can reach; the source list is public.
 
@@ -23,7 +23,7 @@ Purpose: one version makes people believe; many versions make them think.
 - `sources.csv` column `topics` (e.g. `cinema`, `tech;business`) is only for section/specialist feeds whose every report is on that subject; general outlets leave it empty.
 
 ## Layout
-- `pipeline/`: collect, process (tagging.py, embed.py, grouping), translate (headlines into readers' app languages, table `headline_translations`, kept 7 days), cleanup, accounts (deletes accounts unused 12 months), check_feeds, review_groups, export_web_data
+- `pipeline/`: collect, process (tagging.py, embed.py, grouping), translate (headlines, then snippets, into readers' app languages, table `headline_translations`, kept 7 days), cleanup, accounts (deletes accounts unused 12 months), check_feeds, review_groups, export_web_data
 - `pipeline/data/`: places.json (36 states/UTs; each with its districts and main cities as names that identify the state, in English, Hindi, Telugu and its own script), topics.json (17 topics, keywords in every language we collect)
 - `web/`: Next.js 15 App Router + Supabase (`@supabase/ssr`). `lib/` holds pure logic (feed.ts, prefs.ts, ai.ts, i18n.ts, catalog.ts) with tests in `web/tests`; `lib/data.ts` is the only data access layer and falls back to `lib/demo.ts` sample data when Supabase env vars are missing.
 - `supabase/migrations/`, `supabase/tests/`
@@ -35,7 +35,7 @@ Purpose: one version makes people believe; many versions make them think.
 Python 3.11 (requests, psycopg, numpy; sentence-transformers for multilingual grouping) · Supabase (Postgres + Auth) · GitHub Actions · Next.js/React on Vercel · GitHub Actions for scheduled jobs (Oracle Cloud Always Free server as optional fallback) · everything on free tiers; Google sign-in only; the app sends no email · VS Code + Claude Code.
 
 ## Pilot scope
-Every state and union territory is treated alike (same rules, no default state, A-Z lists); sources are being added for all states in one batch (see Roadmap). Interface in English (default) + 11 Indian languages (`web/lib/i18n.ts`, `web/lib/locales/`, drafts needing native-speaker review); news in English and every Indian language we find feeds for (`web/lib/catalog.ts` LANGUAGES), all shown to every reader. Headlines are translated into the app language (`pipeline/translate.py` ahead of time, `web/lib/headlines.ts` fills gaps when a page opens; setup in docs/TRANSLATE.md); nothing else is translated. Web + installable app (PWA); store apps later.
+Every state and union territory is treated alike (same rules, no default state, A-Z lists); sources are being added for all states in one batch (see Roadmap). Interface in English (default) + 11 Indian languages (`web/lib/i18n.ts`, `web/lib/locales/`, drafts needing native-speaker review); news in English and every Indian language we find feeds for (`web/lib/catalog.ts` LANGUAGES), all shown to every reader. Headlines and snippets are translated into the app language (`pipeline/translate.py` ahead of time, `web/lib/headlines.ts` fills gaps when a page opens; setup in docs/TRANSLATE.md); nothing else is translated. Web + installable app (PWA); store apps later.
 
 ## Roadmap
 1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs, story page, compare, follow, Ask your AI, archive, sources + suggest, Google sign-in, settings, legal page templates)

@@ -1,7 +1,8 @@
 import 'server-only';
-// Headlines in the reader's app language. Only headlines: snippets and articles stay as each
-// source wrote them, and readers use their own phone's translator for those. Every
-// translation is shown marked as Google's, with the source's own words one tap away.
+// Headlines and snippets (the short opening text from the feed) in the reader's app language.
+// Articles are never translated: links open the original, and readers use their own phone's
+// translator for it. Every translation is shown marked as Google's, with the source's own
+// words one tap away.
 //
 // Most are ready in the database (pipeline/translate.py, every collect run). Anything still
 // missing is translated when a page first opens, through the same Google Apps Script
@@ -11,13 +12,14 @@ import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
 import { createClient } from './supabase/server';
 import { titleHash } from './titlehash';
-import type { Lang, Story } from './types';
+import type { Article, Lang, Story } from './types';
 
 // Server-only settings (no NEXT_PUBLIC_ prefix, so they never reach the browser).
 const TRANSLATE_URL = tidySetting('TRANSLATE_URL', runtimeSetting('TRANSLATE_URL'));
 const TRANSLATE_TOKEN = tidySetting('TRANSLATE_TOKEN', runtimeSetting('TRANSLATE_TOKEN'));
 const BATCH_LINES = 40;
-const MAX_NOW = 120;          // headlines translated while one page opens; the rest come from the next run
+const BATCH_CHARS = 3500;     // Google takes about 5,000 characters per call
+const MAX_NOW = 120;          // texts translated while one page opens; the rest come from the next run
 
 export interface Headline {
   id: string;                 // article id
@@ -25,7 +27,16 @@ export interface Headline {
   language: string | null;
 }
 
+type Kind = 'title' | 'snippet';
+interface Text {
+  id: string;
+  kind: Kind;
+  text: string;
+  language: string | null;
+}
+
 const oneLine = (s: string) => s.split(/\s+/).filter(Boolean).join(' ');
+const keyOf = (id: string, kind: Kind) => `${id}:${kind}`;
 
 async function callTranslator(texts: string[], source: string, target: string): Promise<string[]> {
   try {
@@ -41,7 +52,7 @@ async function askTranslator(texts: string[], source: string, target: string): P
   const res = await fetch(TRANSLATE_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    // One text, headlines separated by blank lines: translating into Telugu and other scripts Google
+    // One text, items separated by blank lines: translating into Telugu and other scripts Google
     // merges or splits single lines but keeps blank-line paragraphs (pipeline/translate.py does the same).
     body: JSON.stringify({ token: TRANSLATE_TOKEN, source, target, texts: [texts.join('\n\n')] }),
     redirect: 'follow',       // Apps Script answers with a redirect to the result
@@ -52,55 +63,78 @@ async function askTranslator(texts: string[], source: string, target: string): P
   if (parts.length !== texts.length) {
     throw new Error(body.error ?? 'translator answer did not match');   // thrown, so never cached
   }
-  return parts.map((x) => oneLine(x).slice(0, 400));
+  return parts.map((x) => oneLine(x).slice(0, 600));
 }
 
 const cachedTranslate = unstable_cache(callTranslator, ['headline-translation-v1'], { revalidate: 7 * 86_400 });
 
-async function translateNow(items: Headline[], lang: Lang): Promise<Record<string, string>> {
-  const out: Record<string, string> = {};
-  const groups = new Map<string, Headline[]>();
+async function translateNow(items: Text[], lang: Lang): Promise<Map<string, string>> {
+  const out = new Map<string, string>();
+  const batches: { source: string; items: Text[] }[] = [];
+  const open = new Map<string, { source: string; items: Text[] }>();
   for (const it of items.slice(0, MAX_NOW)) {
-    const key = it.language ?? '';
-    groups.set(key, [...(groups.get(key) ?? []), it]);
-  }
-  const calls: Promise<void>[] = [];
-  for (const [source, list] of groups) {
-    for (let i = 0; i < list.length; i += BATCH_LINES) {
-      const batch = list.slice(i, i + BATCH_LINES);
-      calls.push(
-        cachedTranslate(batch.map((b) => oneLine(b.title)), source, lang)
-          .then((texts) => batch.forEach((b, j) => { if (texts[j]) out[b.id] = texts[j]; }))
-          .catch(() => undefined),   // translator busy or not reachable: the original shows
-      );
+    const source = it.language ?? '';
+    let cur = open.get(source);
+    const size = (cur?.items ?? []).reduce((n, x) => n + oneLine(x.text).length, 0) + oneLine(it.text).length;
+    if (!cur || cur.items.length >= BATCH_LINES || size > BATCH_CHARS) {
+      cur = { source, items: [] };
+      open.set(source, cur);
+      batches.push(cur);
     }
+    cur.items.push(it);
   }
-  await Promise.all(calls);
+  await Promise.all(batches.map((b) =>
+    cachedTranslate(b.items.map((x) => oneLine(x.text)), b.source, lang)
+      .then((texts) => b.items.forEach((x, j) => { if (texts[j]) out.set(keyOf(x.id, x.kind), texts[j]); }))
+      .catch(() => undefined),   // translator busy or not reachable: the original shows
+  ));
   return out;
 }
 
-/** Translations into the reader's app language, keyed by article id, for the reports not
- *  already written in it. A report with no translation available shows its original words. */
-export async function translateHeadlines(items: Headline[], lang: Lang): Promise<Record<string, string>> {
-  const need = items.filter((i) => i.id && i.title && i.language !== lang);
-  const out: Record<string, string> = {};
+/** Translations into the reader's app language, keyed "articleId:title" / "articleId:snippet", for
+ *  texts not already written in it. A text with no translation available shows its original words. */
+async function translateTexts(items: Text[], lang: Lang): Promise<Map<string, string>> {
+  const need = items.filter((i) => i.id && oneLine(i.text) && i.language !== lang);
+  const out = new Map<string, string>();
   if (!need.length) return out;
   if (isConfigured()) {
     const supabase = await createClient();
     const { data } = await supabase
       .from('headline_translations')
-      .select('article_id,title,source_hash')
+      .select('article_id,title,source_hash,snippet,snippet_hash')
       .eq('lang', lang)
-      .in('article_id', need.map((i) => i.id));
-    const byId = new Map(need.map((i) => [i.id, i]));
-    for (const r of (data ?? []) as { article_id: string; title: string; source_hash: string }[]) {
-      const it = byId.get(r.article_id);
-      if (it && r.source_hash === titleHash(it.title)) out[r.article_id] = r.title;   // same wording only
+      .in('article_id', [...new Set(need.map((i) => i.id))]);
+    const wanted = new Map(need.map((i) => [keyOf(i.id, i.kind), i]));
+    type Row = { article_id: string; title: string | null; source_hash: string | null; snippet: string | null; snippet_hash: string | null };
+    for (const r of (data ?? []) as Row[]) {
+      const t = wanted.get(keyOf(r.article_id, 'title'));
+      if (t && r.title && r.source_hash === titleHash(t.text)) out.set(keyOf(r.article_id, 'title'), r.title);   // same wording only
+      const s = wanted.get(keyOf(r.article_id, 'snippet'));
+      if (s && r.snippet && r.snippet_hash === titleHash(s.text)) out.set(keyOf(r.article_id, 'snippet'), r.snippet);
     }
   }
-  const missing = need.filter((i) => !out[i.id]);
-  if (missing.length && TRANSLATE_URL && TRANSLATE_TOKEN) Object.assign(out, await translateNow(missing, lang));
+  // Headlines first, so a busy page still gets those.
+  const missing = need.filter((i) => !out.has(keyOf(i.id, i.kind))).sort((a, b) => (a.kind === b.kind ? 0 : a.kind === 'title' ? -1 : 1));
+  if (missing.length && TRANSLATE_URL && TRANSLATE_TOKEN) for (const [k, v] of await translateNow(missing, lang)) out.set(k, v);
   return out;
+}
+
+const pick = (m: Map<string, string>, kind: Kind) =>
+  Object.fromEntries([...m].filter(([k]) => k.endsWith(`:${kind}`)).map(([k, v]) => [k.slice(0, -kind.length - 1), v]));
+
+/** Headline translations by article id. */
+export async function translateHeadlines(items: Headline[], lang: Lang): Promise<Record<string, string>> {
+  return pick(await translateTexts(items.map((i) => ({ id: i.id, kind: 'title', text: i.title, language: i.language })), lang), 'title');
+}
+
+/** Headline and snippet translations of a story's reports, by article id. */
+export async function translateReports(articles: Article[], lang: Lang): Promise<{ titles: Record<string, string>; snippets: Record<string, string> }> {
+  const texts: Text[] = articles.flatMap((a) => [
+    { id: a.id, kind: 'title' as const, text: a.title, language: a.language },
+    ...(a.snippet ? [{ id: a.id, kind: 'snippet' as const, text: a.snippet, language: a.language }] : []),
+  ]);
+  const m = await translateTexts(texts, lang);
+  return { titles: pick(m, 'title'), snippets: pick(m, 'snippet') };
 }
 
 /** The card headline of each story in the reader's app language, keyed by story id. */

@@ -51,7 +51,12 @@ class TranslateTests(unittest.TestCase):
         os.environ.pop("TRANSLATE_LANGS", None)
 
     def stored(self):
-        return {(a, lang): t for a, lang, t in self.db.fetchall("SELECT article_id, lang, title FROM headline_translations")}
+        return {(a, lang): t for a, lang, t in self.db.fetchall(
+            "SELECT article_id, lang, title FROM headline_translations WHERE title IS NOT NULL")}
+
+    def stored_snippets(self):
+        return {(a, lang): t for a, lang, t in self.db.fetchall(
+            "SELECT article_id, lang, snippet FROM headline_translations WHERE snippet IS NOT NULL")}
 
     def test_every_headline_into_each_reader_language_but_its_own(self):
         os.environ["TRANSLATE_LANGS"] = "ta"
@@ -134,12 +139,28 @@ class TranslateTests(unittest.TestCase):
         self.assertEqual(sent["texts"], ["First headline\n\nSecond headline"])
         self.assertEqual(out, ["మొదటి శీర్షిక రెండో భాగం", "రెండవ శీర్షిక"])
 
+    def test_snippets_are_translated_after_the_headlines(self):
+        self.db.execute("UPDATE articles SET snippet = 'భారీ వర్షంతో రోడ్లు జలమయం' WHERE id = 'a1'")
+        jobs = translate.pending(self.db, ["en"], NOW)
+        self.assertEqual([j[3] for j in jobs], ["title", "snippet"], "headlines first, then snippets")
+        result = translate.run(self.db, Fake(), NOW)
+        self.assertEqual((result["headlines"], result["snippets"]), (1, 1))
+        self.assertEqual(self.stored()[("a1", "en")], "[en] హైదరాబాద్‌లో భారీ వర్షం")
+        self.assertEqual(self.stored_snippets()[("a1", "en")], "[en] భారీ వర్షంతో రోడ్లు జలమయం")
+        # Done once; a re-worded snippet alone is translated again, the headline is not.
+        self.db.execute("UPDATE articles SET snippet = 'నగరంలో కుండపోత' WHERE id = 'a1'")
+        again = Fake()
+        translate.run(self.db, again, NOW)
+        self.assertEqual([t for _, _, texts in again.calls for t in texts], ["నగరంలో కుండపోత"])
+        self.assertEqual(self.stored()[("a1", "en")], "[en] హైదరాబాద్‌లో భారీ వర్షం")
+
     def test_card_headlines_go_first(self):
         jobs = translate.pending(self.db, ["ta"], NOW)
         self.assertEqual(jobs[0][0], "a1")          # the story's label article, although older
 
     def test_cleanup_removes_week_old_translations(self):
-        self.db.execute("INSERT INTO headline_translations VALUES ('old', 'te', 'x', 'h', ?)", (NOW,))
+        self.db.execute("INSERT INTO headline_translations (article_id, lang, title, source_hash, translated_at) "
+                        "VALUES ('old', 'te', 'x', 'h', ?)", (NOW,))
         translate.run(self.db, Fake(), NOW)
         cleanup.run(self.db, NOW)
         self.assertNotIn(("old", "te"), self.stored())

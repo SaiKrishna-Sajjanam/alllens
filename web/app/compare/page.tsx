@@ -1,6 +1,6 @@
 import CompareView from '@/components/CompareView';
 import { getArticles, getViewer } from '@/lib/data';
-import { translateHeadlines } from '@/lib/headlines';
+import { translateReports } from '@/lib/headlines';
 
 export const metadata = { title: 'Side by side' };
 
@@ -12,6 +12,6 @@ export default async function ComparePage({ searchParams }: { searchParams: Sear
   const story = typeof sp.story === 'string' && /^[\w-]{1,80}$/.test(sp.story) ? sp.story : null;
   const [viewer, articles] = await Promise.all([getViewer(), getArticles(raw.split(','))]);
   const lang = viewer.prefs.uiLanguage;
-  const translated = await translateHeadlines(articles, lang);
+  const translated = await translateReports(articles, lang);
   return <CompareView articles={articles} lang={lang} storyId={story} aiAssistant={viewer.prefs.aiAssistant} translated={translated} />;
 }

@@ -9,7 +9,7 @@ import {
 import { formatTime, t } from '@/lib/i18n';
 import type { Article, Lang, Story, StorySort } from '@/lib/types';
 import AskAI from './AskAI';
-import { OwnTranslatorNote, Translated } from './Translated';
+import { OwnTranslatorNote, ReportText, Translated } from './Translated';
 import FollowButton from './FollowButton';
 import { BackIcon, ExternalIcon } from './Icons';
 import RemoteImage from './RemoteImage';
@@ -18,8 +18,9 @@ interface Props {
   story: Story;
   articles: Article[];
   lang: Lang;
-  /** Google's translations of the headlines into the app language, by article id. */
+  /** Google's translations into the app language, by article id. */
   translated: Record<string, string>;
+  translatedSnippets: Record<string, string>;
   aiAssistant: string;
   signedIn: boolean;
   following: boolean;
@@ -28,7 +29,7 @@ interface Props {
 const SORTS: StorySort[] = ['earliest', 'latest', 'random', 'source'];
 
 /** Every version of one story, as each source published it. */
-export default function StoryView({ story, articles, lang, translated, aiAssistant, signedIn, following }: Props) {
+export default function StoryView({ story, articles, lang, translated, translatedSnippets, aiAssistant, signedIn, following }: Props) {
   const [group, setGroup] = useState('all');
   const [language, setLanguage] = useState('all');
   const [sort, setSort] = useState<StorySort>('earliest');
@@ -108,7 +109,6 @@ export default function StoryView({ story, articles, lang, translated, aiAssista
         {shown.length === 0 && <p className="panel">{t(lang, 'story.noneMatch')}</p>}
         {shown.map((a) => {
           const name = a.sources?.name ?? a.source_id;
-          const lang2 = a.language ?? undefined;
           const checked = selected.includes(a.id);
           const video = groupsOf(a.sources?.type).includes('video');
           return (
@@ -131,9 +131,8 @@ export default function StoryView({ story, articles, lang, translated, aiAssista
                   {formatTime(a.published_at ?? a.fetched_at, lang)}
                 </time>
               </div>
-              <Translated as="h2" className="headline" original={a.title} originalLang={a.language}
-                translated={translated[a.id]} lang={lang} />
-              {a.snippet && <p className="snippet" lang={lang2}>{a.snippet}</p>}
+              <ReportText title={a.title} snippet={a.snippet} originalLang={a.language} translatedTitle={translated[a.id]}
+                translatedSnippet={translatedSnippets[a.id]} lang={lang} />
               {a.title_updated_at && (
                 <p className="small muted">{t(lang, 'story.updated', { time: formatTime(a.title_updated_at, lang) })}</p>
               )}

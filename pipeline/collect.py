@@ -135,7 +135,7 @@ def main(argv=None) -> int:
 
         if translate.configured():
             try:
-                print("Headlines translated:", translate.run(db))
+                print("Translated:", translate.run(db))
             except Exception as e:  # noqa: BLE001 - translation never fails the collection
                 db.rollback()
                 print(f"Headline translation skipped this run: {type(e).__name__}: {e}")

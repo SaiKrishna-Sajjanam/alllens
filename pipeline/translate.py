@@ -1,15 +1,15 @@
-"""Headlines in the reader's app language.
+"""Headlines and snippets in the reader's app language.
 
-A reader who uses the app in Tamil sees every headline in Tamil: a Telangana story from
-Eenadu shows Google's Tamil translation of Eenadu's Telugu headline, marked as a
-translation, with Eenadu's own words one tap away; the link still opens Eenadu's original
-article. Only headlines are translated. Snippets and articles are not: readers use their
-own phone's translator for those.
+A reader who uses the app in Tamil sees every headline and snippet (the short opening text
+the outlet puts in its feed) in Tamil: a Telangana story from Eenadu shows Google's Tamil
+translation of Eenadu's Telugu words, marked as a translation, with Eenadu's own words one
+tap away. Articles are never translated: the link opens Eenadu's original, and readers use
+their own phone's translator for it.
 
 Translations come from Google's free translator through a small Google Apps Script web app
 in the owner's Google account (deploy/translator/Code.gs; setup in docs/TRANSLATE.md).
-Each headline is translated once per language and kept for FEED_DAYS; a re-worded headline
-is translated again.
+Each text is translated once per language and kept for FEED_DAYS; a re-worded headline or
+snippet is translated again.
 
     python -m pipeline.translate          # also runs at the end of every collect
 
@@ -120,9 +120,9 @@ def translate_batch(fn, texts: list[str], source: str, target: str, budget: Budg
         out = fn(texts, "", target)      # let Google detect the language instead
         source = ""
     if len(out) == len(texts):
-        return [one_line(o)[:400] or None for o in out]
+        return [one_line(o)[:600] or None for o in out]
     if len(texts) == 1:
-        return [one_line(" ".join(out))[:400] or None]
+        return [one_line(" ".join(out))[:600] or None]
     mid = len(texts) // 2
     return translate_batch(fn, texts[:mid], source, target, budget) + \
         translate_batch(fn, texts[mid:], source, target, budget)
@@ -135,27 +135,30 @@ def target_languages(db: DB) -> list[str]:
     return [lang for lang in UI_LANGUAGES if lang in wanted]
 
 
-def pending(db: DB, targets: list[str], now: datetime) -> list[tuple[str, str, str, str]]:
-    """(article_id, source language, target, headline) still to translate: the headlines the
-    feed cards show first, then every other report's, newest first."""
+def pending(db: DB, targets: list[str], now: datetime) -> list[tuple[str, str, str, str, str]]:
+    """(article_id, source language, target, "title" or "snippet", text) still to translate, most
+    visible first: the headlines the feed cards show, every other headline, then the snippets
+    (the short opening text on story pages), each newest first."""
     since = now - timedelta(days=FEED_DAYS)
-    arts = db.fetchall("SELECT id, title, language, fetched_at FROM articles "
+    arts = db.fetchall("SELECT id, title, snippet, language, fetched_at FROM articles "
                        "WHERE fetched_at >= ? AND story_id IS NOT NULL", (since,))
-    done = {(aid, lang): h for aid, lang, h in db.fetchall(
-        "SELECT t.article_id, t.lang, t.source_hash FROM headline_translations t "
+    done = {(aid, lang): (th, sh) for aid, lang, th, sh in db.fetchall(
+        "SELECT t.article_id, t.lang, t.source_hash, t.snippet_hash FROM headline_translations t "
         "JOIN articles a ON a.id = t.article_id WHERE a.fetched_at >= ?", (since,))}
     labels = {r[0] for r in db.fetchall(
         "SELECT label_article_id FROM stories WHERE last_article_at >= ? AND label_article_id IS NOT NULL", (since,))}
-    arts.sort(key=lambda a: (a[0] not in labels, -(to_datetime(a[3]) or since).timestamp()))
-    out = []
-    for aid, title, language, _ in arts:
-        text = one_line(title)
-        if not text:
-            continue
+    arts.sort(key=lambda a: (a[0] not in labels, -(to_datetime(a[4]) or since).timestamp()))
+    titles, snippets = [], []
+    for aid, title, snippet, language, _ in arts:
         for target in targets:
-            if target != language and done.get((aid, target)) != title_hash(title):
-                out.append((aid, language or "", target, title))
-    return out
+            if target == language:
+                continue
+            title_done, snippet_done = done.get((aid, target), (None, None))
+            if one_line(title) and title_done != title_hash(title):
+                titles.append((aid, language or "", target, "title", title))
+            if one_line(snippet) and snippet_done != title_hash(snippet):
+                snippets.append((aid, language or "", target, "snippet", snippet))
+    return titles + snippets
 
 
 def batches(jobs):
@@ -164,7 +167,8 @@ def batches(jobs):
     for job in jobs:
         key = (job[1], job[2])
         cur = open_.get(key)
-        if cur is None or len(cur) >= BATCH_LINES or sum(len(one_line(j[3])) for j in cur) + len(job[3]) > BATCH_CHARS:
+        size = len(one_line(job[4]))
+        if cur is None or len(cur) >= BATCH_LINES or sum(len(one_line(j[4])) for j in cur) + size > BATCH_CHARS:
             cur = open_[key] = []
             order.append(cur)
         cur.append(job)
@@ -182,33 +186,34 @@ def run(db: DB, translator=None, now: datetime | None = None, max_calls: int | N
     halt = threading.Event()   # after the first failure (quota, network) the rest waits for the next run
 
     def work(batch):
-        _, source, target, _ = batch[0]
+        source, target = batch[0][1], batch[0][2]
         if halt.is_set():
             return batch, None, None
         try:
-            return batch, translate_batch(translator, [one_line(j[3]) for j in batch], source, target, budget), None
+            return batch, translate_batch(translator, [one_line(j[4]) for j in batch], source, target, budget), None
         except Exception as e:  # noqa: BLE001 - translation must never break collection
             halt.set()
             return batch, None, e
 
-    translated, stopped = 0, None
+    counts, stopped = {"title": 0, "snippet": 0}, None
     with ThreadPoolExecutor(WORKERS) as pool:
         for batch, result, err in pool.map(work, todo):
             if result is None:
                 stopped = stopped or (f"{type(err).__name__}: {err}" if err else None)
                 continue
-            rows = [(aid, target, text, title_hash(title), now)
-                    for (aid, _, target, title), text in zip(batch, result) if text]
-            db.executemany(
-                """INSERT INTO headline_translations (article_id, lang, title, source_hash, translated_at)
-                   VALUES (?, ?, ?, ?, ?)
-                   ON CONFLICT (article_id, lang) DO UPDATE SET title = excluded.title,
-                       source_hash = excluded.source_hash, translated_at = excluded.translated_at""",
-                rows)
-            translated += len(rows)
+            for kind, column, hash_column in (("title", "title", "source_hash"), ("snippet", "snippet", "snippet_hash")):
+                rows = [(aid, target, text, title_hash(original), now)
+                        for (aid, _, target, k, original), text in zip(batch, result) if text and k == kind]
+                db.executemany(
+                    f"""INSERT INTO headline_translations (article_id, lang, {column}, {hash_column}, translated_at)
+                        VALUES (?, ?, ?, ?, ?)
+                        ON CONFLICT (article_id, lang) DO UPDATE SET {column} = excluded.{column},
+                            {hash_column} = excluded.{hash_column}, translated_at = excluded.translated_at""",
+                    rows)
+                counts[kind] += len(rows)
     db.commit()
-    return {"languages": targets, "translated": translated, "left_for_next_run": len(jobs) - translated,
-            "stopped": stopped}
+    return {"languages": targets, "headlines": counts["title"], "snippets": counts["snippet"],
+            "left_for_next_run": len(jobs) - counts["title"] - counts["snippet"], "stopped": stopped}
 
 
 def main() -> int:
@@ -217,7 +222,7 @@ def main() -> int:
         return 0
     db = DB()
     db.init_schema()
-    print("Headlines translated:", run(db))
+    print("Translated:", run(db))
     db.close()
     return 0
 

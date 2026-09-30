@@ -9,7 +9,8 @@ import { OwnTranslatorNote, Translated } from './Translated';
 /** 2-3 reports next to each other, exactly as published (headlines also in the reader's
  *  language, marked as Google's translation). No commentary. */
 export default function CompareView({ articles, lang, storyId, aiAssistant, translated }: {
-  articles: Article[]; lang: Lang; storyId: string | null; aiAssistant: string; translated: Record<string, string>;
+  articles: Article[]; lang: Lang; storyId: string | null; aiAssistant: string;
+  translated: { titles: Record<string, string>; snippets: Record<string, string> };
 }) {
   const back = storyId ? `/story/${storyId}` : '/feed';
   if (articles.length < 2) {
@@ -45,11 +46,12 @@ export default function CompareView({ articles, lang, storyId, aiAssistant, tran
               </div>
               <span className="section-title">{t(lang, 'compare.headline')}</span>
               <Translated as="p" className="headline" original={a.title} originalLang={a.language}
-                translated={translated[a.id]} lang={lang} />
+                translated={translated.titles[a.id]} lang={lang} />
               {a.snippet && (
                 <>
                   <span className="section-title">{t(lang, 'compare.snippet')}</span>
-                  <p className="small" lang={l} style={{ lineHeight: 1.6 }}>{a.snippet}</p>
+                  <Translated as="p" className="small" original={a.snippet} originalLang={l}
+                    translated={translated.snippets[a.id]} lang={lang} />
                 </>
               )}
               <a href={a.url} target="_blank" rel="noopener noreferrer" className="row" style={{ minHeight: 44, fontWeight: 600 }}>

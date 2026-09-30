@@ -111,6 +111,10 @@ class DB:
         """
         if self.kind == "sqlite":
             text = SCHEMA_SQL.read_text(encoding="utf-8").replace("TEXT[]", "TEXT").replace("JSONB", "TEXT")
+            # A local.db from before snippet translations: its (regenerable) translations table is rebuilt.
+            cols = {r[1] for r in self.conn.execute("PRAGMA table_info(headline_translations)")}
+            if cols and "snippet" not in cols:
+                self.conn.execute("DROP TABLE headline_translations")
             self.conn.executescript(text)
             # SQLite has no "add column if not exists": upgrade an older local.db by hand.
             for table, column in (("articles", "image_url"), ("stories", "image_url"), ("stories", "image_source"),
