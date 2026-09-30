@@ -9,6 +9,7 @@
   --line-strong: #cfc7b6;
   --chip: #eae4d7;
   --accent: #1d4e89;
+  --logo-ink: #0b2550;
   --accent-hover: #153a66;
   --accent-ink: #ffffff;
   --accent-soft: #e4ecf6;
@@ -37,6 +38,7 @@
     --line-strong: #4a473e;
     --chip: #2a2822;
     --accent: #8db4e8;
+    --logo-ink: #ede8dc;
     --accent-hover: #b3cdf0;
     --accent-ink: #0e1a2b;
     --accent-soft: #1e2c3f;
@@ -91,7 +93,8 @@ p { margin: 0; }
 /* ------------------------------------------------------------------ header */
 .site-header { background: var(--bg); border-bottom: 1px solid var(--line); }
 .site-header .inner { max-width: 1080px; margin: 0 auto; padding: 10px 16px; display: flex; align-items: center; gap: 12px; }
-.brand { font-family: var(--serif); font-size: 24px; font-weight: 600; color: var(--accent); text-decoration: none; margin-right: auto; }
+.brand { display: inline-flex; align-items: center; text-decoration: none; margin-right: auto; padding: 4px 0; }
+.logo { display: block; height: 22px; width: auto; aspect-ratio: 1444 / 280; }
 .header-actions { display: flex; align-items: center; gap: 8px; }
 .tabbar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
