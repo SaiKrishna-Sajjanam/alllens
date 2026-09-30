@@ -94,6 +94,31 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM runs")[0][0], 2)
         self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM sources")[0][0], 5)
 
+    def test_database_calls_do_not_grow_with_articles(self):
+        # The production database is far from the GitHub runners (~0.25 s per call), so a call
+        # per article turned a 2,000-article run into an hour. Batches keep calls roughly constant.
+        from pipeline import process
+        from pipeline.embed import LexicalEmbedder
+
+        items = "".join(
+            f"<item><title>Report {i} on subject {i * 7919 % 1000}</title><link>https://big.test/a/{i}</link>"
+            f"<description>Snippet {i}</description><pubDate>Tue, 29 Sep 2026 10:{i % 60:02d}:00 +0000</pubDate></item>"
+            for i in range(300))
+        feed = f'<?xml version="1.0"?><rss version="2.0"><channel><title>Big</title>{items}</channel></rss>'.encode()
+        big = [Source("big", "Big", "national", "digital", "en", "India", "https://big.test/feed", "live")]
+
+        calls = []
+        execute = self.db.execute
+        self.db.execute = lambda sql, params=(): calls.append(sql) or execute(sql, params)
+        for hours in (0, 2):                                  # first run stores; second finds them stored
+            calls.clear()
+            r = collect.run(self.db, big, fetcher=lambda u: (200, feed), now=NOW + timedelta(hours=hours))
+            p = process.run(self.db, embedder=LexicalEmbedder(), now=NOW + timedelta(hours=hours))
+            self.assertLess(len(calls), 30, f"run {hours}: {len(calls)} single database calls")
+        self.assertEqual((r["new_articles"], p["grouped"]), (0, 0))
+        self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM articles WHERE story_id IS NULL")[0][0], 0)
+        self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM articles")[0][0], 300)
+
     def test_cleanup_rolls_up_then_deletes(self):
         collect.run(self.db, SOURCES, fetcher=fake_fetch, now=NOW)
         # Nothing is old yet.

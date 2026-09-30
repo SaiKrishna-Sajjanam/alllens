@@ -39,30 +39,26 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
     Returns (new articles, updated headlines).
     """
     cutoff = now - timedelta(days=RETENTION_DAYS)
-    new = updated = 0
-    for it in items:
-        if it.published_at and it.published_at < cutoff:
-            continue
-        aid = article_id(it.url)
-        cur = db.execute(
-            """INSERT INTO articles (id, source_id, title, snippet, url, published_at, fetched_at,
-                                     language, region, categories)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-               ON CONFLICT (id) DO NOTHING""",
-            (aid, src.id, it.title, make_snippet(it.summary), normalise_url(it.url),
-             it.published_at, now, src.language, src.region, it.categories),
-        )
-        if cur.rowcount and cur.rowcount > 0:
-            new += 1
-            continue
-        # Already stored: rule 3 says show the source's current words, so follow edits.
-        cur = db.execute(
-            """UPDATE articles SET title = ?, title_updated_at = ?, processed_at = NULL
-               WHERE id = ? AND title <> ?""",
-            (it.title, now, aid, it.title),
-        )
-        updated += max(cur.rowcount, 0)
-    return new, updated
+    fresh = {article_id(it.url): it for it in items if not (it.published_at and it.published_at < cutoff)}
+    stored = dict(db.fetch_in("SELECT id, title FROM articles WHERE id IN ({ids})", fresh))
+
+    new = [(aid, src.id, it.title, make_snippet(it.summary), normalise_url(it.url),
+            it.published_at, now, src.language, src.region, it.categories)
+           for aid, it in fresh.items() if aid not in stored]
+    db.executemany(
+        """INSERT INTO articles (id, source_id, title, snippet, url, published_at, fetched_at,
+                                 language, region, categories)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (id) DO NOTHING""",
+        new,
+    )
+    # Already stored: rule 3 says show the source's current words, so follow edits.
+    reworded = [(it.title, now, aid) for aid, it in fresh.items() if aid in stored and stored[aid] != it.title]
+    db.executemany(
+        "UPDATE articles SET title = ?, title_updated_at = ?, processed_at = NULL WHERE id = ?",
+        reworded,
+    )
+    return len(new), len(reworded)
 
 
 def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: datetime | None = None) -> dict:

@@ -34,23 +34,21 @@ def run(db: DB, now: datetime | None = None) -> dict:
         counts[key] = counts.get(key, 0) + 1
         meta[key] = (language, region)
 
-    for (day, source_id), n in counts.items():
-        language, region = meta[(day, source_id)]
-        db.execute(
-            """INSERT INTO coverage_counts (day, source_id, language, region, articles)
-               VALUES (?, ?, ?, ?, ?)
-               ON CONFLICT (day, source_id) DO UPDATE SET articles = coverage_counts.articles + excluded.articles""",
-            (day, source_id, language, region, n),
-        )
+    db.executemany(
+        """INSERT INTO coverage_counts (day, source_id, language, region, articles)
+           VALUES (?, ?, ?, ?, ?)
+           ON CONFLICT (day, source_id) DO UPDATE SET articles = coverage_counts.articles + excluded.articles""",
+        [(day, source_id, *meta[(day, source_id)], n) for (day, source_id), n in counts.items()],
+    )
     affected = {r[0] for r in db.fetchall(
         "SELECT DISTINCT story_id FROM articles WHERE fetched_at < ? AND story_id IS NOT NULL", (cutoff,))}
     deleted = db.execute("DELETE FROM articles WHERE fetched_at < ?", (cutoff,)).rowcount
 
     # Stories that lost articles get fresh counts; stories left empty are removed.
-    from pipeline.process import _sources, refresh_story
+    from pipeline.process import _sources, refresh_stories
 
     sources = _sources(db)
-    removed = sum(0 if refresh_story(db, sid, sources, now) else 1 for sid in affected)
+    removed = refresh_stories(db, affected, sources, now)
     removed += db.execute(
         "DELETE FROM stories WHERE NOT EXISTS (SELECT 1 FROM articles a WHERE a.story_id = stories.id)").rowcount
     db.commit()

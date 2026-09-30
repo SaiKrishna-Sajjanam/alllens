@@ -88,6 +88,22 @@ class DB:
     def fetchall(self, sql: str, params: tuple | list = ()):
         return self.execute(sql, params).fetchall()
 
+    def executemany(self, sql: str, rows) -> None:
+        """One statement, many parameter rows. On Postgres psycopg pipelines them, so a
+        batch costs about one network round trip instead of one per row (the database
+        is in Mumbai, the GitHub runners are not)."""
+        rows = [self._adapt(r) for r in rows]
+        if rows:
+            self.conn.cursor().executemany(self._sql(sql), rows)
+
+    def fetch_in(self, sql: str, ids, chunk: int = 500) -> list:
+        """Run `sql` containing `IN ({ids})` for many ids, a chunk at a time."""
+        ids, out = list(ids), []
+        for i in range(0, len(ids), chunk):
+            part = ids[i:i + chunk]
+            out += self.fetchall(sql.format(ids=", ".join("?" * len(part))), part)
+        return out
+
     def init_schema(self):
         """SQLite: the portable pipeline schema. Postgres: every Supabase migration, in order.
 
@@ -129,12 +145,6 @@ def as_dict(value) -> dict:
         return value
     return json.loads(value)
 
-    def commit(self):
-        self.conn.commit()
-
-    def close(self):
-        self.conn.close()
-
 
 # --------------------------------------------------------------------------
 # Sources
@@ -168,15 +178,14 @@ def save_sources(sources: list[Source], path: Path = SOURCES_CSV) -> None:
 
 def sync_sources(db: DB, sources: list[Source]) -> None:
     now = datetime.now(timezone.utc)
-    for s in sources:
-        db.execute(
-            """INSERT INTO sources (id, name, layer, type, language, region, feed_url, status, updated_at)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-               ON CONFLICT (id) DO UPDATE SET name = excluded.name, layer = excluded.layer,
-                 type = excluded.type, language = excluded.language, region = excluded.region,
-                 feed_url = excluded.feed_url, status = excluded.status, updated_at = excluded.updated_at""",
-            (s.id, s.name, s.layer, s.type, s.language, s.region, s.feed_url or None, s.status, now),
-        )
+    db.executemany(
+        """INSERT INTO sources (id, name, layer, type, language, region, feed_url, status, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+           ON CONFLICT (id) DO UPDATE SET name = excluded.name, layer = excluded.layer,
+             type = excluded.type, language = excluded.language, region = excluded.region,
+             feed_url = excluded.feed_url, status = excluded.status, updated_at = excluded.updated_at""",
+        [(s.id, s.name, s.layer, s.type, s.language, s.region, s.feed_url or None, s.status, now) for s in sources],
+    )
     db.commit()
 
 
