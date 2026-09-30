@@ -17,7 +17,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
       <h1>{t(lang, 'settings.title')}</h1>
       <section className="stack" aria-labelledby="reading">
         <h2 id="reading">{t(lang, 'settings.reading')}</h2>
-        <PrefsForm initial={viewer.prefs} lang={lang} mode="settings" signedIn={!!viewer.user} />
+        <PrefsForm initial={viewer.prefs} lang={lang} mode="settings" />
       </section>
 
       <section className="panel stack" aria-labelledby="account">

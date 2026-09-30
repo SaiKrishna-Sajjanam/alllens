@@ -2,19 +2,16 @@
 
 ```mermaid
 flowchart LR
-  subgraph GH[GitHub Actions, scheduled]
+  subgraph GH[Free Oracle Cloud server, scheduled]
     C[collect.py<br/>every 2 h] --> P[process.py<br/>tag + group]
-    N[notify.py<br/>hourly]
     X[cleanup.py + accounts.py<br/>nightly]
   end
   F[(Public RSS / Atom feeds<br/>sources.csv)] --> C
   P --> DB[(Supabase Postgres<br/>stories, articles, profiles)]
-  N --> DB
   X --> DB
-  N --> E[Resend email]
   W[Next.js web app<br/>on Vercel] -- reads news, reader data<br/>under row-level security --> DB
   U((Reader)) --> W
-  W -- sign-in --> A[Supabase Auth]
+  W -- Google sign-in --> A[Supabase Auth]
   W -- "Ask your AI": link only --> AI[Reader's own assistant]
 ```
 
@@ -26,8 +23,7 @@ flowchart LR
 4. **Group** (`pipeline/process.py`): each new article joins the most similar story updated within 72 hours if its cosine similarity to both the story's running mean and the story's first report is ≥ threshold (0.905 multilingual, 0.52 lexical), else starts a new one. The first-report check stops a story's mean drifting towards "news in general" and swallowing unrelated reports. After changing the rule, run Collect news with **regroup** ticked (articles are kept, stories rebuilt). After editing places, topics or source topics, tick **retag** instead (stories and follows kept).
 5. **Refresh story**: label = earliest headline, plus the earliest per language (the app shows one in the reader's language); counts, languages, source kinds; places kept if ≥40% of reports name them; a story that names no place but is reported mostly (at least half) by one state's own outlets belongs to that state; scope state/national, or international when no Indian place is named and at least half the reports come from world-news feeds (`sources.csv` layer `international`); topics kept if ≥30% of reports carry them.
 6. **Read** (web app): three tabs. International = scope international; National = every Indian story (central, nationwide and all states); State = the reader's state (any state or union territory; none until chosen; switchable on the tab). Filters by topics or own interests (text search), languages, kinds of source, hide crime and accidents. Order: most sources, latest, or seeded random.
-7. **Notify**: once a day at the reader's time: followed-story updates, then state, national, international; top 5 each by source count; headlines as published.
-8. **Retain**: articles deleted after 30 days (counts kept in `coverage_counts`); empty stories removed; inactive accounts warned at ~11 months, deleted 30 days later unless used.
+7. **Retain**: articles deleted after 30 days (counts kept in `coverage_counts`); empty stories removed; accounts unused for 12 months deleted (the app sends no email, so no warning; stated on the Privacy page).
 
 ## Security model (supabase/migrations/20261001000200_app.sql)
 
@@ -35,7 +31,7 @@ flowchart LR
 | --- | --- | --- | --- |
 | sources, stories, articles | read | read | read/write |
 | vectors, runs, coverage_counts | none | none | read/write |
-| profiles, follows | none | own rows only | read (emails, retention) |
+| profiles, follows | none | own rows only | read (retention) |
 | source_suggestions | none | add + read own | read |
 
 Tested by `supabase/tests/rls_test.sql` on every push.

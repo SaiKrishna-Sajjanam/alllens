@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import LoginForm from '@/components/LoginForm';
 import { getViewer } from '@/lib/data';
-import { PHONE_LOGIN, SITE_URL } from '@/lib/env';
+import { SITE_URL } from '@/lib/env';
 import { t } from '@/lib/i18n';
 import { safeNextPath } from '@/lib/paths';
 
@@ -22,7 +22,7 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
         <p className="muted">{t(lang, 'login.intro')}</p>
       </div>
       <div className="panel">
-        <LoginForm lang={lang} next={next} siteUrl={SITE_URL} phoneEnabled={PHONE_LOGIN}
+        <LoginForm lang={lang} next={next} siteUrl={SITE_URL}
           configured={viewer.configured} initialError={sp.error === '1'} />
       </div>
     </div>

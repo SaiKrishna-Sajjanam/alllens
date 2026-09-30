@@ -5,14 +5,14 @@
 All-Lens collects public news feeds (national and state outlets for every state and union territory, TV sites, digital outlets, official YouTube channels, Reddit communities), groups reports of the same incident into one story across languages, and shows every version side by side with a link to each original. No summaries, no bias labels, no hidden ranking.
 
 - A **website** that also installs on phones as an app (home-screen icon, full screen).
-- A **pipeline** that runs on a schedule: collect → tag places and topics → group into stories → daily emails → 30-day clean-up.
+- A **pipeline** that runs on a schedule: collect → tag places and topics → group into stories → 30-day clean-up. The app never sends email.
 
 ## What's in this repo
 
 | Folder | What it is |
 | --- | --- |
 | `web/` | The website/app: Next.js (React), signs in with Supabase. Runs on **sample stories** until Supabase is connected. |
-| `pipeline/` | Python jobs: `collect`, `process` (tagging + grouping), `notify` (daily email), `cleanup` (retention), `accounts`, `check_feeds`, `review_groups`. |
+| `pipeline/` | Python jobs: `collect`, `process` (tagging + grouping), `cleanup` (retention), `accounts` (deletes accounts unused 12 months), `check_feeds`, `review_groups`. |
 | `pipeline/data/` | Place list (36 states/UTs, each with its districts and main cities in English and its own script) and topic keywords. Edit freely. |
 | `sources.csv` | Every outlet we collect from. Edit to add or remove sources. |
 | `supabase/migrations/` | Database tables and security rules (who can read/write what). |
@@ -31,7 +31,7 @@ npm install
 npm run dev
 ```
 
-Open http://localhost:3000. You will see real sample headlines from 29 Sep 2026 with a yellow "sample stories" banner. Everything works except sign-in, following and emails, which need Supabase (see `docs/SETUP.md`).
+Open http://localhost:3000. You will see real sample headlines from 29 Sep 2026 with a yellow "sample stories" banner. Everything works except Google sign-in and following, which need Supabase (see `docs/SETUP.md`).
 
 ## Run the pipeline on your computer
 

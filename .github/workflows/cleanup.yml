@@ -14,9 +14,6 @@ jobs:
     timeout-minutes: 15
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      SITE_URL: ${{ secrets.SITE_URL }}
-      RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-      EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -24,5 +21,5 @@ jobs:
           python-version: "3.11"
           cache: pip
       - run: pip install -r requirements.txt
-      - name: Delete articles older than 30 days, keep counts; warn/delete long-inactive accounts
+      - name: Delete articles older than 30 days, keep counts; delete accounts unused for 12 months
         run: python -m pipeline.cleanup

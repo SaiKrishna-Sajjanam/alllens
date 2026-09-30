@@ -36,4 +36,4 @@ echo
 echo "Setup done. Next (docs/SERVER.md):"
 echo "  1. nano $ENV_FILE          put your keys in; save with Ctrl+O, Enter, Ctrl+X"
 echo "  2. bash $APP/deploy/server/run.sh collect      a first run, to check"
-echo "  3. sudo systemctl enable --now alllens-collect.timer alllens-notify.timer alllens-cleanup.timer"
+echo "  3. sudo systemctl enable --now alllens-collect.timer alllens-cleanup.timer"

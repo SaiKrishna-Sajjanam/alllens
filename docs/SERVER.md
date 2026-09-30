@@ -1,9 +1,9 @@
 # Free server for the scheduled jobs (Oracle Cloud "Always Free")
 
 GitHub's free plan gives a private repository 2,000 Actions minutes a month; collecting from
-hundreds of feeds every 2 hours, plus the hourly email check, needs more. Oracle Cloud's
+hundreds of feeds every 2 hours needs more. Oracle Cloud's
 Always Free tier includes a small server that never expires and has no run limit. The
-**collect**, **notify** (emails) and **cleanup** jobs run there; GitHub keeps running
+**collect** and **cleanup** jobs run there; GitHub keeps running
 **Tests** on every push, and the website stays on Vercel.
 
 The server pulls the latest code from GitHub before every run, so after setup you just
@@ -86,13 +86,10 @@ bash ~/alllens/deploy/server/setup.sh
 nano ~/alllens.env
 ```
 
-Fill in the values between the single quotes:
+Fill in the value between the single quotes:
 
 - `DATABASE_URL`: Supabase → **Connect** → *Session pooler* URI, with your database password in
   it (GitHub secrets can't be read back, so copy it from Supabase again).
-- `SITE_URL`: your site address (after the Vercel step; can stay empty until then).
-- `RESEND_API_KEY`, `EMAIL_FROM`: after the email step; while empty, the email job only
-  prints what it would send.
 
 Save: **Ctrl+O**, **Enter**, then **Ctrl+X**. The file is readable only by you on the server.
 
@@ -106,7 +103,7 @@ The first run downloads the grouping model (~5 min). It ends with `Feeds OK: ...
 `Tagged ... grouped ...`. Then:
 
 ```bash
-sudo systemctl enable --now alllens-collect.timer alllens-notify.timer alllens-cleanup.timer
+sudo systemctl enable --now alllens-collect.timer alllens-cleanup.timer
 systemctl list-timers 'alllens*'
 ```
 
@@ -117,7 +114,7 @@ The list shows the next run of each job (times in UTC; India is UTC+5:30).
 GitHub repository → **Settings → Secrets and variables → Actions → Variables** →
 *New repository variable*: name `SCHEDULE_ON_GITHUB`, value `off`.
 
-GitHub then skips its scheduled collect/email/clean-up runs (skipped runs use no minutes).
+GitHub then skips its scheduled collect and clean-up runs (skipped runs use no minutes).
 *Run workflow* by hand still works there, as a backup. To go back, delete the variable.
 
 ---
@@ -131,8 +128,7 @@ GitHub then skips its scheduled collect/email/clean-up runs (skipped runs use no
 | Run collect now | `sudo systemctl start alllens@collect` |
 | Re-tag stored articles (after editing places/topics) | `bash ~/alllens/deploy/server/run.sh collect --retag` |
 | Regroup all stories | `bash ~/alllens/deploy/server/run.sh collect --regroup` |
-| Test emails without sending | `bash ~/alllens/deploy/server/run.sh notify --dry-run` |
 | Check feeds | `bash ~/alllens/deploy/server/run.sh check_feeds` |
 | Change a key | `nano ~/alllens.env` |
-| Pause everything | `sudo systemctl stop alllens-collect.timer alllens-notify.timer alllens-cleanup.timer` |
+| Pause everything | `sudo systemctl stop alllens-collect.timer alllens-cleanup.timer` |
 | Keep the server's system up to date (monthly) | `sudo apt-get update && sudo apt-get upgrade -y && sudo reboot` |

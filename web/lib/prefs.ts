@@ -19,9 +19,6 @@ export const DEFAULT_PREFS: Prefs = {
   uiLanguage: 'en',
   aiAssistant: 'chatgpt',
   feedSort: 'sources',
-  catchupTime: '19:30',
-  notifyDigest: true,
-  notifyFollowed: true,
 };
 
 const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
@@ -33,7 +30,6 @@ export function cleanPrefs(input: unknown): Prefs {
   const o = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>;
   const langs = strList(o.languages, (c) => LANGUAGES.some((l) => l.code === c), LANGUAGES.length);
   const custom = strList(o.customTopics, (s) => s.trim().length >= 2 && s.length <= 60, 20)?.map((s) => s.trim());
-  const time = typeof o.catchupTime === 'string' && /^([01]\d|2[0-3]):[0-5]\d$/.test(o.catchupTime) ? o.catchupTime : undefined;
   const state = typeof o.state === 'string' && isState(o.state) ? o.state : DEFAULT_PREFS.state;
   return {
     topics: strList(o.topics, isTopic, 20) ?? DEFAULT_PREFS.topics,
@@ -46,9 +42,6 @@ export function cleanPrefs(input: unknown): Prefs {
     aiAssistant: typeof o.aiAssistant === 'string' && AI_ASSISTANTS.some((a) => a.id === o.aiAssistant)
       ? o.aiAssistant : DEFAULT_PREFS.aiAssistant,
     feedSort: SORTS.includes(o.feedSort as FeedSort) ? (o.feedSort as FeedSort) : DEFAULT_PREFS.feedSort,
-    catchupTime: time ?? DEFAULT_PREFS.catchupTime,
-    notifyDigest: typeof o.notifyDigest === 'boolean' ? o.notifyDigest : DEFAULT_PREFS.notifyDigest,
-    notifyFollowed: typeof o.notifyFollowed === 'boolean' ? o.notifyFollowed : DEFAULT_PREFS.notifyFollowed,
   };
 }
 
@@ -77,9 +70,6 @@ export interface ProfileRow {
   ui_language: string;
   ai_assistant: string;
   feed_sort: string;
-  catchup_time: string;
-  notify_digest: boolean;
-  notify_followed: boolean;
   last_visit_at?: string | null;
 }
 
@@ -94,9 +84,6 @@ export function prefsFromProfile(row: Partial<ProfileRow>): Prefs {
     uiLanguage: row.ui_language,
     aiAssistant: row.ai_assistant,
     feedSort: row.feed_sort,
-    catchupTime: typeof row.catchup_time === 'string' ? row.catchup_time.slice(0, 5) : undefined,
-    notifyDigest: row.notify_digest,
-    notifyFollowed: row.notify_followed,
   });
 }
 
@@ -113,8 +100,5 @@ export function profileFromPrefs(userId: string, p: Prefs): ProfileRow {
     ui_language: p.uiLanguage,
     ai_assistant: p.aiAssistant,
     feed_sort: p.feedSort,
-    catchup_time: p.catchupTime,
-    notify_digest: p.notifyDigest,
-    notify_followed: p.notifyFollowed,
   };
 }

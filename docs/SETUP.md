@@ -37,7 +37,6 @@ GitHub repo → Settings → Secrets and variables → Actions → **New reposit
 | Name | Value |
 | --- | --- |
 | `DATABASE_URL` | the Session pooler connection string |
-| `SITE_URL` | your site address, e.g. `https://alllens.vercel.app` (update later if you add a domain) |
 
 **Check:** Actions → **Check feeds** → Run workflow. Download the `feed-report` artifact. Mark working feeds `live` and failing ones `broken` in `sources.csv` (or on your computer: `python -m pipeline.check_feeds --update-sources`), commit and push.
 
@@ -46,7 +45,7 @@ Then Actions → **Collect news** → Run workflow. The first run takes ~5 minut
 
 From now on collection runs every 2 hours and clean-up every night, by themselves.
 
-**Keep it free and private:** a private repository gets 2,000 GitHub Actions minutes a month, which the collect and email schedules outgrow as sources are added. Move the scheduled jobs to a free Oracle Cloud server with `docs/SERVER.md` (about 45 minutes, once); GitHub then only runs Tests.
+**Keep it free and private:** a private repository gets 2,000 GitHub Actions minutes a month, which the collect schedule outgrows as sources are added. Move the scheduled jobs to a free Oracle Cloud server with `docs/SERVER.md` (about 45 minutes, once); GitHub then only runs Tests.
 
 ## 4. Vercel: put the website online (10 min)
 
@@ -67,38 +66,24 @@ From now on collection runs every 2 hours and clean-up every night, by themselve
 
 Every push to `main` now redeploys automatically; every pull request gets a preview link. That is your CI/CD: GitHub Actions tests, Vercel deploys.
 
-## 5. Sign-in (20 min)
+## 5. Sign-in with Google (15 min)
 
-Supabase → **Authentication**:
+Readers sign in with Google only; the app never sends email. Reading needs no account at all (guest choices stay in the browser); an account keeps choices and follows across devices.
 
-1. **URL Configuration:** Site URL = your Vercel address. Redirect URLs: add `https://<your-site>/**` and `http://localhost:3000/**`.
-2. **Email templates** → *Magic Link* and *Confirm signup*: set the link in both to
-   ```html
-   <a href="{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email">Sign in to All-Lens</a>
-   ```
-   (This makes the link work even when opened on a different device.)
-3. **Google sign-in:** Google Cloud Console → APIs & Services → Credentials → *Create OAuth client ID* (Web application). Authorised redirect URI: the callback URL shown in Supabase → Authentication → Providers → Google. Paste the client ID and secret into that Supabase page and enable it.
-4. **Email sending:** Supabase's built-in email is rate-limited (fine for testing). Before inviting pilot users, set Authentication → SMTP to your Resend account (step 6).
-5. **Phone sign-in (later):** needs an SMS provider (Twilio, MSG91 etc.) with Indian **DLT** registration. When ready, enable Phone in Supabase and set `NEXT_PUBLIC_ENABLE_PHONE_LOGIN=true` in Vercel.
+1. Supabase → **Authentication → URL Configuration:** Site URL = your Vercel address. Redirect URLs: add `https://<your-site>/**` and `http://localhost:3000/**`.
+2. Google Cloud Console (free) → APIs & Services → **OAuth consent screen**: External, app name All-Lens, your support email. Then **Credentials → Create OAuth client ID** (Web application). Authorised redirect URI: the callback URL shown in Supabase → Authentication → Providers → Google. Paste the client ID and secret into that Supabase page and enable it.
+3. Supabase → Authentication → Providers → **Email**: turn it off, so no sign-in email is ever sent.
 
-**Check:** on the site, Sign in → email link → you land on your feed; your choices are kept; Follow works; Settings shows your email.
+**Check:** on the site, Sign in → Continue with Google → you land on your feed; your choices are kept; Follow works; Settings shows your Google email.
 
-## 6. Daily catch-up emails (15 min)
-
-1. resend.com → verify your domain (or use their test sender while piloting) → create an API key.
-2. GitHub secrets: `RESEND_API_KEY` = the key, `EMAIL_FROM` = e.g. `All-Lens <catchup@yourdomain>`.
-3. The **Daily catch-up emails** workflow runs hourly and sends each reader one email a day at their chosen time. Until the two secrets exist it only does a dry run and prints what it would send.
-
-**Check:** set your catch-up time to the next hour in Settings, then look at the next run's log or your inbox.
-
-## 7. Before inviting the 20 pilot users
+## 6. Before inviting the 20 pilot users
 
 - [ ] Run **Review story grouping** (Actions) after a day of collection; mark 50 stories right/wrong in the CSV. Aim for 8 of 10 correct. Too many wrong merges: raise `GROUP_THRESHOLD` (default 0.905) a little, set as a repository **variable** under Settings → Secrets and variables → Actions → Variables; too many splits: lower it. Then run **Collect news** with **regroup** ticked so existing articles are grouped again with the new value.
 - [ ] Ask a native speaker to read the Telugu interface text (`web/lib/i18n.ts`).
 - [ ] Fill the grievance officer and contact emails; read Privacy/Terms/Grievance pages and have a lawyer review before public launch.
 - [ ] Check each source's terms of use (some feeds are "personal, non-commercial use"). Ask publishers where needed.
 - [ ] Have a lawyer confirm showing outlets' feed pictures and YouTube thumbnails (linked from their sites, credited, never copied) before public launch; news photos are often agency-owned (PTI, AP, Getty).
-- [ ] Optional: buy a domain, add it in Vercel, then update `SITE_URL` (GitHub secret), `NEXT_PUBLIC_SITE_URL` (Vercel) and the Supabase Site URL.
+- [ ] Optional: buy a domain, add it in Vercel, then update `NEXT_PUBLIC_SITE_URL` (Vercel) and the Supabase Site URL.
 
 ## When something goes wrong
 
@@ -106,10 +91,10 @@ Supabase → **Authentication**:
 | --- | --- |
 | No new stories | Actions → Collect news → latest run log; Supabase table `runs` |
 | Site shows the yellow sample banner | Vercel env vars `NEXT_PUBLIC_SUPABASE_URL` / `..._ANON_KEY` missing; redeploy after adding |
-| Sign-in link says failed | Step 5.1 redirect URLs and 5.2 email template |
+| Sign-in says it failed | Step 5.1 redirect URLs and 5.2 Google settings |
 | A feed stopped working | Actions → Check feeds; mark it `broken` in `sources.csv` |
 | Story shows the wrong state (or none) | Add the place or spelling to that state's aliases in `pipeline/data/places.json`, run `python -m pipeline.export_web_data`, push, then run Collect news with **retag** ticked |
 
 ## Costs to expect
 
-Pilot: close to ₹0. Watch these as users grow: Supabase free tier (500 MB database; the 30-day retention keeps it small), GitHub Actions minutes (private repos have a monthly allowance; the collect job is the largest user), Resend (free tier covers a small daily list), Vercel hobby tier (fine for a pilot; a commercial product needs the Pro plan). Check each pricing page when you sign up; limits change.
+Pilot: close to ₹0. Watch these as users grow: Supabase free tier (500 MB database; the 30-day retention keeps it small), GitHub Actions minutes (only Tests once the scheduled jobs run on the free Oracle server, docs/SERVER.md), Vercel hobby tier (fine for a pilot; a commercial product needs the Pro plan). Check each pricing page when you sign up; limits change.

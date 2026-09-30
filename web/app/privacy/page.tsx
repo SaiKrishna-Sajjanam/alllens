@@ -12,7 +12,7 @@ export default function PrivacyPage() {
       <h2>What we store</h2>
       <ul>
         <li><strong>Without an account:</strong> your choices and the time of your last visit, in a cookie on your device.</li>
-        <li><strong>With an account:</strong> your email address or mobile number (for sign-in), your choices (topics, places, languages, kinds of sources, reminder time, app language, preferred AI assistant), the stories you follow, source suggestions you send, and when you last visited.</li>
+        <li><strong>With an account:</strong> the email address and name Google shares when you sign in with Google (used only to identify your account; we never send you email), your choices (topics, state, languages, kinds of sources, app language, preferred AI assistant), the stories you follow, source suggestions you send, and when you last visited.</li>
         <li><strong>We do not store</strong> which articles you open, your location, or anything you ask an AI assistant. &ldquo;Ask your AI&rdquo; opens the assistant you choose directly; what you do there is between you and that service.</li>
       </ul>
       <h2>What we never do</h2>
@@ -23,7 +23,7 @@ export default function PrivacyPage() {
       </ul>
       <h2>How long we keep it</h2>
       <ul>
-        <li>Your data stays while you use the service. Accounts unused for 12 months get an email warning and are deleted 30 days later if still unused.</li>
+        <li>Your data stays while you use the service. Accounts unused for 12 months are deleted automatically, with your choices and follows. There is no warning message because the service never sends email; any visit restarts the 12 months. You can also delete your account yourself in Settings at any time.</li>
         <li>You can delete your account at any time in Settings. Deletion is immediate and removes your choices and follows.</li>
       </ul>
       <h2>Your rights</h2>
@@ -34,7 +34,7 @@ export default function PrivacyPage() {
       </p>
       <h2>Services we use</h2>
       <ul>
-        <li>Supabase (database and sign-in), Vercel (website hosting), GitHub (scheduled collection), and an email provider for the daily reminder.</li>
+        <li>Supabase (database and sign-in), Google (sign-in only), Vercel (website hosting), GitHub (code and tests) and Oracle Cloud (the server that collects public news feeds; it holds no reader data).</li>
         <li>Pictures and video thumbnails are loaded directly from each outlet&rsquo;s own site (or YouTube), so those sites can see your IP address when you view them, as when you visit them. We send them no information about you. &ldquo;Translate&rdquo; opens Google Translate with the article link only.</li>
       </ul>
     </article>

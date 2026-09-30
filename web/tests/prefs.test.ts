@@ -9,7 +9,6 @@ test('unknown or hostile values fall back to safe defaults', () => {
     state: 'tg-warangal',
     languages: ['xx'],
     uiLanguage: 'fr',
-    catchupTime: '25:99',
     aiAssistant: 'javascript:alert(1)',
     feedSort: 'popularity',
     customTopics: ['  Infosys  ', 'x', 'a'.repeat(100)],
@@ -19,7 +18,6 @@ test('unknown or hostile values fall back to safe defaults', () => {
   assert.equal(p.state, '', 'a district is not a state; no state until the reader picks one');
   assert.deepEqual(p.languages, ['en']);
   assert.equal(p.uiLanguage, 'en');
-  assert.equal(p.catchupTime, DEFAULT_PREFS.catchupTime);
   assert.equal(p.aiAssistant, 'chatgpt');
   assert.equal(p.feedSort, 'sources');
   assert.deepEqual(p.customTopics, ['Infosys']);
@@ -27,11 +25,11 @@ test('unknown or hostile values fall back to safe defaults', () => {
 });
 
 test('cookie and profile round trips keep choices', () => {
-  const p = cleanPrefs({ topics: ['sports'], languages: ['te', 'en'], state: 'kl', catchupTime: '07:15', uiLanguage: 'te' });
+  const p = cleanPrefs({ topics: ['sports'], languages: ['te', 'en'], state: 'kl', uiLanguage: 'te' });
   assert.deepEqual(decodePrefsCookie(encodePrefsCookie(p)), p);
   assert.equal(decodePrefsCookie('%%%not-json'), null);
   const row = profileFromPrefs('u1', p);
-  assert.deepEqual(prefsFromProfile({ ...row, catchup_time: '07:15:00' }), p);
+  assert.deepEqual(prefsFromProfile(row), p);
 });
 
 test('any state or union territory, all alike, none by default; any interface language', () => {

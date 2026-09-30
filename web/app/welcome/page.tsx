@@ -15,7 +15,7 @@ export default async function WelcomePage() {
         <p className="muted">{t(lang, 'welcome.intro')}</p>
         {!viewer.user && <Link href="/login" className="small">{t(lang, 'welcome.signin')}</Link>}
       </div>
-      <PrefsForm initial={viewer.prefs} lang={lang} mode="welcome" signedIn={!!viewer.user} />
+      <PrefsForm initial={viewer.prefs} lang={lang} mode="welcome" />
     </div>
   );
 }

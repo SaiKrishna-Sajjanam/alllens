@@ -12,7 +12,6 @@ interface Props {
   initial: Prefs;
   lang: Lang;
   mode: 'welcome' | 'settings';
-  signedIn: boolean;
 }
 
 function toggle(list: string[], v: string): string[] {
@@ -30,7 +29,7 @@ function AllChip({ lang, on, onClick, soft }: { lang: Lang; on: boolean; onClick
   );
 }
 
-export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
+export default function PrefsForm({ initial, lang, mode }: Props) {
   const [p, setP] = useState<Prefs>(initial);
   const [custom, setCustom] = useState('');
   const [saved, setSaved] = useState(false);
@@ -149,28 +148,6 @@ export default function PrefsForm({ initial, lang, mode, signedIn }: Props) {
       </fieldset>
 
       <div className="card stack">
-        <div className="spread">
-          <label htmlFor="catchup" className="stack" style={{ gap: 2 }}>
-            <strong>{t(lang, 'prefs.catchup')}</strong>
-            <span className="small muted">{t(lang, 'prefs.catchupHint')}</span>
-          </label>
-          <input id="catchup" type="time" value={p.catchupTime} style={{ width: 'auto' }}
-            onChange={(e) => set({ catchupTime: e.target.value || p.catchupTime })} />
-        </div>
-        {mode === 'settings' && (
-          <>
-            <label className="check">
-              <input type="checkbox" checked={p.notifyDigest} disabled={!signedIn}
-                onChange={(e) => set({ notifyDigest: e.target.checked })} />
-              {t(lang, 'settings.digest')}
-            </label>
-            <label className="check">
-              <input type="checkbox" checked={p.notifyFollowed} disabled={!signedIn || !p.notifyDigest}
-                onChange={(e) => set({ notifyFollowed: e.target.checked })} />
-              {t(lang, 'settings.followedUpdates')}
-            </label>
-          </>
-        )}
         <label className="check">
           <input type="checkbox" checked={p.hideCrime} onChange={(e) => set({ hideCrime: e.target.checked })} />
           <span className="stack" style={{ gap: 0 }}>

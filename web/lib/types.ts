@@ -13,9 +13,6 @@ export interface Prefs {
   uiLanguage: Lang;
   aiAssistant: string;
   feedSort: FeedSort;
-  catchupTime: string; // "HH:MM", India time
-  notifyDigest: boolean;
-  notifyFollowed: boolean;
 }
 
 export interface LabelInfo {

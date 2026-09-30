@@ -23,22 +23,22 @@ Purpose: one version makes people believe; many versions make them think.
 - `sources.csv` column `topics` (e.g. `cinema`, `tech;business`) is only for section/specialist feeds whose every report is on that subject; general outlets leave it empty.
 
 ## Layout
-- `pipeline/`: collect, process (tagging.py, embed.py, grouping), notify, cleanup, accounts, check_feeds, review_groups, export_web_data
+- `pipeline/`: collect, process (tagging.py, embed.py, grouping), cleanup, accounts (deletes accounts unused 12 months), check_feeds, review_groups, export_web_data
 - `pipeline/data/`: places.json (36 states/UTs; each with its districts and main cities as names that identify the state, in English, Hindi, Telugu and its own script), topics.json (17 topics, keywords in every language we collect)
 - `web/`: Next.js 15 App Router + Supabase (`@supabase/ssr`). `lib/` holds pure logic (feed.ts, prefs.ts, ai.ts, i18n.ts, catalog.ts) with tests in `web/tests`; `lib/data.ts` is the only data access layer and falls back to `lib/demo.ts` sample data when Supabase env vars are missing.
 - `supabase/migrations/`, `supabase/tests/`
-- `.github/workflows/`: tests (Python + Postgres + RLS + web build), collect (2 h), cleanup (daily), notify (hourly), check_feeds, review_groups (manual)
+- `.github/workflows/`: tests (Python + Postgres + RLS + web build), collect (2 h), cleanup (daily), check_feeds, review_groups (manual)
 - `deploy/server/`: the scheduled jobs on a free Oracle Cloud server (setup.sh, run.sh, systemd timers; guide in docs/SERVER.md). The repo stays private; set repository variable `SCHEDULE_ON_GITHUB=off` so GitHub skips its own scheduled runs
 - `docs/SETUP.md` (accounts and deployment), `docs/SERVER.md` (free server for scheduled jobs), `docs/ARCHITECTURE.md`
 
 ## Stack
-Python 3.11 (requests, psycopg, numpy; sentence-transformers for multilingual grouping) · Supabase (Postgres + Auth) · GitHub Actions · Next.js/React on Vercel · Resend for email · VS Code + Claude Code.
+Python 3.11 (requests, psycopg, numpy; sentence-transformers for multilingual grouping) · Supabase (Postgres + Auth) · GitHub Actions · Next.js/React on Vercel · Oracle Cloud Always Free server for scheduled jobs · everything on free tiers; Google sign-in only; the app sends no email · VS Code + Claude Code.
 
 ## Pilot scope
 Every state and union territory is treated alike (same rules, no default state, A-Z lists); sources are being added for all states in one batch (see Roadmap). Interface in English (default) + 11 Indian languages (`web/lib/i18n.ts`, `web/lib/locales/`, drafts needing native-speaker review); news in English and every Indian language we find feeds for (`web/lib/catalog.ts` LANGUAGES). "Translate" only links the original article to Google Translate; the app never shows translated news text (rules 2 and 3). Web + installable app (PWA); store apps later.
 
 ## Roadmap
-1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs, story page, compare, follow, Ask your AI, archive, sources + suggest, sign-in, settings, daily email, legal page templates)
+1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs, story page, compare, follow, Ask your AI, archive, sources + suggest, Google sign-in, settings, legal page templates)
 6. **Now:** every state treated alike ✔ (places, topics, app); next: sources for all 36 states/UTs in one batch (own-language + English outlets, topic sections, official YouTube channels, subreddits, blogs with feeds; tested with `check_feeds`; public coverage report of thin states/topics); then deploy per docs/SETUP.md, tune grouping with `review_groups` (target 8/10), native-speaker review of the UI languages, pilot with 20 users
 7. Launch; phase 2: exam prep; store apps
 
@@ -49,7 +49,6 @@ python -m pipeline.check_feeds [--update-sources]
 python -m pipeline.collect                # collect + tag + group (local.db unless DATABASE_URL)
 python -m pipeline.process                # tag + group only
 python -m pipeline.review_groups          # group_review.csv for manual checking
-python -m pipeline.notify --dry-run
 python -m pipeline.cleanup
 python -m pipeline.export_web_data
 cd web && npm install && npm run dev      # app on http://localhost:3000 (sample data without Supabase)

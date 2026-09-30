@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
 # Run one pipeline job with the latest pushed code:
 #     bash ~/alllens/deploy/server/run.sh collect [--retag | --regroup]
-#     bash ~/alllens/deploy/server/run.sh notify [--dry-run]
 #     bash ~/alllens/deploy/server/run.sh cleanup
 #     bash ~/alllens/deploy/server/run.sh check_feeds
 set -euo pipefail
-JOB="${1:?usage: run.sh collect|notify|cleanup|check_feeds [options]}"
+JOB="${1:?usage: run.sh collect|cleanup|check_feeds [options]}"
 shift
 APP="$(cd "$(dirname "$0")/../.." && pwd)"
 ENV_FILE="${ALLLENS_ENV:-$HOME/alllens.env}"
