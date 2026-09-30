@@ -85,6 +85,15 @@ class Gazetteer:
                 add(loc["places"], raw)
         # Longer aliases first, so "New Delhi" wins over "Delhi" at the same position.
         self.aliases.sort(key=lambda a: -len(a.text))
+        # All English names in one pattern (one pass over the text instead of ~2,000 searches);
+        # names in Indian scripts are plain substring checks, already fast.
+        self._by_word: dict[str, list[_Alias]] = {}
+        for a in self.aliases:
+            if a.regex is not None:
+                self._by_word.setdefault(a.text.lower(), []).append(a)
+        bodies = [re.escape(w).replace(r"\ ", r"\s+") for w in sorted(self._by_word, key=len, reverse=True)]
+        self._words = re.compile(rf"(?<![A-Za-z0-9])(?:{'|'.join(bodies)})(?![A-Za-z0-9])", re.IGNORECASE)
+        self._scripts = [a for a in self.aliases if a.regex is None]
 
     def with_parents(self, ids) -> list[str]:
         out: list[str] = []
@@ -101,16 +110,22 @@ class Gazetteer:
         return SPECIFICITY.get(self.places.get(pid, {}).get("kind", "state"), 0)
 
     def _hits(self, text: str) -> list[tuple[int, _Alias]]:
-        hits = []
-        for a in self.aliases:
-            pos = a.find(text)
+        first: dict[int, tuple[int, _Alias]] = {}
+        for m in self._words.finditer(text):
+            for a in self._by_word.get(re.sub(r"\s+", " ", m.group(0)).lower(), ()):
+                first.setdefault(id(a), (m.start(), a))
+        for a in self._scripts:
+            pos = text.find(a.text)
             if pos >= 0:
-                hits.append((pos, a))
-        return hits
+                first.setdefault(id(a), (pos, a))
+        return list(first.values())
 
     def place_of(self, name: str) -> str | None:
         """The place a name (e.g. a source's region, "Hyderabad" or "Kerala") belongs to, if exactly one."""
         n = normalise(name).lower()
+        for pid, p in self.places.items():            # the official name, e.g. "Himachal Pradesh"
+            if normalise(p["en"]).lower() == n:
+                return pid
         for a in self.aliases:
             if not a.ambiguous and a.text.lower() == n and len(a.place_ids) == 1:
                 return a.place_ids[0]

@@ -199,6 +199,26 @@ class CheckFeedsTests(unittest.TestCase):
         self.assertEqual(map_by_host(fn, srcs, gap=0), [s.id for s in srcs])   # input order kept
         self.assertEqual(peak["reddit.test"], 1)
 
+    def test_site_that_says_slow_down_is_not_asked_again_this_run(self):
+        calls = []
+
+        def fetcher(url):
+            calls.append(url)
+            return (429, b"") if "reddit.test" in url else (200, RSS)
+
+        srcs = [Source(f"r{i}", "", "state", "community", "en", "", f"https://reddit.test/r/{i}/.rss", "live")
+                for i in range(5)]
+        srcs.append(Source("ok", "", "national", "digital", "en", "India", "https://ok.test/feed", "live"))
+        tmp = tempfile.TemporaryDirectory()
+        db = DB(f"sqlite:///{os.path.join(tmp.name, 't.db')}")
+        db.init_schema()
+        summary = collect.run(db, srcs, fetcher=fetcher, now=datetime(2026, 9, 29, 12, tzinfo=timezone.utc))
+        self.assertEqual(sum("reddit.test" in u for u in calls), 1, "one polite try per run")
+        self.assertEqual(summary["feeds_failed"], 5)
+        self.assertEqual(summary["feeds_ok"], 1)
+        db.close()
+        tmp.cleanup()
+
     def test_rate_limit_leaves_status_unchanged(self):
         srcs = [Source("busy", "", "local", "community", "en", "", "https://busy.test/feed", "to_check"),
                 Source("gone", "", "local", "digital", "en", "", "https://gone.test/feed", "to_check")]

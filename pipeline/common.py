@@ -213,10 +213,14 @@ def fetch(url: str) -> tuple[int, bytes]:
     return r.status_code, r.content
 
 
-def map_by_host(fn, sources: list, workers: int = 8, gap: float = HOST_GAP) -> list:
+def map_by_host(fn, sources: list, workers: int = 8, gap: float = HOST_GAP,
+                stop_host=None, skipped=None) -> list:
     """fn(source) for every source, in input order: different sites in parallel,
     feeds on the same site one after another with a pause (sites like Reddit
-    answer 429 "too many requests" to parallel fetches)."""
+    answer 429 "too many requests" to parallel fetches).
+
+    If stop_host(result) is true (the site asked us to slow down), the site's
+    remaining feeds are not requested this run: skipped(source) stands in for them."""
     from concurrent.futures import ThreadPoolExecutor
 
     groups: dict[str, list[int]] = {}
@@ -229,6 +233,10 @@ def map_by_host(fn, sources: list, workers: int = 8, gap: float = HOST_GAP) -> l
             if n:
                 time.sleep(gap)
             results[i] = fn(sources[i])
+            if stop_host and skipped and stop_host(results[i]):
+                for j in indexes[n + 1:]:
+                    results[j] = skipped(sources[j])
+                return
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
         list(pool.map(run_host, groups.values()))

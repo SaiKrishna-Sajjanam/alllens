@@ -71,7 +71,11 @@ def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: dat
     sync_sources(db, sources)
     targets = [s for s in sources if s.feed_url and s.status in COLLECTABLE]
 
-    results = map_by_host(lambda s: fetch_source(s, fetcher), targets, workers)
+    # A site that answers 429 ("slow down", e.g. Reddit to GitHub's servers) is not asked
+    # again this run, so its other feeds don't each cost a polite pause.
+    results = map_by_host(lambda s: fetch_source(s, fetcher), targets, workers,
+                          stop_host=lambda r: r[2] == "HTTP 429",
+                          skipped=lambda s: (s, [], "HTTP 429 (site asked to slow down; skipped this run)"))
 
     ok, failed, new_total, updated_total, notes = 0, 0, 0, 0, []
     for src, items, error in results:

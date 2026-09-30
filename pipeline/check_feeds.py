@@ -58,7 +58,10 @@ def main(argv=None) -> int:
 
     sources = load_sources()
     targets = [s for s in sources if s.feed_url]
-    rows = map_by_host(check, targets)
+    rows = map_by_host(check, targets, stop_host=lambda r: r["detail"] in TEMPORARY,
+                       skipped=lambda s: {"id": s.id, "name": s.name, "feed_url": s.feed_url, "http_status": 429,
+                                          "items": 0, "newest_item": "", "result": "http_error",
+                                          "detail": "HTTP 429"})
 
     out = ROOT / "feed_report.csv"
     with open(out, "w", newline="", encoding="utf-8") as f:

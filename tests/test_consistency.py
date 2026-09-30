@@ -49,6 +49,20 @@ class ConsistencyTests(unittest.TestCase):
         for p in places["places"]:
             self.assertGreaterEqual(len(p["aliases"]), 3, f"{p['id']}: needs its names and main places")
 
+    def test_coverage_report_is_current(self):
+        from pipeline import coverage
+
+        self.assertEqual(coverage.OUT.read_text(encoding="utf-8"), coverage.build(),
+                         "docs/COVERAGE.md is out of date: run python -m pipeline.coverage")
+
+    def test_every_state_source_names_a_known_state(self):
+        from pipeline.common import load_sources
+        from pipeline.tagging import gazetteer
+
+        gz = gazetteer()
+        unknown = [s.id for s in load_sources() if s.layer == "state" and not gz.place_of(s.region)]
+        self.assertEqual(unknown, [], "sources.csv region must be a state/UT name or one of its places")
+
     def test_sources_csv_ids_unique(self):
         from pipeline.common import load_sources
 

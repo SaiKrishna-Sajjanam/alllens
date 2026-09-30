@@ -194,6 +194,29 @@ class GroupingTests(unittest.TestCase):
         (label,), = self.db.fetchall("SELECT label FROM stories WHERE id = ?", (self.story["kathua_print"],))
         self.assertEqual(label, edited["title"])
 
+    def test_closed_stories_lose_their_vectors_but_keep_articles(self):
+        res = cleanup.run(self.db, now=self.now + timedelta(days=8))
+        self.assertEqual(res["deleted"], 0, "articles stay for 30 days")
+        self.assertGreater(res["vectors_removed"], 0)
+        for table in ("article_vectors", "story_vectors"):
+            self.assertEqual(self.db.fetchall(f"SELECT COUNT(*) FROM {table}")[0][0], 0, table)
+        # A regroup computes vectors again from the stored headlines.
+        process.clear_groups(self.db)
+        again = process.run(self.db, embedder=LexicalEmbedder(), now=self.now + timedelta(days=8))
+        self.assertEqual(again["grouped"], len(ARTICLES))
+
+    def test_vectors_are_stored_compactly(self):
+        (vec,), = self.db.fetchall("SELECT vector FROM article_vectors LIMIT 1")[:1]
+        import numpy as np
+
+        self.assertTrue(vec.startswith("f16:"))
+        v = process.unpack(vec)
+        self.assertEqual(v.dtype, np.float32)
+        # 2 bytes per number (base64): 384 numbers (the production model) take about 1 KB.
+        self.assertLessEqual(len(vec), 4 + 4 * -(-2 * len(v) // 3))
+        self.assertLessEqual(len(process.pack(np.ones(384))), 1100)
+        self.assertEqual(process.unpack("[0.5, 0.25]").tolist(), [0.5, 0.25], "older JSON vectors still read")
+
     def test_retention_removes_old_stories_and_vectors(self):
         res = cleanup.run(self.db, now=self.now + timedelta(days=31))
         self.assertEqual(res["deleted"], len(ARTICLES))

@@ -19,7 +19,7 @@ Purpose: one version makes people believe; many versions make them think.
 - **Never commit secrets.** `DATABASE_URL`, API keys: GitHub Actions secrets, Vercel env vars, local `.env` / `web/.env.local` only.
 - Every table the app can reach has row-level security; change `supabase/migrations/` (idempotent SQL) and extend `supabase/tests/rls_test.sql`.
 - Keep `sql/schema.sql` (SQLite tests) and `supabase/migrations/20261001000100_pipeline.sql` in step; `tests/test_consistency.py` checks.
-- After editing `pipeline/data/places.json` or `topics.json`, run `python -m pipeline.export_web_data`.
+- After editing `pipeline/data/places.json` or `topics.json`, run `python -m pipeline.export_web_data`; after editing `sources.csv`, run `python -m pipeline.coverage`.
 - `sources.csv` column `topics` (e.g. `cinema`, `tech;business`) is only for section/specialist feeds whose every report is on that subject; general outlets leave it empty.
 
 ## Layout
@@ -39,7 +39,7 @@ Every state and union territory is treated alike (same rules, no default state, 
 
 ## Roadmap
 1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs, story page, compare, follow, Ask your AI, archive, sources + suggest, Google sign-in, settings, legal page templates)
-6. **Now:** every state treated alike ✔ (places, topics, app); next: sources for all 36 states/UTs in one batch (own-language + English outlets, topic sections, official YouTube channels, subreddits, blogs with feeds; tested with `check_feeds`; public coverage report of thin states/topics); then deploy per docs/SETUP.md, tune grouping with `review_groups` (target 8/10), native-speaker review of the UI languages, pilot with 20 users
+6. **Now:** every state treated alike ✔; sources for all 36 states/UTs, first batch ✔ (~360 collected; gaps listed in docs/COVERAGE.md: find feeds for thin states, YouTube channel ids for regional TV);  then deploy per docs/SETUP.md, tune grouping with `review_groups` (target 8/10), native-speaker review of the UI languages, pilot with 20 users
 7. Launch; phase 2: exam prep; store apps
 
 ## Commands
@@ -51,6 +51,7 @@ python -m pipeline.process                # tag + group only
 python -m pipeline.review_groups          # group_review.csv for manual checking
 python -m pipeline.cleanup
 python -m pipeline.export_web_data
+python -m pipeline.coverage             # docs/COVERAGE.md from sources.csv (a test checks it is current)
 cd web && npm install && npm run dev      # app on http://localhost:3000 (sample data without Supabase)
 cd web && npm test && npm run build
 ```

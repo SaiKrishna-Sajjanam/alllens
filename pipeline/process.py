@@ -34,6 +34,23 @@ WINDOW = timedelta(hours=72)     # a story stays open for new reports this long 
 BATCH = 64
 
 
+def pack(vec) -> str:
+    """A vector as compact text: 16-bit floats, base64 (about 1 KB instead of 7.5 KB of JSON;
+    the rounding is far below what changes a grouping decision)."""
+    import base64
+
+    return "f16:" + base64.b64encode(np.asarray(vec, dtype=np.float16).tobytes()).decode("ascii")
+
+
+def unpack(text: str) -> "np.ndarray":
+    """Read a stored vector (compact form, or the older JSON list)."""
+    import base64
+
+    if text.startswith("f16:"):
+        return np.frombuffer(base64.b64decode(text[4:]), dtype=np.float16).astype(np.float32)
+    return np.asarray(json.loads(text), dtype=np.float32)
+
+
 def _time(published, fetched) -> datetime:
     return to_datetime(published) or to_datetime(fetched)
 
@@ -88,7 +105,7 @@ def embed_articles(db: DB, embedder) -> int:
         db.executemany(
             """INSERT INTO article_vectors (article_id, model, vector) VALUES (?, ?, ?)
                ON CONFLICT (article_id) DO UPDATE SET model = excluded.model, vector = excluded.vector""",
-            [(aid, embedder.name, json.dumps([round(x, 5) for x in vec])) for (aid, _, _), vec in zip(chunk, vectors)],
+            [(aid, embedder.name, pack(vec)) for (aid, _, _), vec in zip(chunk, vectors)],
         )
         db.commit()
     return len(rows)
@@ -120,18 +137,18 @@ def group_articles(db: DB, embedder, now: datetime) -> dict:
     ids = [r[0] for r in open_rows]
     last = [to_datetime(r[1]) for r in open_rows]
     counts = [int(r[3]) for r in open_rows]
-    sums = [np.asarray(json.loads(r[2]), dtype=np.float32) * r[3] for r in open_rows]   # running sums
+    sums = [unpack(r[2]) * r[3] for r in open_rows]   # running sums
     matrix = np.vstack([s / (np.linalg.norm(s) or 1) for s in sums]) if sums else None
     # A story's first report never moves, so comparing with it stops a story's average
     # drifting towards "news in general" and swallowing unrelated reports.
-    first = np.vstack([np.asarray(json.loads(r[4] or r[2]), dtype=np.float32) for r in open_rows]) if open_rows else None
+    first = np.vstack([unpack(r[4] or r[2]) for r in open_rows]) if open_rows else None
     touched: set[str] = set()
     new_ids: set[str] = set()
     new_rows, assign = [], []
     joined = 0
 
     for aid, title, published, fetched, vec_json in pending:
-        vec = np.asarray(json.loads(vec_json), dtype=np.float32)
+        vec = unpack(vec_json)
         t = _time(published, fetched)
         best, best_sim = None, -1.0
         if matrix is not None and len(ids):
@@ -177,7 +194,7 @@ def group_articles(db: DB, embedder, now: datetime) -> dict:
     for sid in touched:
         i = index[sid]
         centroid = sums[i] / (np.linalg.norm(sums[i]) or 1)
-        vectors.append((sid, embedder.name, json.dumps([round(float(x), 5) for x in centroid]), counts[i]))
+        vectors.append((sid, embedder.name, pack(centroid), counts[i]))
     db.executemany(
         """INSERT INTO story_vectors (story_id, model, vector, n) VALUES (?, ?, ?, ?)
            ON CONFLICT (story_id) DO UPDATE SET model = excluded.model, vector = excluded.vector, n = excluded.n""",
