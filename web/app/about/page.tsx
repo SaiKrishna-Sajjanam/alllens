@@ -30,8 +30,8 @@ function AboutEn() {
 
       <h2>How a story page is made</h2>
       <ol>
-        <li>Every two hours we read the public feeds listed on <Link href="/sources">Our sources</Link>.</li>
-        <li>We keep only the headline, the first few lines the source itself puts in its feed (up to 280 characters), the time and the link. Never the full article, never images.</li>
+        <li>Every three hours we read the public feeds listed on <Link href="/sources">Our sources</Link>.</li>
+        <li>We keep only the headline, the first few lines the source itself puts in its feed (up to 280 characters), the time and the link. Never the full article. A picture the outlet attaches to its feed is shown from the outlet’s own site, credited to it; we never keep a copy.</li>
         <li>A multilingual language model turns each headline into a set of numbers describing its meaning. Reports whose numbers are very close, published within three days of each other, are grouped as one story. The model groups; it never writes anything you see.</li>
         <li>The story is shown under the <em>earliest</em> headline, credited to the source that published it, in your language when one exists.</li>
         <li>The state a story is about, and its topics, come from fixed word lists (the same rules for every state), so the same report always gets the same tags. The topics are: {TOPICS.map((t) => t.en).join(', ')}.</li>
@@ -80,8 +80,8 @@ function AboutTe() {
 
       <h2>ఒక వార్త పేజీ ఎలా తయారవుతుంది</h2>
       <ol>
-        <li>ప్రతి రెండు గంటలకు <Link href="/sources">మా వనరుల</Link> పబ్లిక్ ఫీడ్‌లు చదువుతాం.</li>
-        <li>శీర్షిక, వనరు తన ఫీడ్‌లో ఇచ్చిన మొదటి కొన్ని వాక్యాలు (280 అక్షరాల వరకు), సమయం, లింక్ మాత్రమే ఉంచుతాం. పూర్తి కథనం, చిత్రాలు ఎప్పుడూ ఉంచం.</li>
+        <li>ప్రతి మూడు గంటలకు <Link href="/sources">మా వనరుల</Link> పబ్లిక్ ఫీడ్‌లు చదువుతాం.</li>
+        <li>శీర్షిక, వనరు తన ఫీడ్‌లో ఇచ్చిన మొదటి కొన్ని వాక్యాలు (280 అక్షరాల వరకు), సమయం, లింక్ మాత్రమే ఉంచుతాం. పూర్తి కథనం ఎప్పుడూ ఉంచం. వనరు తన ఫీడ్‌లో జోడించిన చిత్రం ఆ వనరు సైట్ నుంచే, దాని పేరుతో కనిపిస్తుంది; మేము కాపీ ఉంచం.</li>
         <li>ఒక బహుభాషా మోడల్ ప్రతి శీర్షిక అర్థాన్ని సంఖ్యలుగా మారుస్తుంది. మూడు రోజుల్లోపు ప్రచురించిన, దాదాపు ఒకే అర్థం ఉన్న కథనాలను ఒకే వార్తగా కలుపుతాం. మోడల్ కలుపుతుంది మాత్రమే, మీకు కనిపించేది ఏదీ రాయదు.</li>
         <li>వార్తను <em>ముందుగా</em> ప్రచురించిన శీర్షికతో, ఆ వనరు పేరుతో చూపిస్తాం. మీ భాషలో ఉంటే ఆ శీర్షిక.</li>
         <li>ప్రాంతాలు (భారత్, రాష్ట్రం, జిల్లా), అంశాలు స్థిరమైన పదాల జాబితాల నుంచి వస్తాయి. అంశాలు: {TOPICS.map((t) => t.te).join(', ')}.</li>
