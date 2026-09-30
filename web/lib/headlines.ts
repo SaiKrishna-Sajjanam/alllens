@@ -7,15 +7,15 @@ import 'server-only';
 // missing is translated when a page first opens, through the same Google Apps Script
 // translator (docs/TRANSLATE.md), and cached for a week so it is asked for only once.
 import { unstable_cache } from 'next/cache';
-import { isConfigured } from './env';
+import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
 import { createClient } from './supabase/server';
 import { titleHash } from './titlehash';
 import type { Lang, Story } from './types';
 
 // Server-only settings (no NEXT_PUBLIC_ prefix, so they never reach the browser).
-const TRANSLATE_URL = process.env.TRANSLATE_URL ?? '';
-const TRANSLATE_TOKEN = process.env.TRANSLATE_TOKEN ?? '';
+const TRANSLATE_URL = tidySetting('TRANSLATE_URL', runtimeSetting('TRANSLATE_URL'));
+const TRANSLATE_TOKEN = tidySetting('TRANSLATE_TOKEN', runtimeSetting('TRANSLATE_TOKEN'));
 const BATCH_LINES = 40;
 const MAX_NOW = 120;          // headlines translated while one page opens; the rest come from the next run
 

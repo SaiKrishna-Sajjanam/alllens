@@ -1,7 +1,7 @@
 import { createBrowserClient } from '@supabase/ssr';
-import { SUPABASE_ANON_KEY, SUPABASE_URL } from '../env';
 
-/** Supabase client for the browser (sign-in forms). */
-export function createClient() {
-  return createBrowserClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+/** Supabase client for the browser (sign-in form). The server passes the public address and key
+ *  (read while it runs), so the browser does not depend on what the build saw. */
+export function createClient(url: string, anonKey: string) {
+  return createBrowserClient(url, anonKey);
 }

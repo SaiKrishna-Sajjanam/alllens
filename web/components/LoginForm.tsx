@@ -11,10 +11,13 @@ interface Props {
   siteUrl: string;
   configured: boolean;
   initialError: boolean;
+  /** Public Supabase address and key (safe in the browser), from the server. */
+  supabaseUrl: string;
+  supabaseKey: string;
 }
 
 /** Google sign-in only: the app never sends email. Everything also works without an account. */
-export default function LoginForm({ lang, next, siteUrl, configured, initialError }: Props) {
+export default function LoginForm({ lang, next, siteUrl, configured, initialError, supabaseUrl, supabaseKey }: Props) {
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
 
@@ -24,7 +27,7 @@ export default function LoginForm({ lang, next, siteUrl, configured, initialErro
     setBusy(true);
     setError(false);
     const origin = typeof window !== 'undefined' ? window.location.origin : siteUrl;
-    const { error: err } = await createClient().auth.signInWithOAuth({
+    const { error: err } = await createClient(supabaseUrl, supabaseKey).auth.signInWithOAuth({
       provider: 'google',
       options: { redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });

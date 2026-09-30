@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import LoginForm from '@/components/LoginForm';
 import { getViewer } from '@/lib/data';
-import { SITE_URL } from '@/lib/env';
+import { SITE_URL, SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/env';
 import { t } from '@/lib/i18n';
 import { safeNextPath } from '@/lib/paths';
 
@@ -23,7 +23,8 @@ export default async function LoginPage({ searchParams }: { searchParams: Search
       </div>
       <div className="panel">
         <LoginForm lang={lang} next={next} siteUrl={SITE_URL}
-          configured={viewer.configured} initialError={sp.error === '1'} />
+          configured={viewer.configured} initialError={sp.error === '1'}
+          supabaseUrl={SUPABASE_URL} supabaseKey={SUPABASE_ANON_KEY} />
       </div>
     </div>
   );

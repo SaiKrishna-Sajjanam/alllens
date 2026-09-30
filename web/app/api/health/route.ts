@@ -1,37 +1,33 @@
 import { NextResponse } from 'next/server';
-import { isConfigured } from '@/lib/env';
+import { isConfigured, runtimeSetting, tidySetting } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 
-type Check = 'ok' | 'missing' | 'empty' | 'wrong format';
+const SHAPES: Record<string, (v: string) => boolean> = {
+  NEXT_PUBLIC_SUPABASE_URL: (v) => /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(v),
+  NEXT_PUBLIC_SUPABASE_ANON_KEY: (v) => v.length > 20 && !/\s/.test(v),
+  TRANSLATE_URL: (v) => /^https:\/\/script\.google\.com\/\S+\/exec$/.test(v),
+  TRANSLATE_TOKEN: (v) => v.length >= 20 && !/\s/.test(v),
+};
 
-/** Read a setting while the site runs (bracket access, so the build does not bake it in). */
-function runtime(name: string): string | undefined {
-  return process.env[name];
+/** What is wrong with a setting, in words; never its value. */
+function describe(name: string): string {
+  const raw = runtimeSetting(name);
+  if (raw === undefined) return 'missing';
+  if (!raw.trim()) return 'empty';
+  const notes: string[] = [];
+  if (raw !== raw.trim()) notes.push(/[\r\n]/.test(raw) ? 'line break at the start or end' : 'space at the start or end');
+  if (raw.trim().startsWith(`${name}=`)) notes.push(`starts with "${name}="`);
+  if (/^["'`]|["'`]$/.test(raw.trim())) notes.push('quotes around it');
+  const ok = SHAPES[name](tidySetting(name, raw));
+  if (!notes.length) return ok ? 'ok' : `wrong format (${raw.trim().length} characters, does not look like a ${name.includes('URL') ? 'web address of the right kind' : 'key'})`;
+  return ok ? `ok after tidying (${notes.join(', ')})` : `wrong format (${notes.join(', ')})`;
 }
 
-function check(value: string | undefined, ok: (v: string) => boolean): Check {
-  if (value === undefined) return 'missing';
-  if (!value.trim()) return 'empty';
-  return ok(value) ? 'ok' : 'wrong format';
-}
-
-const clean = (v: string) => v === v.trim() && !/["'\s]/.test(v);
-
-/**
- * Is each setting present and in the right shape? Says only ok / missing / empty / wrong format,
- * never a value. "builtIn" is what the build baked into the pages (NEXT_PUBLIC_ settings are fixed
- * at build time, so after changing them the site must be built again).
- */
+/** Is each setting present and in the right shape? Words only, never values. */
 export function GET() {
   return NextResponse.json({
-    builtIn: { supabase: isConfigured() ? 'ok' : 'not set when the site was built' },
-    settingsNow: {
-      NEXT_PUBLIC_SUPABASE_URL: check(runtime('NEXT_PUBLIC_SUPABASE_URL'),
-        (v) => clean(v) && /^https:\/\/[a-z0-9-]+\.supabase\.co\/?$/.test(v)),
-      NEXT_PUBLIC_SUPABASE_ANON_KEY: check(runtime('NEXT_PUBLIC_SUPABASE_ANON_KEY'), (v) => clean(v) && v.length > 20),
-      TRANSLATE_URL: check(runtime('TRANSLATE_URL'), (v) => clean(v) && /^https:\/\/script\.google\.com\/.+\/exec$/.test(v)),
-      TRANSLATE_TOKEN: check(runtime('TRANSLATE_TOKEN'), (v) => clean(v) && v.length >= 20),
-    },
+    site: isConfigured() ? 'live news (Supabase connected)' : 'sample stories (Supabase not connected)',
+    settings: Object.fromEntries(Object.keys(SHAPES).map((n) => [n, describe(n)])),
   });
 }
