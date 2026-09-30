@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import StoryView from '@/components/StoryView';
 import { getFollowState, getStory, getViewer, markFollowSeen } from '@/lib/data';
+import { translateHeadlines } from '@/lib/headlines';
 import { t } from '@/lib/i18n';
 
 type Params = Promise<{ id: string }>;
@@ -24,14 +25,17 @@ export default async function StoryPage({ params }: { params: Params }) {
       </div>
     );
   }
-  const follow = viewer.user ? await getFollowState(id) : { following: false, seen: 0 };
+  const [follow, translated] = await Promise.all([
+    viewer.user ? getFollowState(id) : Promise.resolve({ following: false, seen: 0 }),
+    translateHeadlines(data.articles, lang),
+  ]);
   if (follow.following && follow.seen !== data.story.article_count) await markFollowSeen(id, data.story.article_count);
   return (
     <StoryView
       story={data.story}
       articles={data.articles}
       lang={lang}
-      readLanguages={viewer.prefs.languages}
+      translated={translated}
       aiAssistant={viewer.prefs.aiAssistant}
       signedIn={!!viewer.user}
       following={follow.following}

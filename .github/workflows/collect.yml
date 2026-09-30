@@ -29,6 +29,10 @@ jobs:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       EMBEDDER: multilingual
       GROUP_THRESHOLD: ${{ vars.GROUP_THRESHOLD }}   # optional repository variable; default 0.905
+      # Headline translation (docs/TRANSLATE.md); skipped while these secrets are not set.
+      TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
+      TRANSLATE_TOKEN: ${{ secrets.TRANSLATE_TOKEN }}
+      TRANSLATE_LANGS: ${{ vars.TRANSLATE_LANGS }}   # optional, e.g. "te,ta": always translate into these
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5

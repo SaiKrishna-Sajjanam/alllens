@@ -1,11 +1,10 @@
 import 'server-only';
 import { cookies } from 'next/headers';
 import { cache } from 'react';
-import { groupsOf } from './catalog';
 import { demoData, DEMO_SOURCES } from './demo';
 import { isConfigured } from './env';
 import {
-  ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesInterests, sortStories, type TabId,
+  ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesFilters, sortStories, type TabId,
 } from './feed';
 import { isLang } from './i18n';
 import {
@@ -48,7 +47,7 @@ export interface FeedQuery {
   prefs: Prefs;
   tab: TabId;
   sort: FeedSort;
-  showAllTopics: boolean;
+  topic: string | null;   // a topic button tapped on this visit; null = All
   page: number;
   seed: string;
 }
@@ -59,7 +58,7 @@ export interface FeedResult {
   demo: boolean;
 }
 
-/** Story ids whose headlines or snippets mention any of the reader's own interests. */
+/** Story ids whose headlines or snippets mention any of these words (archive search). */
 async function customStoryIds(terms: string[], since: string, until: string): Promise<Set<string>> {
   const ids = new Set<string>();
   if (!terms.length) return ids;
@@ -82,11 +81,10 @@ async function customStoryIds(terms: string[], since: string, until: string): Pr
 export async function getFeed(q: FeedQuery): Promise<FeedResult> {
   const { prefs } = q;
   const since = daysAgo(FEED_DAYS);
-  const custom = q.showAllTopics ? new Set<string>() : await customStoryIds(prefs.customTopics, since, daysAgo(-1));
 
   if (!isConfigured()) {
     const { stories } = demoData();
-    const filtered = stories.filter((s) => inTab(s, q.tab, prefs) && matchesInterests(s, prefs, custom, q.showAllTopics));
+    const filtered = stories.filter((s) => inTab(s, q.tab, prefs) && matchesFilters(s, prefs, q.topic));
     const sorted = sortStories(filtered, q.sort, q.seed);
     const end = (q.page + 1) * PAGE_SIZE;
     return { stories: sorted.slice(0, end), hasMore: sorted.length > end, demo: true };
@@ -100,19 +98,10 @@ export async function getFeed(q: FeedQuery): Promise<FeedResult> {
     if (!prefs.state) return { stories: [], hasMore: false, demo: false };   // no state chosen yet
     query = query.overlaps('places', [prefs.state]);
   }
-  if (prefs.languages.length) query = query.overlaps('languages', prefs.languages);
-  if (prefs.hideCrime) query = query.not('topics', 'ov', `{${HIDDEN_BY_HIDE_CRIME.join(',')}}`);
-  if (prefs.sourceTypes.length) {
-    const raw = await rawTypesFor(prefs.sourceTypes);
-    if (!raw.length) return { stories: [], hasMore: false, demo: false };
-    query = query.overlaps('source_types', raw);
-  }
-  if (!q.showAllTopics && (prefs.topics.length || prefs.customTopics.length)) {
-    const ids = [...custom];
-    if (prefs.topics.length && ids.length) query = query.or(`topics.ov.{${prefs.topics.join(',')}},id.in.(${ids.join(',')})`);
-    else if (prefs.topics.length) query = query.overlaps('topics', prefs.topics);
-    else if (ids.length) query = query.in('id', ids);
-    else return { stories: [], hasMore: false, demo: false };
+  // Same rules as matchesFilters(): nothing personal narrows the news.
+  if (q.topic) query = query.overlaps('topics', [q.topic]);
+  if (prefs.hideCrime && !(q.topic && HIDDEN_BY_HIDE_CRIME.includes(q.topic))) {
+    query = query.not('topics', 'ov', `{${HIDDEN_BY_HIDE_CRIME.join(',')}}`);
   }
 
   const end = (q.page + 1) * PAGE_SIZE;
@@ -125,13 +114,6 @@ export async function getFeed(q: FeedQuery): Promise<FeedResult> {
   const { data } = await query.order('last_article_at', { ascending: false }).range(0, end);
   const rows = (data ?? []) as unknown as Story[];
   return { stories: rows.slice(0, end), hasMore: rows.length > end, demo: false };
-}
-
-/** Raw source types (e.g. "tv_digital") that belong to the chosen groups (e.g. "tv"). */
-async function rawTypesFor(groups: string[]): Promise<string[]> {
-  const sources = await getSources();
-  const types = new Set(sources.map((s) => s.type ?? 'other'));
-  return [...types].filter((t) => groupsOf(t).some((g) => groups.includes(g)));
 }
 
 // ------------------------------------------------------------------ one story
@@ -201,7 +183,6 @@ export async function getArchive(q: { prefs: Prefs; search: string; page: number
 
   const supabase = await createClient();
   let query = supabase.from('stories').select(STORY_COLS).gte('last_article_at', from).lt('last_article_at', to);
-  if (q.prefs.languages.length) query = query.overlaps('languages', q.prefs.languages);
   if (search.length >= 2) {
     const ids = [...(await customStoryIds([search], from, to))];
     if (!ids.length) return { stories: [], hasMore: false };

@@ -50,7 +50,7 @@ Grouping across languages needs the multilingual model: `pip install -r requirem
 
 1. **No judgement.** No bias labels, reliability scores or ratings.
 2. **No voice of our own.** Nothing written by us or by AI is shown; "Ask your AI" passes only the link.
-3. **No changed words.** Headlines and snippets exactly as published; headline edits by the source are followed and marked.
+3. **No changed words.** Headlines and snippets exactly as published; headline edits by the source are followed and marked. Headlines are also shown in the reader's app language as Google's translation, always marked, with the original one tap away (docs/TRANSLATE.md).
 4. **No hidden ranking.** Order is time, number of sources, or random; the reader chooses.
 5. **Every lens included.** The full source list is public; anyone can suggest more.
 

@@ -1,14 +1,15 @@
 import Link from 'next/link';
 import { groupsOf, languageName } from '@/lib/catalog';
 import { formatTime, t } from '@/lib/i18n';
-import { translateUrl } from '@/lib/translate';
 import type { Article, Lang } from '@/lib/types';
 import AskAI from './AskAI';
 import { BackIcon, ExternalIcon } from './Icons';
+import { OwnTranslatorNote, Translated } from './Translated';
 
-/** 2-3 reports next to each other, exactly as published. No commentary. */
-export default function CompareView({ articles, lang, storyId, aiAssistant }: {
-  articles: Article[]; lang: Lang; storyId: string | null; aiAssistant: string;
+/** 2-3 reports next to each other, exactly as published (headlines also in the reader's
+ *  language, marked as Google's translation). No commentary. */
+export default function CompareView({ articles, lang, storyId, aiAssistant, translated }: {
+  articles: Article[]; lang: Lang; storyId: string | null; aiAssistant: string; translated: Record<string, string>;
 }) {
   const back = storyId ? `/story/${storyId}` : '/feed';
   if (articles.length < 2) {
@@ -43,7 +44,8 @@ export default function CompareView({ articles, lang, storyId, aiAssistant }: {
                 <span className="small muted">{formatTime(a.published_at ?? a.fetched_at, lang)}</span>
               </div>
               <span className="section-title">{t(lang, 'compare.headline')}</span>
-              <p className="headline" lang={l}>{a.title}</p>
+              <Translated as="p" className="headline" original={a.title} originalLang={a.language}
+                translated={translated[a.id]} lang={lang} />
               {a.snippet && (
                 <>
                   <span className="section-title">{t(lang, 'compare.snippet')}</span>
@@ -53,19 +55,11 @@ export default function CompareView({ articles, lang, storyId, aiAssistant }: {
               <a href={a.url} target="_blank" rel="noopener noreferrer" className="row" style={{ minHeight: 44, fontWeight: 600 }}>
                 {t(lang, 'compare.original')} <ExternalIcon />
               </a>
-              {translateUrl(a.url, a.language, lang) && (
-                <a href={translateUrl(a.url, a.language, lang)!} target="_blank" rel="noopener noreferrer" className="row"
-                  style={{ minHeight: 44 }} title={t(lang, 'story.translateNote')}>
-                  {t(lang, 'story.translate')} <ExternalIcon />
-                </a>
-              )}
+              <OwnTranslatorNote articleLang={a.language} lang={lang} />
             </section>
           );
         })}
       </div>
-      {articles.some((a) => translateUrl(a.url, a.language, lang)) && (
-        <p className="small muted">{t(lang, 'story.translateNote')}</p>
-      )}
       <div className="narrow stack" style={{ margin: 0 }}>
         <AskAI urls={articles.map((a) => a.url)} lang={lang} preferred={aiAssistant} label={t(lang, 'compare.askAll')} block />
         <p className="small muted">{t(lang, 'ai.note')}</p>

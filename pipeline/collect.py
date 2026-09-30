@@ -131,6 +131,14 @@ def main(argv=None) -> int:
         result = process.run(db)
         print(f"Tagged {result['tagged']}  grouped {result['grouped']} into "
               f"{result['new_stories']} new and {result['joined']} existing stories")
+        from pipeline import translate
+
+        if translate.configured():
+            try:
+                print("Headlines translated:", translate.run(db))
+            except Exception as e:  # noqa: BLE001 - translation never fails the collection
+                db.rollback()
+                print(f"Headline translation skipped this run: {type(e).__name__}: {e}")
     db.close()
     # Fail the scheduled job only if nothing worked at all, so one bad feed never pages anyone.
     return 1 if summary["feeds_ok"] == 0 else 0

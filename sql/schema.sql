@@ -75,6 +75,17 @@ CREATE TABLE IF NOT EXISTS article_vectors (
     vector      TEXT NOT NULL
 );
 
+-- Headlines in the reader's app language (pipeline/translate.py): Google's translation of a
+-- source's headline, marked as such in the app; kept 7 days. source_hash = which wording.
+CREATE TABLE IF NOT EXISTS headline_translations (
+    article_id     TEXT NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+    lang           TEXT NOT NULL,
+    title          TEXT NOT NULL,
+    source_hash    TEXT NOT NULL,
+    translated_at  TIMESTAMPTZ NOT NULL,
+    PRIMARY KEY (article_id, lang)
+);
+
 CREATE TABLE IF NOT EXISTS story_vectors (
     story_id    TEXT PRIMARY KEY REFERENCES stories(id) ON DELETE CASCADE,
     model       TEXT NOT NULL,

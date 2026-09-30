@@ -97,6 +97,17 @@ create table if not exists public.article_vectors (
     vector      text not null
 );
 
+-- Headlines in the reader's app language (pipeline/translate.py): Google's translation of a
+-- source's headline, marked as such in the app; kept 7 days. source_hash = which wording.
+create table if not exists public.headline_translations (
+    article_id     text not null references public.articles(id) on delete cascade,
+    lang           text not null,
+    title          text not null,
+    source_hash    text not null,
+    translated_at  timestamptz not null,
+    primary key (article_id, lang)
+);
+
 create table if not exists public.story_vectors (
     story_id    text primary key references public.stories(id) on delete cascade,
     model       text not null,

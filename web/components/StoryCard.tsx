@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { groupsOf, languageName, mostSpecific, placeName } from '@/lib/catalog';
-import { isNewSince, pickLabel } from '@/lib/feed';
+import { isNewSince, labelLanguage, pickLabel } from '@/lib/feed';
 import { formatDay, t } from '@/lib/i18n';
 import type { Lang, Story } from '@/lib/types';
 import RemoteImage from './RemoteImage';
@@ -8,16 +8,17 @@ import RemoteImage from './RemoteImage';
 interface Props {
   story: Story;
   lang: Lang;
-  readLanguages: string[];
   lastVisit: string | null;
+  /** Google's translation of the headline into the app language, when it was written in another. */
+  translated?: string;
   extra?: React.ReactNode;
 }
 
-/** One story in a list. The headline is a source's own words, credited to it. */
-export default function StoryCard({ story, lang, readLanguages, lastVisit, extra }: Props) {
-  const label = pickLabel(story, readLanguages);
-  const labelLang = Object.entries(story.labels ?? {}).find(([, v]) => v.article_id === label.article_id)?.[0]
-    ?? story.label_language ?? undefined;
+/** One story in a list. The headline is a source's own words, credited to it, or Google's
+ *  translation of them, marked as such (the original is on the story page). */
+export default function StoryCard({ story, lang, lastVisit, translated, extra }: Props) {
+  const label = pickLabel(story, lang);
+  const labelLang = labelLanguage(story, label) ?? undefined;
   const place = mostSpecific(story.places ?? []);
   const groups = [...new Set((story.source_types ?? []).flatMap((x) => groupsOf(x)))];
   const fresh = isNewSince(story, lastVisit);
@@ -40,8 +41,11 @@ export default function StoryCard({ story, lang, readLanguages, lastVisit, extra
           </span>
         )}
       </div>
-      <h2 className="headline" lang={labelLang}>{label.title}</h2>
-      <p className="small muted">{t(lang, 'feed.firstBy', { source: label.source_name })}</p>
+      <h2 className="headline" lang={translated ? lang : labelLang}>{translated ?? label.title}</h2>
+      <p className="small muted">
+        {t(lang, 'feed.firstBy', { source: label.source_name })}
+        {translated ? ` · ${t(lang, 'tr.from', { language: languageName(labelLang) })}` : ''}
+      </p>
       <div className="row small">
         <span className="count">
           {story.source_count === 1 ? t(lang, 'feed.source1') : t(lang, 'feed.sources', { n: story.source_count })}

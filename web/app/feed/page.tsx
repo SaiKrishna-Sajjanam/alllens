@@ -1,7 +1,8 @@
 import FeedView from '@/components/FeedView';
 import MarkVisited from '@/components/MarkVisited';
 import { getFeed, getViewer } from '@/lib/data';
-import { normaliseTab, tabsFor } from '@/lib/feed';
+import { normaliseTab, normaliseTopic, tabsFor } from '@/lib/feed';
+import { translateStoryHeadlines } from '@/lib/headlines';
 import { t } from '@/lib/i18n';
 import type { FeedSort } from '@/lib/types';
 
@@ -19,10 +20,11 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   const sortParam = one(sp.sort);
   const sort: FeedSort = sortParam === 'latest' || sortParam === 'random' || sortParam === 'sources' ? sortParam : prefs.feedSort;
   const page = Math.min(Math.max(Number.parseInt(one(sp.page) ?? '0', 10) || 0, 0), 20);
-  const showAllTopics = one(sp.all) === '1';
+  const topic = normaliseTopic(one(sp.topic));
   const seed = `${viewer.user?.id ?? 'guest'}-${new Date().toISOString().slice(0, 13)}`;
 
-  const feed = await getFeed({ prefs, tab, sort, showAllTopics, page, seed });
+  const feed = await getFeed({ prefs, tab, sort, topic, page, seed });
+  const translated = await translateStoryHeadlines(feed.stories, lang);
   return (
     <>
       <FeedView
@@ -31,9 +33,10 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
         tabs={tabsFor(prefs, lang, { international: t(lang, 'feed.tabInternational'), national: t(lang, 'feed.tabNational'), state: t(lang, 'prefs.places') })}
         tab={tab}
         sort={sort}
-        showAllTopics={showAllTopics}
+        topic={topic}
         page={page}
         stories={feed.stories}
+        translated={translated}
         hasMore={feed.hasMore}
         demo={feed.demo}
         lastVisit={viewer.lastVisit}

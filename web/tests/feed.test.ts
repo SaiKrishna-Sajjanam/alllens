@@ -2,14 +2,14 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { demoData } from '../lib/demo';
 import {
-  filterArticles, inTab, matchesInterests, normaliseTab, pickLabel, seededShuffle, sortArticles,
+  filterArticles, inTab, labelLanguage, matchesFilters, normaliseTab, normaliseTopic, pickLabel, seededShuffle, sortArticles,
   sortStories, tabsFor, toggleCompare, wireCounts,
 } from '../lib/feed';
 import { DEFAULT_PREFS } from '../lib/prefs';
 import type { Article, Prefs, Story } from '../lib/types';
 
 const { stories, articles } = demoData(Date.parse('2026-10-01T12:00:00Z'));
-const prefs: Prefs = { ...DEFAULT_PREFS, languages: ['en', 'te'], state: 'tg' };
+const prefs: Prefs = { ...DEFAULT_PREFS, state: 'tg' };
 const byId = (id: string) => stories.find((s) => s.id === id)!;
 
 test('tabs: International, National (all India), State (any state, all alike; none until chosen)', () => {
@@ -34,20 +34,22 @@ test('tabs: International, National (all India), State (any state, all alike; no
   assert.ok(!stories.some((s) => inTab(s, 'state', { ...prefs, state: '' })));
 });
 
-test('interests: topics, own words, languages, crime filter are the reader\'s choice', () => {
-  const custom = new Set<string>();
-  const politics = { ...prefs, topics: ['politics'] };
-  assert.ok(matchesInterests(byId('demo-cwc'), politics, custom, false));
-  assert.ok(!matchesInterests(byId('demo-kohli'), politics, custom, false));
-  assert.ok(matchesInterests(byId('demo-kohli'), politics, custom, true), 'show all topics');
-  assert.ok(matchesInterests(byId('demo-kohli'), politics, new Set(['demo-kohli']), false), 'own interest match');
-  assert.ok(!matchesInterests(byId('demo-alwal'), { ...prefs, hideCrime: true }, custom, true));
+test('the same news for everyone: only a tapped topic button and the optional hide-crime narrow it', () => {
+  // Every story shows for every reader, whatever language its sources wrote in.
+  for (const s of stories) assert.ok(matchesFilters(s, DEFAULT_PREFS, null), s.id);
+  assert.ok(matchesFilters(byId('demo-alwal'), DEFAULT_PREFS, null), 'Telugu-only story, any reader');
+  // Topic buttons: this visit only (from the URL); unknown ones mean All.
+  assert.ok(matchesFilters(byId('demo-cwc'), prefs, 'politics'));
+  assert.ok(!matchesFilters(byId('demo-kohli'), prefs, 'politics'));
+  assert.equal(normaliseTopic('politics'), 'politics');
+  assert.equal(normaliseTopic('not-a-topic'), null);
+  assert.equal(normaliseTopic(undefined), null);
+  // Hide crime (and accidents) is the reader's own comfort choice, off by default.
+  assert.equal(DEFAULT_PREFS.hideCrime, false);
+  assert.ok(!matchesFilters(byId('demo-alwal'), { ...prefs, hideCrime: true }, null));
   const crash = { ...byId('demo-kohli'), topics: ['accidents'] };
-  assert.ok(!matchesInterests(crash, { ...prefs, hideCrime: true }, custom, true), 'hide crime also hides accidents');
-  assert.ok(!matchesInterests(byId('demo-alwal'), { ...prefs, languages: ['en'] }, custom, true), 'Telugu-only story, English reader');
-  assert.ok(matchesInterests(byId('demo-kathua'), { ...prefs, languages: ['en'] }, custom, true));
-  assert.ok(!matchesInterests(byId('demo-kohli'), { ...prefs, sourceTypes: ['newspaper'] }, custom, true));
-  assert.ok(matchesInterests(byId('demo-kohli'), { ...prefs, sourceTypes: ['tv'] }, custom, true));
+  assert.ok(!matchesFilters(crash, { ...prefs, hideCrime: true }, null), 'hide crime also hides accidents');
+  assert.ok(matchesFilters(crash, { ...prefs, hideCrime: true }, 'accidents'), 'tapping Accidents shows them');
 });
 
 test('feed order is mechanical: sources, latest, or a stable random', () => {
@@ -62,12 +64,16 @@ test('feed order is mechanical: sources, latest, or a stable random', () => {
   assert.equal(new Set(sortStories(stories, 'random', 'z').map((s) => s.id)).size, stories.length);
 });
 
-test('story label is a source headline, in the reader language when available', () => {
+test('story label: a source headline written in the app language, else the earliest (then shown translated)', () => {
   const kathua = byId('demo-kathua');
-  const en = pickLabel(kathua, ['en']);
+  const en = pickLabel(kathua, 'en');
   assert.equal(en.source_name, 'ThePrint');
-  const te = pickLabel(kathua, ['te', 'en']);
-  assert.equal(te.source_name, 'NTV Telugu');
+  const te = pickLabel(kathua, 'te');
+  assert.equal(te.source_name, 'NTV Telugu', 'a Telugu reader gets the Telugu outlet own headline');
+  assert.equal(labelLanguage(kathua, te), 'te');
+  const ta = pickLabel(kathua, 'ta');
+  assert.equal(ta.source_name, 'ThePrint', 'no Tamil report: the earliest headline, which the page translates');
+  assert.equal(labelLanguage(kathua, ta), 'en');
   const texts = articles.map((a) => a.title);
   assert.ok(texts.includes(en.title) && texts.includes(te.title), 'labels are unchanged headlines');
 });

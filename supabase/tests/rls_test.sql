@@ -16,6 +16,7 @@ insert into public.articles (id, source_id, title, snippet, url, fetched_at, sto
     values ('a1', 'src1', 'A headline about Warangal roads', 'Snippet 50% done', 'https://example.com/a1', now(), 'st1')
     on conflict do nothing;
 insert into public.article_vectors values ('a1', 'm', '[0.1]') on conflict do nothing;
+insert into public.headline_translations values ('a1', 'te', 'అనువాదం', 'h', now()) on conflict do nothing;
 
 create or replace function pg_temp.expect_denied(stmt text) returns void language plpgsql as $$
 begin
@@ -40,6 +41,11 @@ select pg_temp.expect_count('select count(*) from public.stories', 1);
 select pg_temp.expect_count('select count(*) from public.articles', 1);
 select pg_temp.expect_count('select count(*) from public.sources', 1);
 select pg_temp.expect_denied('select count(*) from public.article_vectors');
+-- Translated headlines are public to read, like the headlines; nobody but the pipeline writes them.
+select pg_temp.expect_count('select count(*) from public.headline_translations', 1);
+select pg_temp.expect_denied($q$update public.headline_translations set title = 'fake'$q$);
+select pg_temp.expect_denied($q$insert into public.headline_translations values ('a1', 'hi', 'fake', 'h', now())$q$);
+select pg_temp.expect_denied($q$delete from public.headline_translations$q$);
 select pg_temp.expect_denied('select count(*) from public.runs');
 select pg_temp.expect_denied('select count(*) from public.coverage_counts');
 select pg_temp.expect_denied('select count(*) from public.profiles');
@@ -55,6 +61,7 @@ select pg_temp.expect_count($q$select count(*) from public.search_story_ids('5_%
 reset role;
 set role authenticated;
 select set_config('request.jwt.claim.sub', :'u1', false);
+select pg_temp.expect_denied($q$update public.headline_translations set title = 'fake'$q$);
 insert into public.profiles (user_id, topics) values (:'u1', '{politics}');
 -- Every state is treated alike: a new reader has no state until they pick one.
 select pg_temp.expect_count($q$select count(*) from public.profiles where state = ''$q$, 1);

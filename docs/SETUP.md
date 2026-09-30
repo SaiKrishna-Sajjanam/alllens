@@ -61,6 +61,7 @@ From now on collection runs every 3 hours and clean-up every night, by themselve
    | `NEXT_PUBLIC_GRIEVANCE_OFFICER` | name of the grievance officer (can be you for the pilot) |
    | `NEXT_PUBLIC_GRIEVANCE_EMAIL` | an inbox you check daily |
    | `NEXT_PUBLIC_CONTACT_EMAIL` | general contact inbox |
+   | `TRANSLATE_URL`, `TRANSLATE_TOKEN` | optional: headline translation, from [TRANSLATE.md](TRANSLATE.md) |
 
 4. Deploy. **Check:** the site opens, shows live stories (no yellow "sample" banner), and "Our sources" lists your sources.
 
@@ -75,6 +76,10 @@ Readers sign in with Google only; the app never sends email. Reading needs no ac
 3. Supabase → Authentication → Providers → **Email**: turn it off, so no sign-in email is ever sent.
 
 **Check:** on the site, Sign in → Continue with Google → you land on your feed; your choices are kept; Follow works; Settings shows your Google email.
+
+## 5b. Headlines in every reader's language (10 min)
+
+Follow [TRANSLATE.md](TRANSLATE.md): a small Google Apps Script in your account translates headlines for free.
 
 ## 6. Before inviting the 20 pilot users
 
@@ -93,6 +98,7 @@ Readers sign in with Google only; the app never sends email. Reading needs no ac
 | Site shows the yellow sample banner | Vercel env vars `NEXT_PUBLIC_SUPABASE_URL` / `..._ANON_KEY` missing; redeploy after adding |
 | Sign-in says it failed | Step 5.1 redirect URLs and 5.2 Google settings |
 | A feed stopped working | Actions → Check feeds; mark it `broken` in `sources.csv` |
+| Headlines stay in their original language | docs/TRANSLATE.md "If something goes wrong"; the Collect news log line `Headlines translated` |
 | Story shows the wrong state (or none) | Add the place or spelling to that state's aliases in `pipeline/data/places.json`, run `python -m pipeline.export_web_data`, push, then run Collect news with **retag** ticked |
 
 ## Costs to expect

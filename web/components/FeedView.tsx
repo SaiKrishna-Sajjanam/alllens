@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { TOPICS, topicName } from '@/lib/catalog';
 import { DEFAULT_TAB, type Tab, type TabId } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
 import type { FeedSort, Lang, Prefs, Story } from '@/lib/types';
@@ -11,9 +12,11 @@ interface Props {
   tabs: Tab[];
   tab: TabId;
   sort: FeedSort;
-  showAllTopics: boolean;
+  topic: string | null;
   page: number;
   stories: Story[];
+  /** Card headlines in the app language (Google's translation), by story id. */
+  translated: Record<string, string>;
   hasMore: boolean;
   demo: boolean;
   lastVisit: string | null;
@@ -23,20 +26,19 @@ const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
 
 export default function FeedView(p: Props) {
   const { lang, prefs } = p;
-  const href = (over: Partial<{ tab: TabId; sort: FeedSort; all: boolean; page: number }>) => {
+  const href = (over: Partial<{ tab: TabId; sort: FeedSort; topic: string | null; page: number }>) => {
     const q = new URLSearchParams();
     const tab = over.tab ?? p.tab;
     const sort = over.sort ?? p.sort;
-    const all = over.all ?? p.showAllTopics;
+    const topic = over.topic !== undefined ? over.topic : p.topic;
     const page = over.page ?? 0;
     if (tab !== DEFAULT_TAB) q.set('tab', tab);
     if (sort !== prefs.feedSort) q.set('sort', sort);
-    if (all) q.set('all', '1');
+    if (topic) q.set('topic', topic);
     if (page) q.set('page', String(page));
     const s = q.toString();
     return s ? `/feed?${s}` : '/feed';
   };
-  const hasTopicChoice = prefs.topics.length > 0 || prefs.customTopics.length > 0;
 
   return (
     <div>
@@ -59,6 +61,17 @@ export default function FeedView(p: Props) {
           ))}
         </nav>
         {p.tab === 'state' && <StatePicker prefs={prefs} lang={lang} />}
+        {/* Topic buttons for this visit only: everyone starts on All, so nothing saved narrows the news. */}
+        <div className="filter-row" role="group" aria-label={t(lang, 'prefs.topics')}>
+          <Link href={href({ topic: null })} className="chip" aria-pressed={!p.topic ? 'true' : 'false'}>
+            {t(lang, 'story.all')}
+          </Link>
+          {TOPICS.map((x) => (
+            <Link key={x.id} href={href({ topic: x.id })} className="chip" aria-pressed={p.topic === x.id ? 'true' : 'false'}>
+              {topicName(x.id, lang)}
+            </Link>
+          ))}
+        </div>
         <div className="spread">
           <div className="row" role="group" aria-label={t(lang, 'feed.order')}>
             <span className="small muted">{t(lang, 'feed.order')}:</span>
@@ -69,26 +82,19 @@ export default function FeedView(p: Props) {
               </Link>
             ))}
           </div>
-          {hasTopicChoice && (
-            <Link className="btn btn-quiet btn-small" href={href({ all: !p.showAllTopics })}>
-              {p.showAllTopics ? t(lang, 'feed.onlyMyTopics') : t(lang, 'feed.showAllTopics')}
-            </Link>
-          )}
         </div>
         <p className="small muted">{t(lang, 'feed.orderNote')}</p>
       </div>
 
       {p.tab === 'state' && !prefs.state ? null : p.stories.length === 0 ? (
         <div className="panel stack">
-          <p>{hasTopicChoice && !p.showAllTopics ? t(lang, 'feed.emptyTopics') : t(lang, 'feed.empty')}</p>
-          {hasTopicChoice && !p.showAllTopics && (
-            <Link className="btn btn-secondary" href={href({ all: true })}>{t(lang, 'feed.showAllTopics')}</Link>
-          )}
+          <p>{t(lang, 'feed.empty')}</p>
+          {p.topic && <Link className="btn btn-secondary" href={href({ topic: null })}>{t(lang, 'story.all')}</Link>}
         </div>
       ) : (
         <div className="feed-grid">
           {p.stories.map((s) => (
-            <StoryCard key={s.id} story={s} lang={lang} readLanguages={prefs.languages} lastVisit={p.lastVisit} />
+            <StoryCard key={s.id} story={s} lang={lang} lastVisit={p.lastVisit} translated={p.translated[s.id]} />
           ))}
         </div>
       )}

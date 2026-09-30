@@ -1,35 +1,36 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { LANGUAGES } from '../lib/catalog';
 import { DEFAULT_PREFS, cleanPrefs, decodePrefsCookie, encodePrefsCookie, prefsFromProfile, profileFromPrefs } from '../lib/prefs';
+import { titleHash } from '../lib/titlehash';
 
 test('unknown or hostile values fall back to safe defaults', () => {
   const p = cleanPrefs({
-    topics: ['politics', 'not-a-topic', 42, 'politics'],
     state: 'tg-warangal',
-    languages: ['xx'],
     uiLanguage: 'fr',
     aiAssistant: 'javascript:alert(1)',
     feedSort: 'popularity',
-    customTopics: ['  Infosys  ', 'x', 'a'.repeat(100)],
     hideCrime: 'yes',
   });
-  assert.deepEqual(p.topics, ['politics']);
   assert.equal(p.state, '', 'a district is not a state; no state until the reader picks one');
-  assert.deepEqual(p.languages, ['en']);
   assert.equal(p.uiLanguage, 'en');
   assert.equal(p.aiAssistant, 'chatgpt');
   assert.equal(p.feedSort, 'sources');
-  assert.deepEqual(p.customTopics, ['Infosys']);
   assert.equal(p.hideCrime, false);
 });
 
+test('nothing saved narrows the news: old topic, language and source-kind choices are dropped', () => {
+  const old = cleanPrefs({ topics: ['sports'], customTopics: ['Infosys'], languages: ['te'], sourceTypes: ['tv'], state: 'kl' });
+  assert.deepEqual(Object.keys(old).sort(), ['aiAssistant', 'feedSort', 'hideCrime', 'state', 'uiLanguage']);
+  assert.equal(old.state, 'kl');
+  const row = profileFromPrefs('u1', old);
+  assert.deepEqual([row.topics, row.custom_topics, row.languages, row.source_types], [[], [], [], []]);
+});
+
 test('cookie and profile round trips keep choices', () => {
-  const p = cleanPrefs({ topics: ['sports'], languages: ['te', 'en'], state: 'kl', uiLanguage: 'te' });
+  const p = cleanPrefs({ state: 'kl', uiLanguage: 'te', hideCrime: true });
   assert.deepEqual(decodePrefsCookie(encodePrefsCookie(p)), p);
   assert.equal(decodePrefsCookie('%%%not-json'), null);
-  const row = profileFromPrefs('u1', p);
-  assert.deepEqual(prefsFromProfile(row), p);
+  assert.deepEqual(prefsFromProfile(profileFromPrefs('u1', p)), p);
 });
 
 test('any state or union territory, all alike, none by default; any interface language', () => {
@@ -44,8 +45,6 @@ test('any state or union territory, all alike, none by default; any interface la
   assert.deepEqual(profileFromPrefs('u1', tn).places, [], 'the old column is kept empty');
 });
 
-test('news in every language we collect; "All" keeps them all', () => {
-  const codes = LANGUAGES.map((l) => l.code);
-  assert.ok(codes.length >= 13 && codes[0] === 'en');
-  assert.deepEqual(cleanPrefs({ languages: codes }).languages, codes);
+test('headline wording check matches the pipeline (pipeline/translate.py title_hash)', () => {
+  assert.equal(titleHash('హైదరాబాద్‌లో భారీ వర్షం'), '550051f53119');
 });

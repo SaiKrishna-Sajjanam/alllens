@@ -3,12 +3,10 @@ export type Lang = 'en' | 'hi' | 'te' | 'ta' | 'kn' | 'ml' | 'mr' | 'bn' | 'gu' 
 export type FeedSort = 'sources' | 'latest' | 'random';
 export type StorySort = 'earliest' | 'latest' | 'random' | 'source';
 
+/** The reader's choices. Nothing here narrows International or National: those are the same
+ *  for every reader. The state picks the State tab; "hide crime" is an optional comfort setting. */
 export interface Prefs {
-  topics: string[];
-  customTopics: string[];
   state: string;
-  languages: string[];
-  sourceTypes: string[]; // empty = every type
   hideCrime: boolean;
   uiLanguage: Lang;
   aiAssistant: string;

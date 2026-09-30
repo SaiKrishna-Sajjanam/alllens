@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import StoryCard from '@/components/StoryCard';
 import { getFollowing, getViewer } from '@/lib/data';
+import { translateStoryHeadlines } from '@/lib/headlines';
 import { t } from '@/lib/i18n';
 
 export const metadata = { title: 'Following' };
@@ -19,6 +20,7 @@ export default async function FollowingPage() {
     );
   }
   const items = await getFollowing();
+  const translated = await translateStoryHeadlines(items.map((i) => i.story), lang);
   return (
     <div className="stack-lg">
       <h1>{t(lang, 'following.title')}</h1>
@@ -29,7 +31,7 @@ export default async function FollowingPage() {
           {items.map(({ story, seenArticleCount }) => {
             const fresh = Math.max(story.article_count - seenArticleCount, 0);
             return (
-              <StoryCard key={story.id} story={story} lang={lang} readLanguages={viewer.prefs.languages} lastVisit={null}
+              <StoryCard key={story.id} story={story} lang={lang} lastVisit={null} translated={translated[story.id]}
                 extra={
                   <p className={fresh ? 'badge' : 'small muted'} style={{ alignSelf: 'flex-start' }}>
                     {fresh ? t(lang, 'following.newSince', { n: fresh }) : t(lang, 'following.noNew')}

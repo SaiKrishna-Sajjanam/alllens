@@ -1,7 +1,7 @@
 // Pure, mechanical rules for what a reader sees and in what order.
 // No scoring of sources anywhere: only time, counts, the reader's own
 // choices, or random order.
-import { groupsOf, placeName, type SourceGroup } from './catalog';
+import { groupsOf, isTopic, placeName, type SourceGroup } from './catalog';
 import type { Article, FeedSort, LabelInfo, Lang, Prefs, Story, StorySort } from './types';
 
 export const FEED_DAYS = 7;
@@ -45,17 +45,22 @@ export function inTab(story: Story, tab: TabId, prefs: Prefs): boolean {
   return !!prefs.state && (story.places ?? []).includes(prefs.state);
 }
 
-export function matchesInterests(story: Story, prefs: Prefs, customStoryIds: Set<string>, showAllTopics: boolean): boolean {
+/** A topic button tapped on this visit (from the URL), or null for All. */
+export function normaliseTopic(topic: string | undefined): string | null {
+  return topic && isTopic(topic) ? topic : null;
+}
+
+/**
+ * Nothing personal narrows the news: International and National are the same for every
+ * reader, and the State tab is the same for everyone who picks that state, whatever
+ * language each source used. The only filters are a topic button tapped on this visit
+ * and the optional "hide crime and accidents" (unless the reader tapped Crime or Accidents).
+ */
+export function matchesFilters(story: Story, prefs: Prefs, topic: string | null): boolean {
   const topics = story.topics ?? [];
-  if (prefs.hideCrime && topics.some((t) => HIDDEN_BY_HIDE_CRIME.includes(t))) return false;
-  const langs = story.languages ?? [];
-  if (langs.length && !langs.some((l) => prefs.languages.includes(l))) return false;
-  if (prefs.sourceTypes.length) {
-    const groups = new Set((story.source_types ?? []).flatMap((t) => groupsOf(t)));
-    if (!prefs.sourceTypes.some((g) => groups.has(g as SourceGroup))) return false;
-  }
-  if (showAllTopics || (!prefs.topics.length && !prefs.customTopics.length)) return true;
-  return topics.some((t) => prefs.topics.includes(t)) || customStoryIds.has(story.id);
+  const tappedHidden = !!topic && HIDDEN_BY_HIDE_CRIME.includes(topic);
+  if (prefs.hideCrime && !tappedHidden && topics.some((t) => HIDDEN_BY_HIDE_CRIME.includes(t))) return false;
+  return !topic || topics.includes(topic);
 }
 
 /** Deterministic shuffle so "Random" stays stable while a page is open. */
@@ -85,13 +90,14 @@ export function sortStories(stories: Story[], sort: FeedSort, seed: string): Sto
 }
 
 /**
- * The headline shown for a story: the earliest headline in the reader's first
- * language that has one, otherwise the earliest headline overall. Always a
- * source's own words, credited to that source.
+ * The headline shown for a story: the earliest headline written in the reader's app
+ * language, if a source reported the story in it; otherwise the earliest headline overall
+ * (which the page then shows translated, marked as such: lib/headlines.ts). Always
+ * credited to the source that wrote it.
  */
-export function pickLabel(story: Story, languages: string[]): LabelInfo {
+export function pickLabel(story: Story, lang?: string): LabelInfo {
   const labels = story.labels ?? {};
-  for (const l of languages) if (labels[l]) return labels[l];
+  if (lang && labels[lang]) return labels[lang];
   const first = story.label_language ? labels[story.label_language] : undefined;
   return first ?? {
     title: story.label,
@@ -100,6 +106,12 @@ export function pickLabel(story: Story, languages: string[]): LabelInfo {
     source_name: story.label_source_id ?? '',
     published_at: story.first_published_at ?? '',
   };
+}
+
+/** The language a label was written in. */
+export function labelLanguage(story: Story, label: LabelInfo): string | null {
+  return Object.entries(story.labels ?? {}).find(([, v]) => v.article_id === label.article_id)?.[0]
+    ?? story.label_language;
 }
 
 export function isNewSince(story: Story, lastVisit: string | null): boolean {

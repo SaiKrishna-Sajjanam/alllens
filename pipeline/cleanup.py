@@ -9,6 +9,7 @@
    only for 72 hours after its latest one, so vectors of closed stories (and of
    articles older than a week, except an open story's first report) go. This keeps
    the database small; a regroup simply computes them again.
+4. Deletes headline translations older than a week (the feed's span; pipeline/translate.py).
 
 Feed = days 0-7 and archive = days 8-30 are handled by the app's queries;
 this job only enforces the 30-day limit.
@@ -70,9 +71,14 @@ def run(db: DB, now: datetime | None = None) -> dict:
     vectors += db.execute(
         "DELETE FROM story_vectors WHERE story_id IN (SELECT id FROM stories WHERE last_article_at < ?)",
         (open_since,)).rowcount
+    from pipeline.translate import FEED_DAYS
+
+    translations = db.execute(
+        "DELETE FROM headline_translations WHERE article_id IN (SELECT id FROM articles WHERE fetched_at < ?)",
+        (now - timedelta(days=FEED_DAYS),)).rowcount
     db.commit()
     return {"rolled_up_days": len(counts), "deleted": max(deleted, 0), "stories_removed": max(removed, 0),
-            "vectors_removed": max(vectors, 0)}
+            "vectors_removed": max(vectors, 0), "translations_removed": max(translations, 0)}
 
 
 def main() -> int:
@@ -89,7 +95,8 @@ def main() -> int:
         print(f"Database size: {size} (free plan limit 500 MB); articles stored: {articles}")
     db.close()
     print(f"Rolled up {result['rolled_up_days']} source-days, deleted {result['deleted']} old articles "
-          f"and {result['stories_removed']} empty stories; removed {result['vectors_removed']} unused vectors")
+          f"and {result['stories_removed']} empty stories; removed {result['vectors_removed']} unused vectors "
+          f"and {result['translations_removed']} week-old headline translations")
     return 0
 
 

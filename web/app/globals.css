@@ -199,6 +199,11 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
 .filters { display: flex; flex-direction: column; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
 .filter-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
 .filter-row .chip { min-height: 36px; font-size: 13px; flex-shrink: 0; }
+.filter-row a.chip { text-decoration: none; }
+/* A headline in the reader's language: Google's translation, marked, with the source's own words one tap away. */
+.translated { display: flex; flex-direction: column; gap: 2px; }
+.original summary { cursor: pointer; color: var(--muted); min-height: 32px; display: flex; align-items: center; }
+.original p { margin: 4px 0 0; padding: 8px 10px; border-left: 3px solid var(--line-strong); color: var(--ink); }
 .article-list { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
 .article { display: flex; flex-direction: column; gap: 10px; }
 .article .source { font-size: 15px; font-weight: 600; }

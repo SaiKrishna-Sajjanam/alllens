@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import StoryCard from '@/components/StoryCard';
 import { getArchive, getViewer } from '@/lib/data';
+import { translateStoryHeadlines } from '@/lib/headlines';
 import { t } from '@/lib/i18n';
 
 export const metadata = { title: 'Archive' };
@@ -14,6 +15,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
   const viewer = await getViewer();
   const lang = viewer.prefs.uiLanguage;
   const { stories, hasMore } = await getArchive({ prefs: viewer.prefs, search: q, page });
+  const translated = await translateStoryHeadlines(stories, lang);
   const more = new URLSearchParams({ ...(q ? { q } : {}), page: String(page + 1) }).toString();
   return (
     <div className="stack-lg">
@@ -31,7 +33,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
       ) : (
         <div className="feed-grid">
           {stories.map((s) => (
-            <StoryCard key={s.id} story={s} lang={lang} readLanguages={viewer.prefs.languages} lastVisit={null} />
+            <StoryCard key={s.id} story={s} lang={lang} lastVisit={null} translated={translated[s.id]} />
           ))}
         </div>
       )}

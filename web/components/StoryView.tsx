@@ -3,12 +3,13 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { groupsOf, languageName, mostSpecific, placeName } from '@/lib/catalog';
 import {
-  MAX_COMPARE, filterArticles, pickLabel, presentGroups, presentLanguages, sortArticles, toggleCompare, wireCounts,
+  MAX_COMPARE, filterArticles, labelLanguage, pickLabel, presentGroups, presentLanguages, sortArticles, toggleCompare,
+  wireCounts,
 } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
-import { translateUrl } from '@/lib/translate';
 import type { Article, Lang, Story, StorySort } from '@/lib/types';
 import AskAI from './AskAI';
+import { OwnTranslatorNote, Translated } from './Translated';
 import FollowButton from './FollowButton';
 import { BackIcon, ExternalIcon } from './Icons';
 import RemoteImage from './RemoteImage';
@@ -17,7 +18,8 @@ interface Props {
   story: Story;
   articles: Article[];
   lang: Lang;
-  readLanguages: string[];
+  /** Google's translations of the headlines into the app language, by article id. */
+  translated: Record<string, string>;
   aiAssistant: string;
   signedIn: boolean;
   following: boolean;
@@ -26,15 +28,15 @@ interface Props {
 const SORTS: StorySort[] = ['earliest', 'latest', 'random', 'source'];
 
 /** Every version of one story, as each source published it. */
-export default function StoryView({ story, articles, lang, readLanguages, aiAssistant, signedIn, following }: Props) {
+export default function StoryView({ story, articles, lang, translated, aiAssistant, signedIn, following }: Props) {
   const [group, setGroup] = useState('all');
   const [language, setLanguage] = useState('all');
   const [sort, setSort] = useState<StorySort>('earliest');
   const [selected, setSelected] = useState<string[]>([]);
   const [warn, setWarn] = useState(false);
 
-  const label = pickLabel(story, readLanguages);
-  const labelLang = Object.entries(story.labels ?? {}).find(([, v]) => v.article_id === label.article_id)?.[0];
+  const label = pickLabel(story, lang);
+  const labelLang = labelLanguage(story, label);
   const groups = useMemo(() => presentGroups(articles), [articles]);
   const languages = useMemo(() => presentLanguages(articles), [articles]);
   const wires = useMemo(() => wireCounts(articles), [articles]);
@@ -57,7 +59,8 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
           <BackIcon />
           {t(lang, 'story.back')}
         </Link>
-        <h1 lang={labelLang}>{label.title}</h1>
+        <Translated as="h1" original={label.title} originalLang={labelLang} translated={translated[label.article_id]}
+          lang={lang} />
         <p className="small muted">
           {place ? `${placeName(place, lang)} · ` : ''}
           {t(lang, 'story.firstBy', { source: label.source_name, time: formatTime(label.published_at, lang) })}
@@ -99,9 +102,6 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
           </select>
         </div>
         <p className="small muted">{t(lang, 'story.orderNote')}</p>
-        {articles.some((a) => translateUrl(a.url, a.language, lang)) && (
-          <p className="small muted">{t(lang, 'story.translateNote')}</p>
-        )}
       </div>
 
       <div className="article-list">
@@ -131,7 +131,8 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
                   {formatTime(a.published_at ?? a.fetched_at, lang)}
                 </time>
               </div>
-              <h2 className="headline" lang={lang2}>{a.title}</h2>
+              <Translated as="h2" className="headline" original={a.title} originalLang={a.language}
+                translated={translated[a.id]} lang={lang} />
               {a.snippet && <p className="snippet" lang={lang2}>{a.snippet}</p>}
               {a.title_updated_at && (
                 <p className="small muted">{t(lang, 'story.updated', { time: formatTime(a.title_updated_at, lang) })}</p>
@@ -142,13 +143,6 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
                   {t(lang, video ? 'story.watch' : 'story.read', { source: name })}
                   <ExternalIcon />
                 </a>
-                {translateUrl(a.url, a.language, lang) && (
-                  <a className="btn btn-secondary btn-small" href={translateUrl(a.url, a.language, lang)!} target="_blank"
-                    rel="noopener noreferrer" title={t(lang, 'story.translateNote')}>
-                    {t(lang, 'story.translate')}
-                    <ExternalIcon />
-                  </a>
-                )}
                 <AskAI urls={[a.url]} lang={lang} preferred={aiAssistant} />
                 <label className="check compare small" style={{ minHeight: 40, alignItems: 'center' }}>
                   <input type="checkbox" checked={checked} onChange={() => pick(a.id)}
@@ -156,6 +150,7 @@ export default function StoryView({ story, articles, lang, readLanguages, aiAssi
                   {t(lang, 'story.compare')}
                 </label>
               </div>
+              <OwnTranslatorNote articleLang={a.language} lang={lang} />
             </article>
           );
         })}
