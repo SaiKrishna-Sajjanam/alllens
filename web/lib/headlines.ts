@@ -8,6 +8,7 @@ import 'server-only';
 // missing is translated when a page first opens, through the same Google Apps Script
 // translator (docs/TRANSLATE.md), and cached for a week so it is asked for only once.
 import { unstable_cache } from 'next/cache';
+import { after } from 'next/server';
 import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
 import { textLanguage } from './script';
@@ -21,6 +22,7 @@ const TRANSLATE_TOKEN = tidySetting('TRANSLATE_TOKEN', runtimeSetting('TRANSLATE
 const BATCH_LINES = 40;
 const BATCH_CHARS = 3500;     // Google takes about 5,000 characters per call
 const MAX_NOW = 120;          // texts translated while one page opens; the rest come from the next run
+const WAIT_MS = 2500;         // a page waits at most this long; later answers are kept for the next visit
 
 export interface Headline {
   id: string;                 // article id
@@ -57,7 +59,7 @@ async function askTranslator(texts: string[], source: string, target: string): P
     // merges or splits single lines but keeps blank-line paragraphs (pipeline/translate.py does the same).
     body: JSON.stringify({ token: TRANSLATE_TOKEN, source, target, texts: [texts.join('\n\n')] }),
     redirect: 'follow',       // Apps Script answers with a redirect to the result
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(20_000),
   });
   const body = (await res.json()) as { translations?: unknown[]; error?: string };
   const parts = Array.isArray(body.translations) ? body.translations.map(String).join('\n').trim().split(/\n\s*\n/) : [];
@@ -84,12 +86,16 @@ async function translateNow(items: Text[], lang: Lang): Promise<Map<string, stri
     }
     cur.items.push(it);
   }
-  await Promise.all(batches.map((b) =>
+  const work = Promise.all(batches.map((b) =>
     cachedTranslate(b.items.map((x) => oneLine(x.text)), b.source, lang)
       .then((texts) => b.items.forEach((x, j) => { if (texts[j]) out.set(keyOf(x.id, x.kind), texts[j]); }))
       .catch(() => undefined),   // translator busy or not reachable: the original shows
   ));
-  return out;
+  // Google can take several seconds. The page doesn't wait for it: what is ready shows translated,
+  // the rest shows its original words this time, and finishes in the background (cached for a week).
+  const finished = await Promise.race([work.then(() => true), new Promise<false>((r) => setTimeout(() => r(false), WAIT_MS))]);
+  if (!finished) after(() => work);
+  return new Map(out);
 }
 
 /** Translations into the reader's app language, keyed "articleId:title" / "articleId:snippet", for

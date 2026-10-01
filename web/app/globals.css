@@ -254,3 +254,13 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
 .site-footer a { color: var(--muted); }
 
 @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+/* Placeholder while a page loads (app/loading.tsx) */
+.loading { display: grid; gap: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 420px), 1fr)); margin-top: 16px; }
+.loading-card { display: grid; gap: 12px; }
+.loading-block { background: var(--line); border-radius: 8px; animation: loading-pulse 1.2s ease-in-out infinite; }
+.loading-picture { aspect-ratio: 16 / 9; }
+.loading-line { height: 18px; }
+.loading-line.short { width: 60%; }
+@keyframes loading-pulse { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) { .loading-block { animation: none; } }
