@@ -10,6 +10,7 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
+import { textLanguage } from './script';
 import { createClient } from './supabase/server';
 import { titleHash } from './titlehash';
 import type { Article, Lang, Story } from './types';
@@ -94,7 +95,10 @@ async function translateNow(items: Text[], lang: Lang): Promise<Map<string, stri
 /** Translations into the reader's app language, keyed "articleId:title" / "articleId:snippet", for
  *  texts not already written in it. A text with no translation available shows its original words. */
 async function translateTexts(items: Text[], lang: Lang): Promise<Map<string, string>> {
-  const need = items.filter((i) => i.id && oneLine(i.text) && i.language !== lang);
+  // By the text's own letters: an English title on a Telugu channel is translated for a Telugu reader.
+  const need = items
+    .map((i) => ({ ...i, language: textLanguage(i.text, i.language) }))
+    .filter((i) => i.id && oneLine(i.text) && i.language !== lang);
   const out = new Map<string, string>();
   if (!need.length) return out;
   if (isConfigured()) {

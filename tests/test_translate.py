@@ -116,6 +116,25 @@ class TranslateTests(unittest.TestCase):
         self.assertEqual(self.stored()[("as1", "en")], "[en] গুৱাহাটীত প্ৰবল বৰষুণ")
         self.assertIn(("", "en", ["গুৱাহাটীত প্ৰবল বৰষুণ"]), fake.calls)
 
+    def test_english_title_on_a_telugu_channel_is_translated_for_telugu_readers(self):
+        os.environ["TRANSLATE_LANGS"] = "te"
+        self.db.execute("INSERT INTO articles (id, source_id, title, url, fetched_at, language, story_id) "
+                        "VALUES ('yt1', 'eenadu', 'CEC Resignation Demands | Why Chandrababu Silent On SIR', "
+                        "'https://x.test/yt1', ?, 'te', 's1')", (NOW,))
+        fake = Fake()
+        translate.run(self.db, fake, NOW)
+        self.assertEqual(self.stored()[("yt1", "te")], "[te] CEC Resignation Demands | Why Chandrababu Silent On SIR")
+        self.assertNotIn(("yt1", "en"), self.stored(), "already English: not translated into English")
+        self.assertIn(("en", "te", ["CEC Resignation Demands | Why Chandrababu Silent On SIR", "Heavy rain in Hyderabad"]),
+                      [(s, t, sorted(x)) for s, t, x in fake.calls])
+
+    def test_written_in(self):
+        self.assertTrue(translate.written_in("Modi-Trump: మోదీ-ట్రంప్ ఫోన్ కాల్.. ట్రేడ్, డిఫెన్స్", "te"))
+        self.assertFalse(translate.written_in("CEC Gyanesh Kumar Resignation Demands | @SakshiTV", "te"))
+        self.assertTrue(translate.written_in("Heavy rain in Hyderabad", "en"))
+        self.assertFalse(translate.written_in("హైదరాబాద్‌లో భారీ వర్షం", "en"))
+        self.assertEqual(translate.text_language("Flipkart Sale | Big Billion Days", "te"), "en")
+
     def test_headlines_travel_as_blank_line_paragraphs(self):
         # Translating into Telugu, Google splits or merges single lines but keeps blank-line
         # paragraphs, so one call must still give one answer per headline.

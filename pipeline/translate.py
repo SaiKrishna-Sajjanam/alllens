@@ -53,6 +53,37 @@ def title_hash(title: str) -> str:
     return hashlib.sha256(title.encode("utf-8")).hexdigest()[:12]
 
 
+# The script each language is written in (Unicode blocks); web/lib/script.ts has the same table.
+SCRIPTS = {
+    "hi": (0x0900, 0x097F), "mr": (0x0900, 0x097F), "bn": (0x0980, 0x09FF), "as": (0x0980, 0x09FF),
+    "pa": (0x0A00, 0x0A7F), "gu": (0x0A80, 0x0AFF), "or": (0x0B00, 0x0B7F), "ta": (0x0B80, 0x0BFF),
+    "te": (0x0C00, 0x0C7F), "kn": (0x0C80, 0x0CFF), "ml": (0x0D00, 0x0D7F), "ur": (0x0600, 0x06FF),
+}
+
+
+def written_in(text: str, lang: str | None) -> bool:
+    """Whether a text is really in its source's language, by its letters: a Telugu channel
+    often titles its videos in English. At least a third of the letters in the language's own
+    script (English: mostly Latin letters). Languages we have no table for: trusted."""
+    latin = sum(1 for c in text if c.isascii() and c.isalpha())
+    if lang == "en":
+        other = sum(1 for c in text if any(lo <= ord(c) <= hi for lo, hi in SCRIPTS.values()))
+        return latin >= other
+    if lang not in SCRIPTS:
+        return True
+    lo, hi = SCRIPTS[lang]
+    own = sum(1 for c in text if lo <= ord(c) <= hi)
+    return own > 0 and own * 2 >= latin
+
+
+def text_language(text: str, lang: str | None) -> str:
+    """The source's language when the text is written in it; else English when it is in Latin
+    letters; else "" (Google detects it)."""
+    if lang and written_in(text, lang):
+        return lang
+    return "en" if written_in(text, "en") else ""
+
+
 def one_line(text: str) -> str:
     return " ".join((text or "").split())
 
@@ -150,14 +181,15 @@ def pending(db: DB, targets: list[str], now: datetime) -> list[tuple[str, str, s
     arts.sort(key=lambda a: (a[0] not in labels, -(to_datetime(a[4]) or since).timestamp()))
     titles, snippets = [], []
     for aid, title, snippet, language, _ in arts:
+        # A text already in the target language is not translated; one written in another
+        # language than its source's (English titles on a Telugu channel) is, from that language.
+        title_lang, snippet_lang = text_language(title or "", language), text_language(snippet or "", language)
         for target in targets:
-            if target == language:
-                continue
             title_done, snippet_done = done.get((aid, target), (None, None))
-            if one_line(title) and title_done != title_hash(title):
-                titles.append((aid, language or "", target, "title", title))
-            if one_line(snippet) and snippet_done != title_hash(snippet):
-                snippets.append((aid, language or "", target, "snippet", snippet))
+            if target != title_lang and one_line(title) and title_done != title_hash(title):
+                titles.append((aid, title_lang, target, "title", title))
+            if target != snippet_lang and one_line(snippet) and snippet_done != title_hash(snippet):
+                snippets.append((aid, snippet_lang, target, "snippet", snippet))
     return titles + snippets
 
 

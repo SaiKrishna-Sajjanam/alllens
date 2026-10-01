@@ -1,5 +1,6 @@
 import { languageName } from '@/lib/catalog';
 import { t } from '@/lib/i18n';
+import { textLanguage } from '@/lib/script';
 import type { Lang } from '@/lib/types';
 
 /** A headline in the reader's app language. When it is Google's translation, it says so, and
@@ -12,6 +13,7 @@ export function Translated({ as: Tag, className, original, originalLang, transla
   translated: string | undefined;
   lang: Lang;
 }) {
+  originalLang = textLanguage(original, originalLang);
   if (!translated) return <Tag className={className} lang={originalLang ?? undefined}>{original}</Tag>;
   return (
     <div className="translated">
@@ -34,14 +36,14 @@ export function ReportText({ title, snippet, originalLang, translatedTitle, tran
   translatedSnippet: string | undefined;
   lang: Lang;
 }) {
-  const ol = originalLang ?? undefined;
+  const ol = textLanguage(title, originalLang) ?? undefined;
   return (
     <div className="translated">
       <h2 className="headline" lang={translatedTitle ? lang : ol}>{translatedTitle ?? title}</h2>
       {snippet && <p className="snippet" lang={translatedSnippet ? lang : ol}>{translatedSnippet ?? snippet}</p>}
       {(translatedTitle || translatedSnippet) && (
         <details className="original small">
-          <summary>{t(lang, 'tr.showOriginal', { language: languageName(originalLang) })}</summary>
+          <summary>{t(lang, 'tr.showOriginal', { language: languageName(ol) })}</summary>
           <p lang={ol}><strong>{title}</strong></p>
           {snippet && <p lang={ol}>{snippet}</p>}
         </details>
