@@ -428,11 +428,22 @@ class _Stripper(HTMLParser):
             self.parts.append(data)
 
 
+_TAG = re.compile(r"</?[A-Za-z][^<>]*>")
+_CUT_TAG = re.compile(r"</?[A-Za-z][^<>]*$")     # a tag cut off at the end of a shortened summary
+
+
 def strip_html(text: str) -> str:
-    p = _Stripper()
-    p.feed(text or "")
-    p.close()
-    out = html.unescape(" ".join(p.parts))
+    """Plain text from a feed field. Some feeds escape their HTML twice (`&lt;p style=...&gt;`),
+    so it is stripped again until no markup is left."""
+    out = text or ""
+    for _ in range(3):
+        p = _Stripper()
+        p.feed(out)
+        p.close()
+        out = html.unescape(" ".join(p.parts))
+        if not _TAG.search(out) and not _CUT_TAG.search(out):
+            break
+    out = _CUT_TAG.sub("", _TAG.sub(" ", out))
     return re.sub(r"\s+", " ", out).strip()
 
 

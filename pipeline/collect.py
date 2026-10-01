@@ -13,7 +13,7 @@ import uuid
 from datetime import datetime, timedelta, timezone
 
 from pipeline.common import (
-    DB, RETENTION_DAYS, NotAFeed, Source, article_id, fetch, load_sources,
+    DB, RETENTION_DAYS, NotAFeed, Source, article_id, clean_title, fetch, load_sources,
     make_snippet, map_by_host, normalise_url, parse_feed, sync_sources,
 )
 
@@ -66,9 +66,23 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
     return len(new), len(reworded)
 
 
+def repair_markup(db: DB) -> int:
+    """Stored headlines or snippets that still carry web-page code (feeds that escape their HTML
+    twice, cleaned before strip_html handled that) are cleaned again. Returns how many."""
+    rows = db.fetchall("SELECT id, title, snippet FROM articles WHERE title LIKE '%<%' OR snippet LIKE '%<%'")
+    fixed = []
+    for aid, title, snippet in rows:
+        new_title, new_snippet = clean_title(title), make_snippet(snippet or "") or None
+        if (new_title, new_snippet) != (title, snippet):
+            fixed.append((new_title or title, new_snippet, aid))
+    db.executemany("UPDATE articles SET title = ?, snippet = ?, processed_at = NULL WHERE id = ?", fixed)
+    return len(fixed)
+
+
 def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: datetime | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     sync_sources(db, sources)
+    repair_markup(db)
     targets = [s for s in sources if s.feed_url and s.status in COLLECTABLE]
 
     # A site that answers 429 ("slow down", e.g. Reddit to GitHub's servers) is not asked

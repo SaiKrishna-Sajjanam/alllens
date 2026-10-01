@@ -7,6 +7,7 @@ import {
   ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesFilters, sortStories, type TabId,
 } from './feed';
 import { isLang } from './i18n';
+import { plainText } from './plaintext';
 import {
   DEFAULT_PREFS, PREFS_COOKIE, UI_COOKIE, VISIT_COOKIE, decodePrefsCookie, prefsFromProfile,
 } from './prefs';
@@ -17,6 +18,8 @@ const STORY_COLS =
   'id,label,label_source_id,label_language,labels,first_published_at,last_article_at,article_count,source_count,languages,source_types,places,primary_place,scope,topics,image_url,image_source';
 const ARTICLE_COLS =
   'id,source_id,title,snippet,url,published_at,fetched_at,title_updated_at,language,wire_key,primary_place,image_url,story_id,sources(id,name,type,language,region,layer)';
+
+const cleanArticle = (a: Article): Article => ({ ...a, title: plainText(a.title), snippet: plainText(a.snippet) });
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
@@ -131,7 +134,7 @@ export async function getStory(id: string): Promise<{ story: Story; articles: Ar
     supabase.from('articles').select(ARTICLE_COLS).eq('story_id', id).order('published_at', { ascending: true }).limit(300),
   ]);
   if (!story) return null;
-  return { story: story as unknown as Story, articles: (articles ?? []) as unknown as Article[] };
+  return { story: story as unknown as Story, articles: ((articles ?? []) as unknown as Article[]).map(cleanArticle) };
 }
 
 export async function getArticles(ids: string[]): Promise<Article[]> {
@@ -140,7 +143,7 @@ export async function getArticles(ids: string[]): Promise<Article[]> {
   if (!isConfigured()) return demoData().articles.filter((a) => clean.includes(a.id));
   const supabase = await createClient();
   const { data } = await supabase.from('articles').select(ARTICLE_COLS).in('id', clean);
-  const rows = (data ?? []) as unknown as Article[];
+  const rows = ((data ?? []) as unknown as Article[]).map(cleanArticle);
   return clean.map((id) => rows.find((r) => r.id === id)).filter((a): a is Article => !!a);
 }
 

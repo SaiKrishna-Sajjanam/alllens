@@ -128,6 +128,22 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM runs")[0][0], 2)
         self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM sources")[0][0], 5)
 
+    def test_html_escaped_twice_leaves_no_code(self):
+        # ABP's feed escapes its HTML twice; one pass left <p style=...> and <a href=...> on screen.
+        raw = ('&lt;p style="text-align: justify;"&gt;ప్రధానమంత్రి &lt;a title="Narendra Modi" '
+               'href="https://www.abplive.com/topic/narendra-modi"&gt;నరేంద్ర మోదీ&lt;/a&gt; అమెరికా అధ్యక్షుడు '
+               '&lt;a title="Donald Trump" href="https://www.abplive.com/topic/donald-trump"')
+        self.assertEqual(make_snippet(raw), "ప్రధానమంత్రి నరేంద్ర మోదీ అమెరికా అధ్యక్షుడు")
+        self.assertEqual(make_snippet("<p>Rs 5 &lt; 6 &amp; more</p>"), "Rs 5 < 6 & more", "plain < stays")
+        # Reports stored before the fix are cleaned on the next collect.
+        collect.run(self.db, SOURCES, fetcher=fake_fetch, now=NOW)
+        self.db.execute("INSERT INTO articles (id, source_id, title, snippet, url, fetched_at) VALUES "
+                        "('x', ?, 'Modi-Trump talks', ?, 'https://x.test/x', ?)",
+                        (SOURCES[0].id, '<p style="a">ప్రధానమంత్రి <a href="https://x.test">మోదీ</a></p>', NOW))
+        self.assertEqual(collect.repair_markup(self.db), 1)
+        self.assertEqual(self.db.fetchall("SELECT snippet FROM articles WHERE id = 'x'")[0][0], "ప్రధానమంత్రి మోదీ")
+        self.assertEqual(collect.repair_markup(self.db), 0, "once")
+
     def test_database_calls_do_not_grow_with_articles(self):
         # The production database is far from the GitHub runners (~0.25 s per call), so a call
         # per article turned a 2,000-article run into an hour. Batches keep calls roughly constant.
