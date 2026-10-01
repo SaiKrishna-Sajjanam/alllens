@@ -210,11 +210,47 @@ def sync_sources(db: DB, sources: list[Source]) -> None:
 # --------------------------------------------------------------------------
 
 def fetch(url: str) -> tuple[int, bytes]:
-    """Return (http_status, body). Raises on network errors."""
+    """Return (http_status, body). Raises on network errors.
+
+    A few sites refuse GitHub's servers (HTTP 403, or no answer) while serving the same feed
+    to everyone else; then the feed is asked for once more through the owner's Apps Script
+    (deploy/translator/Code.gs, on Google's servers), when it is set up. Never Reddit: it
+    limits automated readers on purpose and needs its official API."""
     import requests
 
-    r = requests.get(url, headers={"User-Agent": USER_AGENT, "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"}, timeout=TIMEOUT)
-    return r.status_code, r.content
+    try:
+        r = requests.get(url, headers={"User-Agent": USER_AGENT, "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml, */*"}, timeout=TIMEOUT)
+        if r.status_code != 403 or not _relay_allowed(url):
+            return r.status_code, r.content
+    except (requests.ConnectionError, requests.Timeout):
+        if not _relay_allowed(url):
+            raise
+    return fetch_via_apps_script(url)
+
+
+def _relay_allowed(url: str) -> bool:
+    host = (urlsplit(url).hostname or "").lower()
+    return bool(os.environ.get("TRANSLATE_URL") and os.environ.get("TRANSLATE_TOKEN")) and not (
+        host == "reddit.com" or host.endswith(".reddit.com"))
+
+
+def fetch_via_apps_script(url: str) -> tuple[int, bytes]:
+    """The feed as Google's servers see it: (http_status, body)."""
+    import base64
+
+    import requests
+
+    r = requests.post(os.environ["TRANSLATE_URL"], json={"token": os.environ["TRANSLATE_TOKEN"], "feed": url},
+                      headers={"User-Agent": USER_AGENT}, timeout=90)
+    r.raise_for_status()
+    try:
+        body = r.json()
+    except ValueError:
+        raise RuntimeError("Apps Script did not answer with JSON") from None
+    if "error" in body:
+        # An Apps Script deployed before feed fetching answers "bad request": see docs/TRANSLATE.md.
+        raise RuntimeError(f"via Apps Script: {body['error']}")
+    return int(body["status"]), base64.b64decode(body["body"])
 
 
 def map_by_host(fn, sources: list, workers: int = 8, gap: float = HOST_GAP,

@@ -89,3 +89,24 @@ kept for a week (the feed's span) and deleted by the nightly clean-up.
 
 If you change `Code.gs` later: Deploy → **Manage deployments** → pencil → Version: **New version**
 → Deploy. The URL stays the same.
+
+## Second job: feeds that refuse GitHub's servers
+
+A few sites (Indian Express, MediaNama, 24 News, Herald Goa, State Times, Kolkata24x7, Time8,
+Northeast Today…) serve their public RSS feed to everyone except GitHub's servers. When a
+site answers the collector with 403 or not at all, the collector asks the same script to
+fetch that feed (Google's `UrlFetchApp`, free, 20,000 a day; it tells the site it is Google
+Apps Script). Never Reddit, which limits automated readers on purpose.
+
+To switch it on with a script made before October 2026 (about 3 minutes):
+
+1. **script.google.com** → *Vuaz translator* → `Code.gs`: select all, delete, paste the new
+   contents of [`deploy/translator/Code.gs`](../deploy/translator/Code.gs) → **Save**.
+2. Choose the function **check** → **Run**. Google asks for one new permission ("connect to an
+   external service"): **Review permissions** → your account → **Advanced** → **Go to Vuaz
+   translator (unsafe)** → **Allow**. The log shows a Tamil sentence and `Feed answer: 200`.
+3. **Deploy → Manage deployments** → pencil ✏️ → Version: **New version** → **Deploy**.
+   The URL and password stay the same; nothing changes in GitHub or Vercel.
+
+Until then those feeds show `via Apps Script: bad request` in the collect log, and everything
+else works as before.
