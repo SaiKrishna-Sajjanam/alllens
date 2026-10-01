@@ -35,7 +35,8 @@ export function normaliseTab(tab: string | undefined): TabId {
 export const isInternational = (story: Story) => story.scope === 'international';
 
 /**
- * International = stories from world-news feeds that name no Indian place.
+ * International = stories naming no Indian place, from world-news feeds or naming foreign places
+ *   (pipeline/data/scope.json).
  * National = every Indian story (central, nationwide and all states, the reader's included).
  * State = the reader's state (any state or union territory, all treated alike; none until chosen).
  */

@@ -145,6 +145,47 @@ class GroupingTests(unittest.TestCase):
         self.assertEqual(gz.place_of("Kerala"), "kl")
         self.assertIsNone(gz.place_of("India"))
 
+    def test_world_and_country_names(self):
+        from pipeline.tagging import scope_markers
+
+        sm = scope_markers()
+        self.assertEqual(sm.mark("దుబాయ్ నుంచి ఇజ్రాయెల్ వెళ్తున్న విమానంలో ఎమర్జెన్సీ"), "world")
+        self.assertEqual(sm.mark("Relentless rainfall triggers floods across Nepal"), "world")
+        self.assertEqual(sm.mark("US Iran Conflict: અમેરિકાના આર્થિક પ્રતિબંધો"), "world")
+        self.assertEqual(sm.mark("ವಾಹನ ಸವಾರರಿಗೆ ಸುಪ್ರೀಂ ಕೋರ್ಟ್ ಶಾಕ್"), "country")
+        self.assertEqual(sm.mark("Asian Games: India hammer Lanka 16-1"), "country")
+        self.assertEqual(sm.mark("मर्सिडीज 4 नोव्हेंबरला भारतात लाँच"), "country")
+        self.assertEqual(sm.mark("Indian volleyball team eyes Asian Games podium"), "country", "India with a foreign name")
+        self.assertIsNone(sm.mark("సీఎం రేవంత్ రెడ్డి కీలక ప్రకటన"))
+        self.assertIsNone(sm.mark("चीनी मिल में गन्ने की पेराई शुरू"), "चीनी (sugar) is not चीन (China)")
+        self.assertIsNone(sm.mark("Smriti Irani visits the district", "Many women attended."), "Irani is not Iran")
+        self.assertIsNone(sm.mark("Old woman rescued from well"), "woman is not Oman")
+
+    def test_scope_without_a_place_named(self):
+        from pipeline.process import _scope_without_place
+        from pipeline.tagging import gazetteer
+
+        gz = gazetteer()
+        sources = {"ntv": {"layer": "state", "region": "Telangana"}, "kn": {"layer": "state", "region": "Karnataka"},
+                   "ndtv": {"layer": "national", "region": "India"},
+                   "world": {"layer": "international", "region": "World"}}
+
+        def scope(*reports):
+            return _scope_without_place([{"source_id": s, "title": t, "snippet": ""} for s, t in reports], sources, gz)
+
+        # A state outlet's report on world news is world news; on a nationwide matter, national.
+        self.assertEqual(scope(("ntv", "కెనడా ఉత్పత్తులపై అమెరికా నిషేధం ఎందుకు?")), "international")
+        self.assertEqual(scope(("kn", "ವಾಹನ ಸವಾರರಿಗೆ ಸುಪ್ರೀಂ ಕೋರ್ಟ್ ಶಾಕ್")), "national")
+        # Nothing country-wide or foreign named: the state whose outlets reported it.
+        self.assertEqual(scope(("ntv", "Flipkart Sale: కొత్త ఫోన్ల జాబితా")), "tg")
+        # As many national outlets as the state's own: the same for every reader.
+        self.assertEqual(scope(("ntv", "AI safety debate grows"), ("ndtv", "AI safety debate grows")), "national")
+        # One report in two naming a foreign company is not enough for International.
+        self.assertEqual(scope(("ndtv", "Jio Finance, Allianz Europe invest"), ("ndtv", "Jio Allianz insurance JV")),
+                         "national")
+        # World-news feeds: as before.
+        self.assertEqual(scope(("world", "Ocean treaty talks open"), ("ndtv", "Ocean treaty talks open")), "international")
+
     def test_topics(self):
         topics = {sid: as_list(t) for sid, t in self.db.fetchall("SELECT id, topics FROM stories")}
         self.assertIn("crime", topics[self.story["kathua_print"]])

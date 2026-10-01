@@ -28,7 +28,7 @@ import numpy as np
 
 from pipeline.common import DB, as_list, to_datetime
 from pipeline.embed import article_text, get_embedder
-from pipeline.tagging import gazetteer, topic_tagger, wire_key
+from pipeline.tagging import gazetteer, scope_markers, topic_tagger, wire_key
 
 WINDOW = timedelta(hours=72)     # a story stays open for new reports this long after its latest one
 BATCH = 64
@@ -222,7 +222,7 @@ def refresh_stories(db: DB, story_ids, sources: dict, now: datetime) -> int:
     by_story: dict[str, list] = {sid: [] for sid in story_ids}
     for row in db.fetch_in(
             """SELECT story_id, id, source_id, title, language, published_at, fetched_at, primary_place, topics,
-                      image_url
+                      image_url, snippet
                FROM articles WHERE story_id IN ({ids})""", by_story):
         by_story[row[0]].append(row[1:])
     empty = [(sid,) for sid, rows in by_story.items() if not rows]
@@ -237,10 +237,44 @@ def refresh_story(db: DB, story_id: str, sources: dict, now: datetime) -> bool:
     return refresh_stories(db, [story_id], sources, now) == 0
 
 
+def _scope_without_place(arts, sources: dict, gz) -> str:
+    """International, national, or the id of the state, for a story none of whose places is
+    named often enough. Mechanical, from each report's words and the feed it came from
+    (pipeline/data/scope.json lists the names); the same rule for every state."""
+    n = len(arts)
+    sm = scope_markers()
+    layers = [sources.get(a["source_id"], {}).get("layer") for a in arts]
+    marks = [sm.mark(a["title"], a["snippet"]) for a in arts]
+    world_desk = sum(1 for layer in layers if layer == "international")
+    world = sum(1 for layer, m in zip(layers, marks) if layer == "international" or m == "world")
+    country = sum(1 for layer, m in zip(layers, marks) if layer != "international" and m == "country")
+    # International: at least half the reports from world-news feeds (sources.csv layer
+    # "international"), or most reports naming a foreign country, capital, leader or body.
+    if world_desk * 2 >= n or (world * 2 > n and world > country):
+        return "international"
+    # Naming India, a nationwide institution or another country: the same for every reader.
+    if world or country:
+        return "national"
+    # Otherwise, reported mostly (at least half) by one state's own outlets (sources.csv layer
+    # state/local), and more of them than national outlets: that state.
+    homes = Counter()
+    for a, layer in zip(arts, layers):
+        if layer in ("state", "local"):
+            home = gz.place_of(sources.get(a["source_id"], {}).get("region") or "")
+            if home:
+                homes[home] += 1
+    if homes:
+        home, c = homes.most_common(1)[0]
+        wide = sum(1 for layer in layers if layer in ("national", "international"))
+        if c * 2 >= n and c > wide:
+            return home
+    return "national"
+
+
 def _story_values(rows, sources: dict, gz, now: datetime) -> tuple:
     arts = []
-    for aid, sid, title, lang, pub, fetched, primary, topics, image in rows:
-        arts.append({"id": aid, "source_id": sid, "title": title, "language": lang or "",
+    for aid, sid, title, lang, pub, fetched, primary, topics, image, snippet in rows:
+        arts.append({"id": aid, "source_id": sid, "title": title, "snippet": snippet or "", "language": lang or "",
                      "time": _time(pub, fetched), "fetched": to_datetime(fetched),
                      "primary": primary, "topics": as_list(topics), "image": image})
     arts.sort(key=lambda a: (a["time"], a["id"]))
@@ -263,26 +297,11 @@ def _story_values(rows, sources: dict, gz, now: datetime) -> tuple:
     primary_place = None
     if primaries:
         primary_place = max(primaries.items(), key=lambda pc: (pc[1], gz.specificity(pc[0])))[0]
-    if not places:
-        # No place named: a story reported mostly (at least half) by one state's own outlets
-        # (sources.csv layer state/local) belongs to that state. The same rule for every state.
-        homes = Counter()
-        for a in arts:
-            src = sources.get(a["source_id"], {})
-            if src.get("layer") in ("state", "local"):
-                home = gz.place_of(src.get("region") or "")
-                if home:
-                    homes[home] += 1
-        if homes:
-            home, c = homes.most_common(1)[0]
-            if c * 2 >= n:
-                places, primary_place = [home], home
     scope = "state" if places else "national"
-    # International: no Indian place named, and at least half the reports come from world-news feeds
-    # (sources.csv layer "international"). Mechanical, from the feed each report came from.
-    world = sum(1 for a in arts if sources.get(a["source_id"], {}).get("layer") == "international")
-    if not places and world * 2 >= n:
-        scope = "international"
+    if not places:
+        scope = _scope_without_place(arts, sources, gz)
+        if scope in gz.places:
+            places, primary_place, scope = [scope], scope, "state"
 
     topic_counts = Counter(t for a in arts for t in a["topics"])
     topics = sorted(t for t, c in topic_counts.items() if c >= max(1, math.ceil(0.3 * n)))

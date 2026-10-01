@@ -199,6 +199,40 @@ class TopicTagger:
 
 
 # --------------------------------------------------------------------------
+# World / country-wide names (for stories that name no Indian place)
+# --------------------------------------------------------------------------
+
+# A letter in any script we collect, vowel signs included (Python's \w leaves those out).
+_LETTER = r"[\w؀-ۿऀ-෿]"
+
+
+def _names_regex(terms) -> re.Pattern:
+    """Whole words in any script; a trailing * allows any ending."""
+    alts = []
+    for term in sorted({normalise(t) for t in terms}, key=len, reverse=True):
+        body = re.escape(term.rstrip("*")).replace(r"\ ", r"\s+")
+        alts.append(body + (f"{_LETTER}*" if term.endswith("*") else ""))
+    return re.compile(rf"(?<!{_LETTER})(?:{'|'.join(alts)})(?!{_LETTER})", re.IGNORECASE)
+
+
+class ScopeMarkers:
+    def __init__(self, path: Path = DATA / "scope.json"):
+        data = json.loads(path.read_text(encoding="utf-8"))
+        self._world = _names_regex(data["world"])
+        self._country = _names_regex(data["country"])
+
+    def mark(self, title: str, snippet: str = "") -> str | None:
+        """'country' if a report names India or a nationwide institution, else 'world' if it
+        names a foreign country, capital, leader or body, else None."""
+        text = normalise(f"{title} {snippet}")
+        if self._country.search(text):
+            return "country"
+        if self._world.search(text):
+            return "world"
+        return None
+
+
+# --------------------------------------------------------------------------
 # Wire copies
 # --------------------------------------------------------------------------
 
@@ -223,3 +257,8 @@ def gazetteer() -> Gazetteer:
 @lru_cache(maxsize=1)
 def topic_tagger() -> TopicTagger:
     return TopicTagger()
+
+
+@lru_cache(maxsize=1)
+def scope_markers() -> ScopeMarkers:
+    return ScopeMarkers()

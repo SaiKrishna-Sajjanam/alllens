@@ -24,7 +24,7 @@ Purpose: one version makes people believe; many versions make them think.
 
 ## Layout
 - `pipeline/`: collect, process (tagging.py, embed.py, grouping), translate (headlines, then snippets, into readers' app languages, table `headline_translations`, kept 7 days), cleanup, accounts (deletes accounts unused 12 months), check_feeds, review_groups, export_web_data
-- `pipeline/data/`: places.json (36 states/UTs; each with its districts and main cities as names that identify the state, in English, Hindi, Telugu and its own script), topics.json (17 topics, keywords in every language we collect)
+- `pipeline/data/`: places.json (36 states/UTs; each with its districts and main cities as names that identify the state, in English, Hindi, Telugu and its own script), topics.json (17 topics, keywords in every language we collect), scope.json (foreign and nationwide names that keep a story naming no Indian place out of a state tab)
 - `web/`: Next.js 15 App Router + Supabase (`@supabase/ssr`). `lib/` holds pure logic (feed.ts, prefs.ts, ai.ts, i18n.ts, catalog.ts) with tests in `web/tests`; `lib/data.ts` is the only data access layer and falls back to `lib/demo.ts` sample data when Supabase env vars are missing.
 - `supabase/migrations/`, `supabase/tests/`
 - `.github/workflows/`: tests (Python + Postgres + RLS + web build), collect (every 3 h, packages cached; fits the free 2,000 min/month), cleanup (daily), check_feeds, review_groups (manual)
