@@ -13,6 +13,10 @@ on:
         description: "Tag every stored article again (after changing places, topics or source topics); stories and follows are kept"
         type: boolean
         default: false
+      check_pictures:
+        description: "Remove this week's picture links too heavy for phones (once, after the picture check was added)"
+        type: boolean
+        default: false
 
 concurrency:
   group: collect
@@ -57,4 +61,4 @@ jobs:
           path: ~/.cache/huggingface
           key: hf-multilingual-e5-small
       - name: Collect, tag and group into stories
-        run: .venv/bin/python -m pipeline.collect ${{ inputs.regroup && '--regroup' || '' }} ${{ inputs.retag && '--retag' || '' }}
+        run: .venv/bin/python -m pipeline.collect ${{ inputs.regroup && '--regroup' || '' }} ${{ inputs.retag && '--retag' || '' }} ${{ inputs.check_pictures && '--check-pictures' || '' }}

@@ -3,6 +3,7 @@ import { groupsOf, languageName, mostSpecific, placeName } from '@/lib/catalog';
 import { isNewSince, labelLanguage, pickLabel } from '@/lib/feed';
 import { formatDay, t } from '@/lib/i18n';
 import type { Lang, Story } from '@/lib/types';
+import { lightPicture } from '@/lib/pictures';
 import RemoteImage from './RemoteImage';
 
 interface Props {
@@ -22,11 +23,12 @@ export default function StoryCard({ story, lang, lastVisit, translated, extra }:
   const place = mostSpecific(story.places ?? []);
   const groups = [...new Set((story.source_types ?? []).flatMap((x) => groupsOf(x)))];
   const fresh = isNewSince(story, lastVisit);
+  const picture = lightPicture(story.image_url);
   return (
     <Link href={`/story/${story.id}`} className="card story-card">
-      {story.image_url && (
+      {picture && (
         <figure className="story-pic">
-          <RemoteImage src={story.image_url} />
+          <RemoteImage src={picture} />
           {story.image_source && <figcaption>{t(lang, 'story.pictureBy', { source: story.image_source })}</figcaption>}
         </figure>
       )}

@@ -128,6 +128,27 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM runs")[0][0], 2)
         self.assertEqual(self.db.fetchall("SELECT COUNT(*) FROM sources")[0][0], 5)
 
+    def test_heavy_pictures_are_not_linked(self):
+        from pipeline.common import Item
+
+        light = Item("A", "https://a.test/1", "", NOW, image_url="https://a.test/light.jpg")
+        heavy = Item("B", "https://a.test/2", "", NOW, image_url="https://a.test/7mb.gif")
+        asked = []
+
+        def too_heavy(url):
+            asked.append(url)
+            return "7mb" in url
+
+        results = [(SOURCES[0], [light, heavy], None)]
+        self.assertEqual(collect.drop_heavy_pictures(self.db, results, too_heavy), 1)
+        self.assertEqual((light.image_url, heavy.image_url), ("https://a.test/light.jpg", ""))
+        # Reports already stored are not asked about again.
+        collect.sync_sources(self.db, SOURCES)
+        collect.store_items(self.db, SOURCES[0], [light], NOW)
+        asked.clear()
+        collect.drop_heavy_pictures(self.db, [(SOURCES[0], [light], None)], too_heavy)
+        self.assertEqual(asked, [])
+
     def test_html_escaped_twice_leaves_no_code(self):
         # ABP's feed escapes its HTML twice; one pass left <p style=...> and <a href=...> on screen.
         raw = ('&lt;p style="text-align: justify;"&gt;ప్రధానమంత్రి &lt;a title="Narendra Modi" '

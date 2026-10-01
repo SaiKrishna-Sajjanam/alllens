@@ -12,6 +12,7 @@ import AskAI from './AskAI';
 import { OwnTranslatorNote, ReportText, Translated } from './Translated';
 import FollowButton from './FollowButton';
 import { BackIcon, ExternalIcon } from './Icons';
+import { lightPicture } from '@/lib/pictures';
 import RemoteImage from './RemoteImage';
 
 interface Props {
@@ -113,10 +114,10 @@ export default function StoryView({ story, articles, lang, translated, translate
           const video = groupsOf(a.sources?.type).includes('video');
           return (
             <article key={a.id} className="card article">
-              {a.image_url && (
+              {lightPicture(a.image_url) && (
                 <a href={a.url} target="_blank" rel="noopener noreferrer" className={video ? 'report-pic video' : 'report-pic'}
                   tabIndex={-1} aria-hidden="true">
-                  <RemoteImage src={a.image_url} />
+                  <RemoteImage src={lightPicture(a.image_url)!} />
                 </a>
               )}
               <div className="spread" style={{ alignItems: 'baseline' }}>

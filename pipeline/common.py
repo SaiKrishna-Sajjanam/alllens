@@ -228,6 +228,26 @@ def fetch(url: str) -> tuple[int, bytes]:
     return fetch_via_apps_script(url)
 
 
+PICTURE_MAX = 500_000     # bytes; a card picture heavier than this makes phones crawl
+
+
+def picture_too_heavy(url: str) -> bool:
+    """Whether an outlet's picture is too heavy to link on a phone: over PICTURE_MAX bytes, or an
+    animated GIF. Asks the outlet's server for the size only (HEAD); the picture is never
+    downloaded or stored. Unknown size: linked as before."""
+    import requests
+
+    try:
+        r = requests.head(url, headers={"User-Agent": USER_AGENT}, timeout=8, allow_redirects=True)
+    except requests.RequestException:
+        return False
+    if r.status_code != 200:
+        return False
+    kind = r.headers.get("Content-Type", "").lower()
+    size = r.headers.get("Content-Length", "")
+    return kind.startswith("image/gif") or (size.isdigit() and int(size) > PICTURE_MAX)
+
+
 def _relay_allowed(url: str) -> bool:
     host = (urlsplit(url).hostname or "").lower()
     return bool(os.environ.get("TRANSLATE_URL") and os.environ.get("TRANSLATE_TOKEN")) and not (

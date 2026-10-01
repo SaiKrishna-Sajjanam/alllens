@@ -14,7 +14,7 @@ from datetime import datetime, timedelta, timezone
 
 from pipeline.common import (
     DB, RETENTION_DAYS, NotAFeed, Source, article_id, clean_title, fetch, load_sources,
-    make_snippet, map_by_host, normalise_url, parse_feed, sync_sources,
+    make_snippet, map_by_host, normalise_url, parse_feed, picture_too_heavy, sync_sources,
 )
 
 COLLECTABLE = {"live", "to_check"}
@@ -79,7 +79,43 @@ def repair_markup(db: DB) -> int:
     return len(fixed)
 
 
-def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: datetime | None = None) -> dict:
+def drop_heavy_pictures(db: DB, results, too_heavy, workers: int = 16) -> int:
+    """New reports whose picture is too heavy for a phone are stored without it (their story then
+    shows the next report's picture). Only new reports are checked, all at once. Returns how many."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    items = {article_id(it.url): it for _, its, error in results if not error for it in its if it.image_url}
+    known = {r[0] for r in db.fetch_in("SELECT id FROM articles WHERE id IN ({ids})", items)}
+    new = [it for aid, it in items.items() if aid not in known]
+    urls = sorted({it.image_url for it in new})
+    if not urls:
+        return 0
+    with ThreadPoolExecutor(workers) as pool:
+        heavy = {u for u, h in zip(urls, pool.map(too_heavy, urls)) if h}
+    dropped = 0
+    for it in new:
+        if it.image_url in heavy:
+            it.image_url, dropped = "", dropped + 1
+    return dropped
+
+
+def check_stored_pictures(db: DB, too_heavy, now: datetime, workers: int = 16) -> int:
+    """Once, for reports stored before pictures were checked: the feed week's picture links that
+    are too heavy for a phone are removed (their stories then show the next report's picture)."""
+    from concurrent.futures import ThreadPoolExecutor
+
+    since = now - timedelta(days=7)
+    urls = sorted({r[0] for r in db.fetchall(
+        "SELECT image_url FROM articles WHERE image_url IS NOT NULL AND fetched_at >= ?", (since,))})
+    with ThreadPoolExecutor(workers) as pool:
+        heavy = [(u,) for u, h in zip(urls, pool.map(too_heavy, urls)) if h]
+    db.executemany("UPDATE articles SET image_url = NULL, processed_at = NULL WHERE image_url = ?", heavy)
+    db.commit()
+    return len(heavy)
+
+
+def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: datetime | None = None,
+        too_heavy=None) -> dict:
     now = now or datetime.now(timezone.utc)
     sync_sources(db, sources)
     repair_markup(db)
@@ -90,6 +126,8 @@ def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: dat
     results = map_by_host(lambda s: fetch_source(s, fetcher), targets, workers,
                           stop_host=lambda r: r[2] == "HTTP 429",
                           skipped=lambda s: (s, [], "HTTP 429 (site asked to slow down; skipped this run)"))
+
+    heavy = drop_heavy_pictures(db, results, too_heavy) if too_heavy else 0
 
     ok, failed, new_total, updated_total, notes = 0, 0, 0, 0, []
     for src, items, error in results:
@@ -104,7 +142,7 @@ def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: dat
     db.commit()
 
     summary = {"feeds_ok": ok, "feeds_failed": failed, "new_articles": new_total,
-               "updated_headlines": updated_total, "notes": notes}
+               "updated_headlines": updated_total, "heavy_pictures": heavy, "notes": notes}
     db.execute(
         "INSERT INTO runs (id, started_at, finished_at, feeds_ok, feeds_failed, new_articles, notes) VALUES (?, ?, ?, ?, ?, ?, ?)",
         (str(uuid.uuid4()), now, datetime.now(timezone.utc), ok, failed, new_total, "\n".join(notes) or None),
@@ -122,6 +160,8 @@ def main(argv=None) -> int:
                     help="clear all story groupings and group every article again (articles are kept)")
     ap.add_argument("--retag", action="store_true",
                     help="tag every stored article again, e.g. after editing places or topics (stories are kept)")
+    ap.add_argument("--check-pictures", action="store_true",
+                    help="remove the feed week's picture links that are too heavy for phones (once)")
     args = ap.parse_args(argv)
 
     db = DB()
@@ -134,9 +174,13 @@ def main(argv=None) -> int:
         from pipeline import process
 
         print(f"Tagging {process.retag_all(db)} stored articles again")
-    summary = run(db, load_sources())
+    if args.check_pictures:
+        n = check_stored_pictures(db, picture_too_heavy, datetime.now(timezone.utc))
+        print(f"Removed {n} picture links too heavy for phones")
+    summary = run(db, load_sources(), too_heavy=picture_too_heavy)
     print(f"Feeds OK: {summary['feeds_ok']}  failed: {summary['feeds_failed']}  "
-          f"new articles: {summary['new_articles']}  re-worded headlines: {summary['updated_headlines']}")
+          f"new articles: {summary['new_articles']}  re-worded headlines: {summary['updated_headlines']}  "
+          f"pictures too heavy to link: {summary['heavy_pictures']}")
     for n in summary["notes"]:
         print("  -", n)
     if not args.no_process:

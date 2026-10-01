@@ -6,7 +6,7 @@ import type { Article, FeedSort, LabelInfo, Lang, Prefs, Story, StorySort } from
 
 export const FEED_DAYS = 7;
 export const ARCHIVE_DAYS = 30;
-export const PAGE_SIZE = 40;
+export const PAGE_SIZE = 20;      // cards per page; each loads the outlet's picture on the phone
 /** The reader's "hide crime and accidents" choice. */
 export const HIDDEN_BY_HIDE_CRIME = ['crime', 'accidents'];
 
