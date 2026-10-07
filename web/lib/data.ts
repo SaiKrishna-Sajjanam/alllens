@@ -4,7 +4,7 @@ import { cache } from 'react';
 import { demoData, DEMO_SOURCES } from './demo';
 import { isConfigured } from './env';
 import {
-  ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesFilters, sortStories, type TabId,
+  ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesFilters, pickLabel, sortStories, type TabId,
 } from './feed';
 import { isLang } from './i18n';
 import { plainText } from './plaintext';
@@ -117,6 +117,32 @@ export async function getFeed(q: FeedQuery): Promise<FeedResult> {
   const { data } = await query.order('last_article_at', { ascending: false }).range(0, end);
   const rows = (data ?? []) as unknown as Story[];
   return { stories: rows.slice(0, end), hasMore: rows.length > end, demo: false };
+}
+
+export interface CardSnippet {
+  article_id: string;
+  snippet: string;
+  language: string | null;
+}
+
+/** The opening lines of the report each card's headline comes from, by story id: the same
+ *  source's own words, credited on the card with the headline. */
+export async function getCardSnippets(stories: Story[], lang: string): Promise<Record<string, CardSnippet>> {
+  const byArticle = new Map(stories.map((s): [string, string] => [pickLabel(s, lang).article_id, s.id]).filter(([a]) => a));
+  if (!byArticle.size) return {};
+  let rows: { id: string; snippet: string | null; language: string | null }[];
+  if (!isConfigured()) rows = demoData().articles.filter((a) => byArticle.has(a.id));
+  else {
+    const supabase = await createClient();
+    const { data } = await supabase.from('articles').select('id,snippet,language').in('id', [...byArticle.keys()]);
+    rows = data ?? [];
+  }
+  const out: Record<string, CardSnippet> = {};
+  for (const r of rows) {
+    const snippet = plainText(r.snippet);
+    if (snippet) out[byArticle.get(r.id)!] = { article_id: r.id, snippet, language: r.language };
+  }
+  return out;
 }
 
 // ------------------------------------------------------------------ one story

@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import { DEFAULT_PREFS, cleanPrefs, decodePrefsCookie, encodePrefsCookie, prefsFromProfile, profileFromPrefs } from '../lib/prefs';
 import { titleHash } from '../lib/titlehash';
+import { TOPICS } from '../lib/catalog';
 
 test('unknown or hostile values fall back to safe defaults', () => {
   const p = cleanPrefs({
@@ -14,13 +15,13 @@ test('unknown or hostile values fall back to safe defaults', () => {
   assert.equal(p.state, '', 'a district is not a state; no state until the reader picks one');
   assert.equal(p.uiLanguage, 'en');
   assert.equal(p.aiAssistant, 'chatgpt');
-  assert.equal(p.feedSort, 'sources');
+  assert.equal(p.feedSort, 'latest');
   assert.equal(p.hideCrime, false);
 });
 
 test('nothing saved narrows the news: old topic, language and source-kind choices are dropped', () => {
   const old = cleanPrefs({ topics: ['sports'], customTopics: ['Infosys'], languages: ['te'], sourceTypes: ['tv'], state: 'kl' });
-  assert.deepEqual(Object.keys(old).sort(), ['aiAssistant', 'feedSort', 'hideCrime', 'state', 'uiLanguage']);
+  assert.deepEqual(Object.keys(old).sort(), ['aiAssistant', 'feedSort', 'hideCrime', 'state', 'topicOrder', 'uiLanguage']);
   assert.equal(old.state, 'kl');
   const row = profileFromPrefs('u1', old);
   assert.deepEqual([row.topics, row.custom_topics, row.languages, row.source_types], [[], [], [], []]);
@@ -47,4 +48,13 @@ test('any state or union territory, all alike, none by default; any interface la
 
 test('headline wording check matches the pipeline (pipeline/translate.py title_hash)', () => {
   assert.equal(titleHash('హైదరాబాద్‌లో భారీ వర్షం'), '550051f53119');
+});
+
+test('topic order: the reader’s order first, every topic exactly once, unknown ids dropped', () => {
+  const all = TOPICS.map((x) => x.id);
+  assert.deepEqual(cleanPrefs({}).topicOrder, all);
+  const p = cleanPrefs({ topicOrder: ['space', 'sports', 'space', 'nonsense', 42] });
+  assert.deepEqual(p.topicOrder.slice(0, 2), ['space', 'sports']);
+  assert.deepEqual([...p.topicOrder].sort(), [...all].sort());
+  assert.deepEqual(prefsFromProfile(profileFromPrefs('u1', p)).topicOrder, p.topicOrder);
 });

@@ -1,8 +1,11 @@
 import Link from 'next/link';
-import { TOPICS, topicName } from '@/lib/catalog';
-import { DEFAULT_TAB, type Tab, type TabId } from '@/lib/feed';
+import { topicName } from '@/lib/catalog';
+import { DEFAULT_TAB, labelLanguage, pickLabel, type Tab, type TabId } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
 import type { FeedSort, Lang, Prefs, Story } from '@/lib/types';
+import type { storyCardTexts } from '@/lib/headlines';
+import { textLanguage } from '@/lib/script';
+import ReadAloud, { type Spoken } from './ReadAloud';
 import StatePicker from './StatePicker';
 import StoryCard from './StoryCard';
 
@@ -15,8 +18,8 @@ interface Props {
   topic: string | null;
   page: number;
   stories: Story[];
-  /** Card headlines in the app language (Google's translation), by story id. */
-  translated: Record<string, string>;
+  /** Card headlines and opening lines in the app language (Google's translation where needed), by story id. */
+  cards: Awaited<ReturnType<typeof storyCardTexts>>;
   hasMore: boolean;
   demo: boolean;
   lastVisit: string | null;
@@ -40,6 +43,20 @@ export default function FeedView(p: Props) {
     return s ? `/feed?${s}` : '/feed';
   };
 
+  // Read aloud in the order shown: each card's source, headline and opening lines, as on screen.
+  const spoken: Spoken[] = p.stories.map((s) => {
+    const label = pickLabel(s, lang);
+    const sn = p.cards.snippets[s.id];
+    const title = p.cards.titles[s.id];
+    return {
+      source: label.source_name,
+      title: title ?? label.title,
+      titleLang: title ? lang : textLanguage(label.title, labelLanguage(s, label)),
+      snippet: sn ? sn.translated ?? sn.text : null,
+      snippetLang: sn ? (sn.translated ? lang : textLanguage(sn.text, sn.language)) : null,
+    };
+  });
+
   return (
     <div>
       <div className="feed-head">
@@ -61,16 +78,19 @@ export default function FeedView(p: Props) {
           ))}
         </nav>
         {p.tab === 'state' && <StatePicker prefs={prefs} lang={lang} />}
-        {/* Topic buttons for this visit only: everyone starts on All, so nothing saved narrows the news. */}
+        {/* Topic buttons for this visit only, in the reader's own order: the feed starts with all news,
+            tapping a topic shows only that topic, tapping it again shows all news again. */}
         <div className="filter-row" role="group" aria-label={t(lang, 'prefs.topics')}>
-          <Link href={href({ topic: null })} className="chip" aria-pressed={!p.topic ? 'true' : 'false'}>
-            {t(lang, 'story.all')}
-          </Link>
-          {TOPICS.map((x) => (
-            <Link key={x.id} href={href({ topic: x.id })} className="chip" aria-pressed={p.topic === x.id ? 'true' : 'false'}>
-              {topicName(x.id, lang)}
-            </Link>
-          ))}
+          {prefs.topicOrder.map((id) => {
+            const on = p.topic === id;
+            return (
+              <Link key={id} href={href({ topic: on ? null : id })} className="chip" aria-pressed={on ? 'true' : 'false'}
+                title={on ? t(lang, 'feed.allTopics') : undefined}>
+                {topicName(id, lang)}
+                {on && <span aria-hidden="true">&nbsp;✕</span>}
+              </Link>
+            );
+          })}
         </div>
         <div className="spread">
           <div className="row" role="group" aria-label={t(lang, 'feed.order')}>
@@ -84,17 +104,19 @@ export default function FeedView(p: Props) {
           </div>
         </div>
         <p className="small muted">{t(lang, 'feed.orderNote')}</p>
+        <ReadAloud items={spoken} lang={lang} label="listen.all" />
       </div>
 
       {p.tab === 'state' && !prefs.state ? null : p.stories.length === 0 ? (
         <div className="panel stack">
           <p>{t(lang, 'feed.empty')}</p>
-          {p.topic && <Link className="btn btn-secondary" href={href({ topic: null })}>{t(lang, 'story.all')}</Link>}
+          {p.topic && <Link className="btn btn-secondary" href={href({ topic: null })}>{t(lang, 'feed.allTopics')}</Link>}
         </div>
       ) : (
         <div className="feed-grid">
           {p.stories.map((s) => (
-            <StoryCard key={s.id} story={s} lang={lang} lastVisit={p.lastVisit} translated={p.translated[s.id]} />
+            <StoryCard key={s.id} story={s} lang={lang} lastVisit={p.lastVisit} translated={p.cards.titles[s.id]}
+              snippet={p.cards.snippets[s.id]} />
           ))}
         </div>
       )}

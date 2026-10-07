@@ -4,6 +4,7 @@ import { isNewSince, labelLanguage, pickLabel } from '@/lib/feed';
 import { formatDay, t } from '@/lib/i18n';
 import type { Lang, Story } from '@/lib/types';
 import { lightPicture } from '@/lib/pictures';
+import { textLanguage } from '@/lib/script';
 import RemoteImage from './RemoteImage';
 
 interface Props {
@@ -12,12 +13,15 @@ interface Props {
   lastVisit: string | null;
   /** Google's translation of the headline into the app language, when it was written in another. */
   translated?: string;
+  /** The opening lines of the same report, and Google's translation of them when there is one. */
+  snippet?: { text: string; language: string | null; translated?: string };
   extra?: React.ReactNode;
 }
 
-/** One story in a list. The headline is a source's own words, credited to it, or Google's
- *  translation of them, marked as such (the original is on the story page). */
-export default function StoryCard({ story, lang, lastVisit, translated, extra }: Props) {
+/** One story in a list. The headline and its opening lines are one source's own words,
+ *  credited to it, or Google's translation of them, marked as such (the original is on the
+ *  story page). */
+export default function StoryCard({ story, lang, lastVisit, translated, snippet, extra }: Props) {
   const label = pickLabel(story, lang);
   const labelLang = labelLanguage(story, label) ?? undefined;
   const place = mostSpecific(story.places ?? []);
@@ -44,9 +48,14 @@ export default function StoryCard({ story, lang, lastVisit, translated, extra }:
         )}
       </div>
       <h2 className="headline" lang={translated ? lang : labelLang}>{translated ?? label.title}</h2>
+      {snippet && (
+        <p className="card-snippet" lang={snippet.translated ? lang : textLanguage(snippet.text, snippet.language) ?? undefined}>
+          {snippet.translated ?? snippet.text}
+        </p>
+      )}
       <p className="small muted">
         {t(lang, 'feed.firstBy', { source: label.source_name })}
-        {translated ? ` · ${t(lang, 'tr.from', { language: languageName(labelLang) })}` : ''}
+        {translated || snippet?.translated ? ` · ${t(lang, 'tr.from', { language: languageName(labelLang) })}` : ''}
       </p>
       <div className="row small">
         <span className="count">

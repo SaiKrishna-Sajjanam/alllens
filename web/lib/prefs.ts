@@ -1,7 +1,7 @@
 // Reader choices: defaults, validation, and conversion to/from the cookie
 // (guests) and the profiles table (signed-in readers).
 import { AI_ASSISTANTS } from './ai';
-import { isState } from './catalog';
+import { TOPICS, isTopic, isState } from './catalog';
 import { isLang } from './i18n';
 import type { FeedSort, Prefs } from './types';
 
@@ -14,8 +14,16 @@ export const DEFAULT_PREFS: Prefs = {
   hideCrime: false,
   uiLanguage: 'en',
   aiAssistant: 'chatgpt',
-  feedSort: 'sources',
+  feedSort: 'latest',
+  topicOrder: TOPICS.map((t) => t.id),
 };
+
+/** Every topic exactly once: the reader's order first, then any topic they haven't placed
+ *  (for example one added later), in the standard order. */
+export function cleanTopicOrder(input: unknown): string[] {
+  const mine = Array.isArray(input) ? input.filter((x): x is string => typeof x === 'string' && isTopic(x)) : [];
+  return [...new Set([...mine, ...TOPICS.map((t) => t.id)])];
+}
 
 const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
 /** Accept only known values; anything unexpected falls back to the default. */
@@ -30,6 +38,7 @@ export function cleanPrefs(input: unknown): Prefs {
     aiAssistant: typeof o.aiAssistant === 'string' && AI_ASSISTANTS.some((a) => a.id === o.aiAssistant)
       ? o.aiAssistant : DEFAULT_PREFS.aiAssistant,
     feedSort: SORTS.includes(o.feedSort as FeedSort) ? (o.feedSort as FeedSort) : DEFAULT_PREFS.feedSort,
+    topicOrder: cleanTopicOrder(o.topicOrder),
   };
 }
 
@@ -58,6 +67,7 @@ export interface ProfileRow {
   ui_language: string;
   ai_assistant: string;
   feed_sort: string;
+  topic_order: string[];
   last_visit_at?: string | null;
 }
 
@@ -68,6 +78,7 @@ export function prefsFromProfile(row: Partial<ProfileRow>): Prefs {
     uiLanguage: row.ui_language,
     aiAssistant: row.ai_assistant,
     feedSort: row.feed_sort,
+    topicOrder: row.topic_order,
   });
 }
 
@@ -86,5 +97,6 @@ export function profileFromPrefs(userId: string, p: Prefs): ProfileRow {
     ui_language: p.uiLanguage,
     ai_assistant: p.aiAssistant,
     feed_sort: p.feedSort,
+    topic_order: p.topicOrder,
   };
 }

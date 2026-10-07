@@ -9,6 +9,7 @@ import 'server-only';
 // translator (docs/TRANSLATE.md), and cached for a week so it is asked for only once.
 import { unstable_cache } from 'next/cache';
 import { after } from 'next/server';
+import { getCardSnippets } from './data';
 import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
 import { textLanguage } from './script';
@@ -23,12 +24,6 @@ const BATCH_LINES = 40;
 const BATCH_CHARS = 3500;     // Google takes about 5,000 characters per call
 const MAX_NOW = 120;          // texts translated while one page opens; the rest come from the next run
 const WAIT_MS = 2500;         // a page waits at most this long; later answers are kept for the next visit
-
-export interface Headline {
-  id: string;                 // article id
-  title: string;
-  language: string | null;
-}
 
 type Kind = 'title' | 'snippet';
 interface Text {
@@ -132,11 +127,6 @@ async function translateTexts(items: Text[], lang: Lang): Promise<Map<string, st
 const pick = (m: Map<string, string>, kind: Kind) =>
   Object.fromEntries([...m].filter(([k]) => k.endsWith(`:${kind}`)).map(([k, v]) => [k.slice(0, -kind.length - 1), v]));
 
-/** Headline translations by article id. */
-export async function translateHeadlines(items: Headline[], lang: Lang): Promise<Record<string, string>> {
-  return pick(await translateTexts(items.map((i) => ({ id: i.id, kind: 'title', text: i.title, language: i.language })), lang), 'title');
-}
-
 /** Headline and snippet translations of a story's reports, by article id. */
 export async function translateReports(articles: Article[], lang: Lang): Promise<{ titles: Record<string, string>; snippets: Record<string, string> }> {
   const texts: Text[] = articles.flatMap((a) => [
@@ -147,12 +137,31 @@ export async function translateReports(articles: Article[], lang: Lang): Promise
   return { titles: pick(m, 'title'), snippets: pick(m, 'snippet') };
 }
 
-/** The card headline of each story in the reader's app language, keyed by story id. */
-export async function translateStoryHeadlines(stories: Story[], lang: Lang): Promise<Record<string, string>> {
-  const labels = stories.map((s) => {
+/** What each card shows under the picture, keyed by story id: the headline in the reader's app
+ *  language and the same report's opening lines, each Google's translation where needed. Headlines
+ *  are asked for first, so a busy translator still gives those. */
+export async function storyCardTexts(stories: Story[], lang: Lang): Promise<{
+  titles: Record<string, string>;
+  snippets: Record<string, { text: string; language: string | null; translated?: string }>;
+}> {
+  const snippets = await getCardSnippets(stories, lang);
+  const texts: Text[] = [];
+  const storyOf = new Map<string, string>();
+  for (const s of stories) {
     const label = pickLabel(s, lang);
-    return { story: s.id, item: { id: label.article_id, title: label.title, language: labelLanguage(s, label) } };
-  });
-  const byArticle = await translateHeadlines(labels.map((l) => l.item), lang);
-  return Object.fromEntries(labels.filter((l) => byArticle[l.item.id]).map((l) => [l.story, byArticle[l.item.id]]));
+    if (!label.article_id) continue;
+    storyOf.set(label.article_id, s.id);
+    texts.push({ id: label.article_id, kind: 'title', text: label.title, language: labelLanguage(s, label) });
+    const sn = snippets[s.id];
+    if (sn) texts.push({ id: sn.article_id, kind: 'snippet', text: sn.snippet, language: sn.language });
+  }
+  const m = await translateTexts(texts, lang);
+  const byStory = (r: Record<string, string>) =>
+    Object.fromEntries(Object.entries(r).filter(([a]) => storyOf.has(a)).map(([a, v]) => [storyOf.get(a)!, v]));
+  const translatedSnippets = byStory(pick(m, 'snippet'));
+  return {
+    titles: byStory(pick(m, 'title')),
+    snippets: Object.fromEntries(Object.entries(snippets).map(([id, sn]) =>
+      [id, { text: sn.snippet, language: sn.language, translated: translatedSnippets[id] }])),
+  };
 }

@@ -82,6 +82,18 @@ begin
     raise exception 'expected ui_language check to refuse fr';
 end $$;
 update public.profiles set state = 'tg', ui_language = 'en' where user_id = :'u1';
+-- The reader's own order of topic buttons; a list longer than any topic list is refused.
+update public.profiles set topic_order = '{space,sports,politics}' where user_id = :'u1';
+select pg_temp.expect_count($q$select count(*) from public.profiles where topic_order[1] = 'space'$q$, 1);
+do $$
+begin
+    begin
+        update public.profiles set topic_order = array_fill('x'::text, array[41]) where user_id = '11111111-1111-1111-1111-111111111111';
+    exception when check_violation then
+        return;
+    end;
+    raise exception 'expected topic_order length check';
+end $$;
 insert into public.follows (user_id, story_id) values (:'u1', 'st1');
 insert into public.source_suggestions (user_id, name, url) values (:'u1', 'Local Portal', 'https://local.example');
 select pg_temp.expect_denied($q$insert into public.source_suggestions (user_id, name) values ('22222222-2222-2222-2222-222222222222', 'Fake')$q$);

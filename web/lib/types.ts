@@ -4,13 +4,16 @@ export type FeedSort = 'sources' | 'latest' | 'random';
 export type StorySort = 'earliest' | 'latest' | 'random' | 'source';
 
 /** The reader's choices. Nothing here narrows International or National: those are the same
- *  for every reader. The state picks the State tab; "hide crime" is an optional comfort setting. */
+ *  for every reader. The state picks the State tab; "hide crime" is an optional comfort setting;
+ *  the topic order only arranges the topic buttons. */
 export interface Prefs {
   state: string;
   hideCrime: boolean;
   uiLanguage: Lang;
   aiAssistant: string;
   feedSort: FeedSort;
+  /** Topic ids in the order the reader put the topic buttons (every topic, each once). Moves buttons only. */
+  topicOrder: string[];
 }
 
 export interface LabelInfo {

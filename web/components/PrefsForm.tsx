@@ -3,7 +3,7 @@ import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
 import { savePrefs } from '@/app/actions';
 import { AI_ASSISTANTS } from '@/lib/ai';
-import { STATES, placeName } from '@/lib/catalog';
+import { STATES, TOPICS, placeName, topicName } from '@/lib/catalog';
 import { UI_LANGUAGES, isLang, t } from '@/lib/i18n';
 import type { Lang, Prefs } from '@/lib/types';
 
@@ -38,6 +38,12 @@ export default function PrefsForm({ initial, lang, mode }: Props) {
     });
   }
 
+  function move(i: number, by: -1 | 1) {
+    const order = [...p.topicOrder];
+    [order[i], order[i + by]] = [order[i + by], order[i]];
+    set({ topicOrder: order });
+  }
+
   return (
     <form className="stack-lg" onSubmit={submit}>
       <fieldset className="form-section" style={{ border: 0, padding: 0, margin: 0 }}>
@@ -61,6 +67,30 @@ export default function PrefsForm({ initial, lang, mode }: Props) {
           </span>
         </label>
       </div>
+
+      {mode === 'settings' && (
+        <div className="card stack">
+          <span className="field-label" id="topic-order">{t(lang, 'prefs.topicOrder')}</span>
+          <p className="small muted">{t(lang, 'prefs.topicOrderHint')}</p>
+          <ol className="topic-order" aria-labelledby="topic-order">
+            {p.topicOrder.map((id, i) => (
+              <li key={id}>
+                <span>{topicName(id, lang)}</span>
+                <span className="row" style={{ gap: 4 }}>
+                  <button type="button" className="btn btn-secondary btn-small" disabled={i === 0} onClick={() => move(i, -1)}
+                    aria-label={t(lang, 'prefs.moveUp', { topic: topicName(id, lang) })}>↑</button>
+                  <button type="button" className="btn btn-secondary btn-small" disabled={i === p.topicOrder.length - 1}
+                    onClick={() => move(i, 1)} aria-label={t(lang, 'prefs.moveDown', { topic: topicName(id, lang) })}>↓</button>
+                </span>
+              </li>
+            ))}
+          </ol>
+          <button type="button" className="btn btn-secondary btn-small" style={{ alignSelf: 'flex-start' }}
+            onClick={() => set({ topicOrder: TOPICS.map((x) => x.id) })}>
+            {t(lang, 'prefs.resetOrder')}
+          </button>
+        </div>
+      )}
 
       {mode === 'settings' && (
         <div className="card stack">

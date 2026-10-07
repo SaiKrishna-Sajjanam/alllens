@@ -2,7 +2,7 @@ import FeedView from '@/components/FeedView';
 import MarkVisited from '@/components/MarkVisited';
 import { getFeed, getViewer } from '@/lib/data';
 import { normaliseTab, normaliseTopic, tabsFor } from '@/lib/feed';
-import { translateStoryHeadlines } from '@/lib/headlines';
+import { storyCardTexts } from '@/lib/headlines';
 import { t } from '@/lib/i18n';
 import type { FeedSort } from '@/lib/types';
 
@@ -24,7 +24,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   const seed = `${viewer.user?.id ?? 'guest'}-${new Date().toISOString().slice(0, 13)}`;
 
   const feed = await getFeed({ prefs, tab, sort, topic, page, seed });
-  const translated = await translateStoryHeadlines(feed.stories, lang);
+  const cards = await storyCardTexts(feed.stories, lang);
   return (
     <>
       <FeedView
@@ -36,7 +36,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
         topic={topic}
         page={page}
         stories={feed.stories}
-        translated={translated}
+        cards={cards}
         hasMore={feed.hasMore}
         demo={feed.demo}
         lastVisit={viewer.lastVisit}

@@ -9,6 +9,8 @@ import {
 import { formatTime, t } from '@/lib/i18n';
 import type { Article, Lang, Story, StorySort } from '@/lib/types';
 import AskAI from './AskAI';
+import ReadAloud, { type Spoken } from './ReadAloud';
+import { textLanguage } from '@/lib/script';
 import { OwnTranslatorNote, ReportText, Translated } from './Translated';
 import FollowButton from './FollowButton';
 import { BackIcon, ExternalIcon } from './Icons';
@@ -47,6 +49,17 @@ export default function StoryView({ story, articles, lang, translated, translate
     [articles, group, language, sort, story.id],
   );
   const place = mostSpecific(story.places ?? []);
+  // Each report as on screen: Google's marked translation where there is one, else the source's own words.
+  const spoken = (a: Article): Spoken => {
+    const own = textLanguage(a.title, a.language);
+    return {
+      source: a.sources?.name ?? a.source_id,
+      title: translated[a.id] ?? a.title,
+      titleLang: translated[a.id] ? lang : own,
+      snippet: translatedSnippets[a.id] ?? a.snippet,
+      snippetLang: translatedSnippets[a.id] ? lang : own,
+    };
+  };
 
   function pick(id: string) {
     const next = toggleCompare(selected, id);
@@ -73,6 +86,7 @@ export default function StoryView({ story, articles, lang, translated, translate
           </p>
           <FollowButton storyId={story.id} initial={following} signedIn={signedIn} lang={lang} />
         </div>
+        <ReadAloud items={shown.map(spoken)} lang={lang} label="listen.all" />
       </div>
 
       <div className="filters">
@@ -143,6 +157,7 @@ export default function StoryView({ story, articles, lang, translated, translate
                   {t(lang, video ? 'story.watch' : 'story.read', { source: name })}
                   <ExternalIcon />
                 </a>
+                <ReadAloud items={[spoken(a)]} lang={lang} label="listen.one" />
                 <AskAI urls={[a.url]} lang={lang} preferred={aiAssistant} />
                 <label className="check compare small" style={{ minHeight: 40, alignItems: 'center' }}>
                   <input type="checkbox" checked={checked} onChange={() => pick(a.id)}
