@@ -97,3 +97,14 @@ export function groupsOf(type: string | null | undefined): SourceGroup[] {
   if (t.includes('international')) out.push('international');
   return out.length ? out : ['digital'];
 }
+
+/** The one section a source's reports are listed under on a story page, by fixed rule (a TV
+ *  channel's YouTube feed is YouTube; a newspaper's TV arm is Newspaper). Sections are shown in
+ *  SOURCE_GROUPS order, which is fixed and the same for every story. */
+export function sectionOf(type: string | null | undefined): SourceGroup {
+  const g = groupsOf(type);
+  for (const s of ['video', 'newspaper', 'tv', 'community', 'government', 'international', 'digital'] as const) {
+    if (g.includes(s)) return s;
+  }
+  return 'digital';
+}

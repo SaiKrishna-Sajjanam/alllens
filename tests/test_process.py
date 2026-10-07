@@ -324,3 +324,37 @@ class WireCopyTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class TopicKeywordTests(unittest.TestCase):
+    """Wrong topics found in live articles (2026-10-07); each must stay fixed."""
+
+    def tag(self, title, snippet=""):
+        from pipeline.tagging import topic_tagger
+        return topic_tagger().tag(title, snippet)
+
+    def test_english_keywords_do_not_match_other_words(self):
+        self.assertNotIn("business", self.tag("Afternoon Important News LIVE"))
+        self.assertNotIn("business", self.tag("2026 Nobel Prize in Chemistry announced in Stockholm"))
+        self.assertNotIn("education", self.tag("SC to examine 'shield' to CEC"))
+        self.assertNotIn("health", self.tag("71% seats vacant in aviation & hospitality course"))
+        self.assertNotIn("accidents", self.tag("Tammy Beaumont to Blaze away for two more years"))
+        self.assertIn("education", self.tag("Board exams to begin in February"))
+        self.assertIn("accidents", self.tag("Speeding Thar crashes into house, damages 2 motorcycles"))
+
+    def test_script_keywords_match_from_the_start_of_a_word(self):
+        # యాప్ "app" is not inside దేశవ్యాప్తంగా "nationwide"; খুন "murder" not inside দেখুন "see".
+        self.assertNotIn("tech", self.tag("దేశవ్యాప్తంగా విద్యుత్ కోతలు"))
+        self.assertNotIn("crime", self.tag("ছবিটি দেখুন"))
+        self.assertNotIn("space", self.tag("मस्कऱ्या गणपतीच्या दर्शनासाठी आशिष शेलार"))
+        # Endings still match: రైతు finds రైతులకు.
+        self.assertIn("farming", self.tag("రైతులకు శుభవార్త"))
+        # A trailing $ is the whole word only: ఏఐ "AI" but not ఏఐసీటీఈ "AICTE".
+        self.assertNotIn("tech", self.tag("ఏఐసీటీఈ కొత్త నిబంధనలు"))
+
+    def test_only_the_first_hashtags_of_a_snippet_count(self):
+        title = "Ahilyanagar | जिल्हा बँक अर्ज दाखल"
+        spam = "#pune #news #today #thackerayVsBJP #Congress #farmers"
+        self.assertEqual(self.tag(title, spam), [])
+        self.assertIn("politics", self.tag("Delhi protest LIVE", "#Congress #RahulGandhi #Delhi"))
+        self.assertNotIn("politics", self.tag("Delhi traffic", "Subscribe to our channel for BJP and Congress news"))

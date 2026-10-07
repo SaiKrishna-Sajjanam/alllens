@@ -2,7 +2,10 @@ import type { Metadata, Viewport } from 'next';
 import localFont from 'next/font/local';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
+import ScrollMemory from '@/components/ScrollMemory';
+import { cookies } from 'next/headers';
 import { getViewer } from '@/lib/data';
+import { THEME_COOKIE } from '@/lib/prefs';
 import { isRtl } from '@/lib/i18n';
 import './globals.css';
 
@@ -44,12 +47,16 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const viewer = await getViewer();
   const lang = viewer.prefs.uiLanguage;
+  // Light or dark when the reader picked one (components/ThemeToggle.tsx); otherwise the device decides.
+  const theme = (await cookies()).get(THEME_COOKIE)?.value;
   return (
-    <html lang={lang} dir={isRtl(lang) ? 'rtl' : 'ltr'} className={fonts}>
+    <html lang={lang} dir={isRtl(lang) ? 'rtl' : 'ltr'} className={fonts}
+      data-theme={theme === 'dark' || theme === 'light' ? theme : undefined}>
       <body>
         <Header lang={lang} signedIn={!!viewer.user} />
         <main id="main" className="container">{children}</main>
         <Footer lang={lang} />
+        <ScrollMemory />
       </body>
     </html>
   );

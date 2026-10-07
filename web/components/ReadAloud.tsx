@@ -72,8 +72,9 @@ export default function ReadAloud({ items, lang, label }: { items: Spoken[]; lan
 
   return (
     <span className="read-aloud">
-      <button type="button" className="btn btn-secondary btn-small" aria-pressed={speaking} onClick={speaking ? stop : start}>
-        <span aria-hidden="true">{speaking ? '■' : '🔊'}</span>&nbsp;{t(lang, speaking ? 'listen.stop' : label)}
+      <button type="button" className="btn btn-secondary btn-small" aria-pressed={speaking} onClick={speaking ? stop : start}
+        aria-label={t(lang, speaking ? 'listen.stop' : label)}>
+        <span aria-hidden="true">{speaking ? '■' : '🔊'}</span><span className="read-aloud-text" aria-hidden="true">&nbsp;{t(lang, speaking ? 'listen.stop' : label)}</span>
       </button>
       {speaking && missing.length > 0 && (
         <span className="small muted" role="status">

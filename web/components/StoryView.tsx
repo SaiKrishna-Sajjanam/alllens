@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { groupsOf, languageName, mostSpecific, placeName } from '@/lib/catalog';
 import {
-  MAX_COMPARE, filterArticles, labelLanguage, pickLabel, presentGroups, presentLanguages, sortArticles, toggleCompare,
+  MAX_COMPARE, filterArticles, labelLanguage, pickLabel, bySection, presentLanguages, sortArticles, toggleCompare,
   wireCounts,
 } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
@@ -13,7 +13,8 @@ import ReadAloud, { type Spoken } from './ReadAloud';
 import { textLanguage } from '@/lib/script';
 import { OwnTranslatorNote, ReportText, Translated } from './Translated';
 import FollowButton from './FollowButton';
-import { BackIcon, ExternalIcon } from './Icons';
+import BackLink from './BackLink';
+import { ExternalIcon } from './Icons';
 import { lightPicture } from '@/lib/pictures';
 import RemoteImage from './RemoteImage';
 
@@ -41,13 +42,15 @@ export default function StoryView({ story, articles, lang, translated, translate
 
   const label = pickLabel(story, lang);
   const labelLang = labelLanguage(story, label);
-  const groups = useMemo(() => presentGroups(articles), [articles]);
+  const counts = useMemo(() => bySection(articles), [articles]);
   const languages = useMemo(() => presentLanguages(articles), [articles]);
   const wires = useMemo(() => wireCounts(articles), [articles]);
   const shown = useMemo(
     () => sortArticles(filterArticles(articles, group, language), sort, story.id),
     [articles, group, language, sort, story.id],
   );
+  // Reports listed by kind of source (newspapers, TV, digital, YouTube, ...), each in the order chosen.
+  const sections = useMemo(() => bySection(shown), [shown]);
   const place = mostSpecific(story.places ?? []);
   // Each report as on screen: Google's marked translation where there is one, else the source's own words.
   const spoken = (a: Article): Spoken => {
@@ -70,10 +73,7 @@ export default function StoryView({ story, articles, lang, translated, translate
   return (
     <div className="narrow">
       <div className="story-head">
-        <Link href="/feed" className="row" style={{ minHeight: 44, textDecoration: 'none', fontWeight: 500 }}>
-          <BackIcon />
-          {t(lang, 'story.back')}
-        </Link>
+        <BackLink fallback="/feed" label={t(lang, 'story.back')} />
         <Translated as="h1" original={label.title} originalLang={labelLang} translated={translated[label.article_id]}
           lang={lang} />
         <p className="small muted">
@@ -90,11 +90,14 @@ export default function StoryView({ story, articles, lang, translated, translate
       </div>
 
       <div className="filters">
-        {groups.length > 1 && (
+        {counts.length > 1 && (
           <div className="filter-row" role="group" aria-label={t(lang, 'story.filterType')}>
-            {['all', ...groups].map((g) => (
+            <button type="button" className="chip" aria-pressed={group === 'all'} onClick={() => setGroup('all')}>
+              {t(lang, 'story.all')} · {articles.length}
+            </button>
+            {counts.map(([g, list]) => (
               <button key={g} type="button" className="chip" aria-pressed={group === g} onClick={() => setGroup(g)}>
-                {g === 'all' ? t(lang, 'story.all') : t(lang, `group.${g}` as 'group.tv')}
+                {t(lang, `group.${g}` as 'group.tv')} · {list.length}
               </button>
             ))}
           </div>
@@ -122,53 +125,62 @@ export default function StoryView({ story, articles, lang, translated, translate
 
       <div className="article-list">
         {shown.length === 0 && <p className="panel">{t(lang, 'story.noneMatch')}</p>}
-        {shown.map((a) => {
-          const name = a.sources?.name ?? a.source_id;
-          const checked = selected.includes(a.id);
-          const video = groupsOf(a.sources?.type).includes('video');
-          return (
-            <article key={a.id} className="card article">
-              {lightPicture(a.image_url) && (
-                <a href={a.url} target="_blank" rel="noopener noreferrer" className={video ? 'report-pic video' : 'report-pic'}
-                  tabIndex={-1} aria-hidden="true">
-                  <RemoteImage src={lightPicture(a.image_url)!} />
-                </a>
-              )}
-              <div className="spread" style={{ alignItems: 'baseline' }}>
-                <div className="stack" style={{ gap: 0 }}>
-                  <span className="source">{name}</span>
-                  <span className="small muted">
-                    {[...groupsOf(a.sources?.type).map((g) => t(lang, `group.${g}` as 'group.tv')), languageName(a.language)]
-                      .filter(Boolean).join(' · ')}
-                  </span>
-                </div>
-                <time className="small muted" dateTime={a.published_at ?? a.fetched_at}>
-                  {formatTime(a.published_at ?? a.fetched_at, lang)}
-                </time>
-              </div>
-              <ReportText title={a.title} snippet={a.snippet} originalLang={a.language} translatedTitle={translated[a.id]}
-                translatedSnippet={translatedSnippets[a.id]} lang={lang} />
-              {a.title_updated_at && (
-                <p className="small muted">{t(lang, 'story.updated', { time: formatTime(a.title_updated_at, lang) })}</p>
-              )}
-              {wires.get(a.id) ? <p className="small muted">{t(lang, 'story.wire', { n: wires.get(a.id)! })}</p> : null}
-              <div className="actions">
-                <a className="btn btn-primary btn-small" href={a.url} target="_blank" rel="noopener noreferrer">
-                  {t(lang, video ? 'story.watch' : 'story.read', { source: name })}
-                  <ExternalIcon />
-                </a>
-                <ReadAloud items={[spoken(a)]} lang={lang} label="listen.one" />
-                <AskAI urls={[a.url]} lang={lang} preferred={aiAssistant} />
-                <label className="check compare small" style={{ minHeight: 40, alignItems: 'center' }}>
-                  <input type="checkbox" checked={checked} onChange={() => pick(a.id)}
-                    disabled={!checked && selected.length >= MAX_COMPARE} />
-                  {t(lang, 'story.compare')}
-                </label>
-              </div>
-              <OwnTranslatorNote articleLang={a.language} lang={lang} />
-            </article>
-          );
-        })}
+        {sections.map(([g, list]) => (
+          <section key={g} className="report-section" aria-label={t(lang, `group.${g}` as 'group.tv')}>
+            {group === 'all' && sections.length > 1 && (
+              <h2 className="section-head">
+                {t(lang, `group.${g}` as 'group.tv')} <span className="muted">· {list.length}</span>
+              </h2>
+            )}
+      {list.map((a) => {
+                const name = a.sources?.name ?? a.source_id;
+                const checked = selected.includes(a.id);
+                const video = groupsOf(a.sources?.type).includes('video');
+                return (
+                  <article key={a.id} className="card article">
+                    {lightPicture(a.image_url) && (
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" className={video ? 'report-pic video' : 'report-pic'}
+                        tabIndex={-1} aria-hidden="true">
+                        <RemoteImage src={lightPicture(a.image_url)!} />
+                      </a>
+                    )}
+                    <div className="spread" style={{ alignItems: 'baseline' }}>
+                      <div className="stack" style={{ gap: 0 }}>
+                        <span className="source">{name}</span>
+                        <span className="small muted">
+                          {[...groupsOf(a.sources?.type).map((g) => t(lang, `group.${g}` as 'group.tv')), languageName(a.language)]
+                            .filter(Boolean).join(' · ')}
+                        </span>
+                      </div>
+                      <time className="small muted" dateTime={a.published_at ?? a.fetched_at}>
+                        {formatTime(a.published_at ?? a.fetched_at, lang)}
+                      </time>
+                    </div>
+                    <ReportText title={a.title} snippet={a.snippet} originalLang={a.language} translatedTitle={translated[a.id]}
+                      translatedSnippet={translatedSnippets[a.id]} lang={lang} />
+                    {a.title_updated_at && (
+                      <p className="small muted">{t(lang, 'story.updated', { time: formatTime(a.title_updated_at, lang) })}</p>
+                    )}
+                    {wires.get(a.id) ? <p className="small muted">{t(lang, 'story.wire', { n: wires.get(a.id)! })}</p> : null}
+                    <div className="actions">
+                      <a className="btn btn-primary btn-small" href={a.url} target="_blank" rel="noopener noreferrer">
+                        {t(lang, video ? 'story.watch' : 'story.read', { source: name })}
+                        <ExternalIcon />
+                      </a>
+                      <ReadAloud items={[spoken(a)]} lang={lang} label="listen.one" />
+                      <AskAI urls={[a.url]} lang={lang} preferred={aiAssistant} />
+                      <label className="check compare small" style={{ minHeight: 40, alignItems: 'center' }}>
+                        <input type="checkbox" checked={checked} onChange={() => pick(a.id)}
+                          disabled={!checked && selected.length >= MAX_COMPARE} />
+                        {t(lang, 'story.compare')}
+                      </label>
+                    </div>
+                    <OwnTranslatorNote articleLang={a.language} lang={lang} />
+                  </article>
+                );
+              })}
+          </section>
+        ))}
         <p className="panel small muted">{t(lang, 'story.moreComing')}</p>
       </div>
 

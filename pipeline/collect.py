@@ -44,8 +44,11 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
     stored = {aid: title for aid, title, _ in rows}
     no_picture = {aid for aid, _, image in rows if not image}
 
+    # A publish time later than now is a feed's time-zone mistake (e.g. Indian time marked as UTC):
+    # the report was published by the time we read it, so it counts from now.
     new = [(aid, src.id, it.title, make_snippet(it.summary), normalise_url(it.url),
-            it.published_at, now, src.language, src.region, it.categories, it.image_url or None)
+            min(it.published_at, now) if it.published_at else None, now, src.language, src.region,
+            it.categories, it.image_url or None)
            for aid, it in fresh.items() if aid not in stored]
     db.executemany(
         """INSERT INTO articles (id, source_id, title, snippet, url, published_at, fetched_at,
@@ -77,6 +80,15 @@ def repair_markup(db: DB) -> int:
             fixed.append((new_title or title, new_snippet, aid))
     db.executemany("UPDATE articles SET title = ?, snippet = ?, processed_at = NULL WHERE id = ?", fixed)
     return len(fixed)
+
+
+def repair_future_times(db: DB) -> int:
+    """Reports stored before publish times were checked, whose time is later than when we collected
+    them, count from when we collected them (their stories are worked out again). Returns how many."""
+    n = db.fetchall("SELECT COUNT(*) FROM articles WHERE published_at > fetched_at")[0][0]
+    if n:
+        db.execute("UPDATE articles SET published_at = fetched_at, processed_at = NULL WHERE published_at > fetched_at")
+    return n
 
 
 def drop_heavy_pictures(db: DB, results, too_heavy, workers: int = 16) -> int:
@@ -119,6 +131,7 @@ def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: dat
     now = now or datetime.now(timezone.utc)
     sync_sources(db, sources)
     repair_markup(db)
+    repair_future_times(db)
     targets = [s for s in sources if s.feed_url and s.status in COLLECTABLE]
 
     # A site that answers 429 ("slow down", e.g. Reddit to GitHub's servers) is not asked

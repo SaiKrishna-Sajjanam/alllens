@@ -15,9 +15,9 @@
   "te": "టెక్"
  },
  {
-  "id": "auto",
-  "en": "Automobile",
-  "te": "ఆటోమొబైల్"
+  "id": "cinema",
+  "en": "Cinema",
+  "te": "సినిమా"
  },
  {
   "id": "sports",
@@ -25,9 +25,24 @@
   "te": "క్రీడలు"
  },
  {
-  "id": "cinema",
-  "en": "Cinema",
-  "te": "సినిమా"
+  "id": "space",
+  "en": "Space",
+  "te": "అంతరిక్షం"
+ },
+ {
+  "id": "gaming",
+  "en": "Gaming",
+  "te": "గేమింగ్"
+ },
+ {
+  "id": "education",
+  "en": "Education & jobs",
+  "te": "విద్య & ఉద్యోగాలు"
+ },
+ {
+  "id": "auto",
+  "en": "Automobile",
+  "te": "ఆటోమొబైల్"
  },
  {
   "id": "lifestyle",
@@ -55,11 +70,6 @@
   "te": "ఆరోగ్యం"
  },
  {
-  "id": "education",
-  "en": "Education & jobs",
-  "te": "విద్య & ఉద్యోగాలు"
- },
- {
   "id": "farming",
   "en": "Farming",
   "te": "వ్యవసాయం"
@@ -83,10 +93,5 @@
   "id": "accidents",
   "en": "Accidents",
   "te": "ప్రమాదాలు"
- },
- {
-  "id": "space",
-  "en": "Space",
-  "te": "అంతరిక్షం"
  }
 ]

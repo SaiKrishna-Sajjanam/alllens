@@ -1,9 +1,9 @@
-import Link from 'next/link';
 import { groupsOf, languageName } from '@/lib/catalog';
 import { formatTime, t } from '@/lib/i18n';
 import type { Article, Lang } from '@/lib/types';
 import AskAI from './AskAI';
-import { BackIcon, ExternalIcon } from './Icons';
+import BackLink from './BackLink';
+import { ExternalIcon } from './Icons';
 import { OwnTranslatorNote, Translated } from './Translated';
 
 /** 2-3 reports next to each other, exactly as published (headlines also in the reader's
@@ -18,17 +18,14 @@ export default function CompareView({ articles, lang, storyId, aiAssistant, tran
       <div className="narrow stack">
         <h1>{t(lang, 'compare.title')}</h1>
         <p className="panel">{t(lang, 'compare.none')}</p>
-        <Link href={back}>{t(lang, storyId ? 'compare.backToStory' : 'story.back')}</Link>
+        <BackLink fallback={back} label={t(lang, storyId ? 'compare.backToStory' : 'story.back')} icon={false} />
       </div>
     );
   }
   return (
     <div className="stack-lg">
       <div className="stack">
-        <Link href={back} className="row" style={{ minHeight: 44, textDecoration: 'none', fontWeight: 500 }}>
-          <BackIcon />
-          {t(lang, storyId ? 'compare.backToStory' : 'story.back')}
-        </Link>
+        <BackLink fallback={back} label={t(lang, storyId ? 'compare.backToStory' : 'story.back')} />
         <h1>{t(lang, 'compare.title')}</h1>
         <p className="muted">{t(lang, 'compare.intro')}</p>
       </div>

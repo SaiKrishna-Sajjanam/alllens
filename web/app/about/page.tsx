@@ -34,7 +34,7 @@ function AboutEn() {
         <li>We keep only the headline, the first few lines the source itself puts in its feed (up to 280 characters), the time and the link. Never the full article. A picture the outlet attaches to its feed is shown from the outlet’s own site, credited to it; we never keep a copy.</li>
         <li>A multilingual language model turns each headline into a set of numbers describing its meaning. Reports whose numbers are very close, published within three days of each other, are grouped as one story. The model groups; it never writes anything you see.</li>
         <li>The story is shown under the <em>earliest</em> headline, credited to the source that published it; if a source wrote the story in your app language, under its headline instead.</li>
-        <li>International and National news is the same for every reader, and the State tab is the same for everyone who picks that state, whatever language each source wrote in. Topic buttons narrow the page only for that visit.</li>
+        <li>International and National news is the same for every reader, and the State tab is the same for everyone who picks that state, whatever language each source wrote in. The feed shows one topic at a time: it opens on Politics (or the topic you put first), and you tap another topic to change it. Stories that match no topic are not in the feed.</li>
         <li>Headlines and opening text written in another language are shown in yours as Google&rsquo;s translation (marked &ldquo;Translated by Google&rdquo;, with the source&rsquo;s own words one tap away). Articles are never translated: the links open the original article or video, and your phone&rsquo;s own translator (Google Translate, or Translate in Safari on iPhone) can show it in your language.</li>
         <li>The state a story is about, and its topics, come from fixed word lists (the same rules for every state), so the same report always gets the same tags. The topics are: {TOPICS.map((t) => t.en).join(', ')}.</li>
       </ol>
@@ -86,7 +86,7 @@ function AboutTe() {
         <li>శీర్షిక, వనరు తన ఫీడ్‌లో ఇచ్చిన మొదటి కొన్ని వాక్యాలు (280 అక్షరాల వరకు), సమయం, లింక్ మాత్రమే ఉంచుతాం. పూర్తి కథనం ఎప్పుడూ ఉంచం. వనరు తన ఫీడ్‌లో జోడించిన చిత్రం ఆ వనరు సైట్ నుంచే, దాని పేరుతో కనిపిస్తుంది; మేము కాపీ ఉంచం.</li>
         <li>ఒక బహుభాషా మోడల్ ప్రతి శీర్షిక అర్థాన్ని సంఖ్యలుగా మారుస్తుంది. మూడు రోజుల్లోపు ప్రచురించిన, దాదాపు ఒకే అర్థం ఉన్న కథనాలను ఒకే వార్తగా కలుపుతాం. మోడల్ కలుపుతుంది మాత్రమే, మీకు కనిపించేది ఏదీ రాయదు.</li>
         <li>వార్తను <em>ముందుగా</em> ప్రచురించిన శీర్షికతో, ఆ వనరు పేరుతో చూపిస్తాం. మీ యాప్ భాషలో ఏ వనరైనా రాస్తే, ఆ శీర్షిక.</li>
-        <li>అంతర్జాతీయ, జాతీయ వార్తలు ప్రతి పాఠకుడికీ ఒకటే; రాష్ట్ర ట్యాబ్ ఆ రాష్ట్రాన్ని ఎంచుకున్న అందరికీ ఒకటే, వనరు ఏ భాషలో రాసినా. అంశాల బటన్లు ఆ సందర్శనకు మాత్రమే.</li>
+        <li>అంతర్జాతీయ, జాతీయ వార్తలు ప్రతి పాఠకుడికీ ఒకటే; రాష్ట్ర ట్యాబ్ ఆ రాష్ట్రాన్ని ఎంచుకున్న అందరికీ ఒకటే, వనరు ఏ భాషలో రాసినా. ఫీడ్ ఒకేసారి ఒక అంశాన్ని చూపిస్తుంది: రాజకీయాలతో (లేదా మీరు ముందు పెట్టిన అంశంతో) మొదలవుతుంది; మార్చడానికి మరో అంశాన్ని నొక్కండి. ఏ అంశానికీ సరిపోని వార్తలు ఫీడ్‌లో ఉండవు.</li>
         <li>వేరే భాషలో ఉన్న శీర్షికలు, మొదటి వాక్యాలు మీ భాషలో Google అనువాదంగా కనిపిస్తాయి (&ldquo;Google అనువాదం&rdquo; అని గుర్తుతో, వనరు అసలు మాటలు ఒక్క ట్యాప్ దూరంలో). పూర్తి కథనాలను అనువదించం: లింకులు అసలు కథనాన్ని లేదా వీడియోను తెరుస్తాయి; మీ భాషలో చదవడానికి మీ ఫోన్ అనువాదకాన్ని వాడండి.</li>
         <li>రాష్ట్రం, అంశాలు స్థిరమైన పదాల జాబితాల నుంచి వస్తాయి. అంశాలు: {TOPICS.map((t) => t.te).join(', ')}.</li>
       </ol>

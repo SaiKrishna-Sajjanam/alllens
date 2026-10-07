@@ -1,8 +1,9 @@
 [Unit]
-Description=Vuaz: collect, tag and group news every 3 hours
+Description=Vuaz: collect, tag and group news every 90 minutes
 
 [Timer]
 OnCalendar=*-*-* 00/3:07:00 UTC
+OnCalendar=*-*-* 01/3:37:00 UTC
 Persistent=true
 Unit=alllens@collect.service
 

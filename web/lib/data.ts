@@ -46,6 +46,100 @@ export const getViewer = cache(async (): Promise<Viewer> => {
 
 // ------------------------------------------------------------------ feed
 
+/** International, National or the reader's state: the same rule as inTab() (lib/feed.ts), as a query. */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function tabStories<Q extends { eq: any; or: any; overlaps: any }>(query: Q, tab: TabId, prefs: Prefs): Q {
+  if (tab === 'international') return query.eq('scope', 'international');
+  if (tab === 'national') return query.or('scope.is.null,scope.neq.international');
+  return query.overlaps('places', [prefs.state]);
+}
+
+const hideCrime = (prefs: Prefs) => (s: Story) =>
+  !prefs.hideCrime || !(s.topics ?? []).some((x) => HIDDEN_BY_HIDE_CRIME.includes(x));
+
+/** The stories most outlets reported in the last 24 hours, most sources first (all topics), and the
+ *  newest stories. Mechanical: by number of sources, and by time. */
+export async function getHighlights(tab: TabId, prefs: Prefs): Promise<{ mostCovered: Story[]; justIn: Story[] }> {
+  const day = daysAgo(1);
+  const nowIso = new Date().toISOString();
+  if (!isConfigured()) {
+    const { stories } = demoData();
+    const mine = stories.filter((s) => inTab(s, tab, prefs) && hideCrime(prefs)(s));
+    return {
+      mostCovered: sortStories(mine, 'sources', '').slice(0, 5),
+      justIn: [...mine].sort((a, b) => (b.first_published_at ?? '').localeCompare(a.first_published_at ?? '')).slice(0, 3),
+    };
+  }
+  if (tab === 'state' && !prefs.state) return { mostCovered: [], justIn: [] };
+  const supabase = await createClient();
+  const base = () => tabStories(supabase.from('stories').select(STORY_COLS), tab, prefs);
+  const [most, latest] = await Promise.all([
+    base().gte('last_article_at', day).order('source_count', { ascending: false })
+      .order('last_article_at', { ascending: false }).limit(12),
+    // Some feeds give times in the future (wrong time zone): those are left out of "just in".
+    base().lte('first_published_at', nowIso).order('first_published_at', { ascending: false }).limit(12),
+  ]);
+  const keep = hideCrime(prefs);
+  return {
+    mostCovered: ((most.data ?? []) as unknown as Story[]).filter(keep).slice(0, 5),
+    justIn: ((latest.data ?? []) as unknown as Story[]).filter(keep).slice(0, 3),
+  };
+}
+
+export interface Video {
+  id: string;
+  title: string;
+  url: string;
+  image_url: string | null;
+  published_at: string | null;
+  language: string | null;
+  story_id: string | null;
+  source: string;
+}
+
+/** The newest videos from the official YouTube channels we follow, newest first. */
+export async function getVideos(q: { tab: TabId; prefs: Prefs; limit: number; offset?: number }): Promise<Video[]> {
+  if (!isConfigured()) return [];
+  if (q.tab === 'state' && !q.prefs.state) return [];
+  const supabase = await createClient();
+  let query = supabase.from('articles')
+    .select('id,title,url,image_url,published_at,language,story_id,sources(name),stories!inner(scope,places)')
+    .like('source_id', 'yt_%')   // every YouTube source id starts with yt_ (sources.csv)
+    .lte('published_at', new Date().toISOString())
+    .gte('published_at', daysAgo(FEED_DAYS));
+  if (q.tab === 'international') query = query.eq('stories.scope', 'international');
+  else if (q.tab === 'national') query = query.or('scope.is.null,scope.neq.international', { referencedTable: 'stories' });
+  else query = query.overlaps('stories.places', [q.prefs.state]);
+  const from = q.offset ?? 0;
+  const { data } = await query.order('published_at', { ascending: false }).range(from, from + q.limit - 1);
+  type Row = Omit<Video, 'source'> & { sources: { name: string } | null };
+  return ((data ?? []) as unknown as Row[]).map((r) => ({
+    id: r.id, title: plainText(r.title), url: r.url, image_url: r.image_url ?? null, published_at: r.published_at,
+    language: r.language, story_id: r.story_id, source: (r.sources?.name ?? '').replace(/\s*\(YouTube\)$/, ''),
+  }));
+}
+
+/** Stories from the last 30 days whose headlines or opening lines mention the words, newest first. */
+export async function searchStories(q: string, page: number): Promise<{ stories: Story[]; hasMore: boolean }> {
+  const term = q.trim().slice(0, 100);
+  const end = (page + 1) * PAGE_SIZE;
+  if (term.length < 2) return { stories: [], hasMore: false };
+  const from = daysAgo(ARCHIVE_DAYS);
+  const to = new Date(Date.now() + 60_000).toISOString();
+  if (!isConfigured()) {
+    const ids = await customStoryIds([term], from, to);
+    const stories = demoData().stories.filter((s) => ids.has(s.id));
+    return { stories: sortStories(stories, 'latest', '').slice(0, end), hasMore: stories.length > end };
+  }
+  const ids = [...(await customStoryIds([term], from, to))];
+  if (!ids.length) return { stories: [], hasMore: false };
+  const supabase = await createClient();
+  const { data } = await supabase.from('stories').select(STORY_COLS).in('id', ids.slice(0, 500))
+    .order('last_article_at', { ascending: false }).range(0, end);
+  const rows = (data ?? []) as unknown as Story[];
+  return { stories: rows.slice(0, end), hasMore: rows.length > end };
+}
+
 export interface FeedQuery {
   prefs: Prefs;
   tab: TabId;
@@ -94,13 +188,8 @@ export async function getFeed(q: FeedQuery): Promise<FeedResult> {
   }
 
   const supabase = await createClient();
-  let query = supabase.from('stories').select(STORY_COLS).gte('last_article_at', since);
-  if (q.tab === 'international') query = query.eq('scope', 'international');
-  else if (q.tab === 'national') query = query.or('scope.is.null,scope.neq.international');
-  else {
-    if (!prefs.state) return { stories: [], hasMore: false, demo: false };   // no state chosen yet
-    query = query.overlaps('places', [prefs.state]);
-  }
+  if (q.tab === 'state' && !prefs.state) return { stories: [], hasMore: false, demo: false };   // no state chosen yet
+  let query = tabStories(supabase.from('stories').select(STORY_COLS).gte('last_article_at', since), q.tab, prefs);
   // Same rules as matchesFilters(): nothing personal narrows the news.
   if (q.topic) query = query.overlaps('topics', [q.topic]);
   if (prefs.hideCrime && !(q.topic && HIDDEN_BY_HIDE_CRIME.includes(q.topic))) {
@@ -143,6 +232,17 @@ export async function getCardSnippets(stories: Story[], lang: string): Promise<R
     if (snippet) out[byArticle.get(r.id)!] = { article_id: r.id, snippet, language: r.language };
   }
   return out;
+}
+
+/** When news was last collected: the time the most recent report reached the database. */
+export async function getLastRefresh(): Promise<string | null> {
+  if (!isConfigured()) {
+    const times = demoData().articles.map((a) => a.fetched_at).sort();
+    return times.at(-1) ?? null;
+  }
+  const supabase = await createClient();
+  const { data } = await supabase.from('articles').select('fetched_at').order('fetched_at', { ascending: false }).limit(1);
+  return (data?.[0] as { fetched_at: string } | undefined)?.fetched_at ?? null;
 }
 
 // ------------------------------------------------------------------ one story

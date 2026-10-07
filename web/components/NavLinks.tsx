@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { t } from '@/lib/i18n';
 import type { Lang } from '@/lib/types';
-import { ArchiveIcon, BookmarkIcon, FeedIcon, PersonIcon } from './Icons';
+import { ArchiveIcon, BookmarkIcon, FeedIcon, PersonIcon, WatchIcon } from './Icons';
 
 export default function NavLinks({ lang, signedIn }: { lang: Lang; signedIn: boolean }) {
   const path = usePathname() ?? '';
@@ -17,6 +17,10 @@ export default function NavLinks({ lang, signedIn }: { lang: Lang; signedIn: boo
       <Link href="/following" aria-current={current('/following')}>
         <BookmarkIcon />
         {t(lang, 'nav.following')}
+      </Link>
+      <Link href="/watch" aria-current={current('/watch')}>
+        <WatchIcon />
+        {t(lang, 'nav.watch')}
       </Link>
       <Link href="/archive" aria-current={current('/archive')}>
         <ArchiveIcon />

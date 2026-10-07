@@ -1,7 +1,7 @@
 # Vuaz — project guide for Claude Code
 
 ## What this product is
-A news app and website for India. For every news incident it shows **every public version** (newspapers, TV sites, digital outlets, Reddit, community) side by side, with a link to each original. **International and National are the same for every reader**; the State tab follows the state the reader picks (every state and union territory treated alike, no district level). Nothing saved narrows the news: no language, topic or source-kind filters (topics are buttons for one visit, in an order the reader may arrange; there is no "All" button, tapping a topic again shows all news; "hide crime and accidents" is the only optional setting). Headlines appear in the reader's app language. Readers catch up at their own time; there is no breaking-news pressure.
+A news app and website for India. For every news incident it shows **every public version** (newspapers, TV sites, digital outlets, Reddit, community) side by side, with a link to each original. **International and National are the same for every reader**; the State tab follows the state the reader picks (every state and union territory treated alike, no district level). Nothing saved narrows the news: no language, topic or source-kind filters (topics are buttons in an order the reader may arrange; owner's decision, 2026-10-07: the feed shows one topic at a time and opens on the reader's first topic, Politics by default, with no "All" button, so stories that match no topic (about a third) are not in the feed; "hide crime and accidents" is the only optional setting). Headlines appear in the reader's app language. Readers catch up at their own time; there is no breaking-news pressure.
 
 Purpose: one version makes people believe; many versions make them think.
 
@@ -27,7 +27,7 @@ Purpose: one version makes people believe; many versions make them think.
 - `pipeline/data/`: places.json (36 states/UTs; each with its districts and main cities as names that identify the state, in English, Hindi, Telugu and its own script), topics.json (18 topics, keywords in every language we collect), scope.json (foreign and nationwide names that keep a story naming no Indian place out of a state tab)
 - `web/`: Next.js 15 App Router + Supabase (`@supabase/ssr`). `lib/` holds pure logic (feed.ts, prefs.ts, ai.ts, i18n.ts, catalog.ts) with tests in `web/tests`; `lib/data.ts` is the only data access layer and falls back to `lib/demo.ts` sample data when Supabase env vars are missing.
 - `supabase/migrations/`, `supabase/tests/`
-- `.github/workflows/`: tests (Python + Postgres + RLS + web build), collect (every 3 h, packages cached; fits the free 2,000 min/month), cleanup (daily), check_feeds, review_groups (manual)
+- `.github/workflows/`: tests (Python + Postgres + RLS + web build), collect (every 8 h, ~15 min a run, packages cached; fits the free 2,000 min/month; the optional server collects every 90 min), cleanup (daily), check_feeds, review_groups (manual)
 - `deploy/server/`: optional fallback if GitHub minutes run short: the scheduled jobs on a free Oracle Cloud server (guide in docs/SERVER.md); then set repository variable `SCHEDULE_ON_GITHUB=off`
 - `docs/SETUP.md` (accounts and deployment), `docs/SERVER.md` (free server for scheduled jobs), `docs/ARCHITECTURE.md`
 
@@ -38,7 +38,7 @@ Python 3.11 (requests, psycopg, numpy; sentence-transformers for multilingual gr
 Every state and union territory is treated alike (same rules, no default state, A-Z lists); sources are being added for all states in one batch (see Roadmap). Interface in English (default) + 11 Indian languages (`web/lib/i18n.ts`, `web/lib/locales/`, drafts needing native-speaker review); news in English and every Indian language we find feeds for (`web/lib/catalog.ts` LANGUAGES), all shown to every reader. Headlines and snippets are translated into the app language (`pipeline/translate.py` ahead of time, `web/lib/headlines.ts` fills gaps when a page opens; setup in docs/TRANSLATE.md); nothing else is translated. Web + installable app (PWA); store apps later.
 
 ## Roadmap
-1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs, story page, compare, follow, Ask your AI, read aloud (phone’s own voice, words as published), archive, sources + suggest, Google sign-in, settings, legal page templates)
+1. Product brief ✔  2. Source list ✔  3. Collection pipeline ✔  4. Story grouping + place/topic tagging ✔  5. Web app ✔ (onboarding, feed tabs with "most covered today" (by number of sources) and "just in" (by time), Watch (official YouTube channels, newest first), search (last 30 days), light/dark switch, story page, compare, follow, Ask your AI, read aloud (phone’s own voice, words as published), archive, sources + suggest, Google sign-in, settings, legal page templates)
 6. **Now:** every state treated alike ✔; sources for all 36 states/UTs, first batch ✔ (~360 collected; gaps listed in docs/COVERAGE.md: find feeds for thin states, YouTube channel ids for regional TV);  then deploy per docs/SETUP.md, tune grouping with `review_groups` (target 8/10), native-speaker review of the UI languages, pilot with 20 users
 7. Launch; phase 2: exam prep; store apps
 

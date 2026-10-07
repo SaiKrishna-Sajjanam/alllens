@@ -1,9 +1,10 @@
 # Optional: free server for the scheduled jobs (Oracle Cloud "Always Free")
 
-**Not needed today.** The scheduled jobs run on GitHub Actions (collect every 3 hours, with the
-installed packages cached), which fits a private repository's free 2,000 minutes a month.
-Use this guide only if the monthly usage (GitHub → Settings → Billing and licensing → Usage)
-gets close to 2,000 as sources are added.
+**Not needed today.** The scheduled jobs run on GitHub Actions (collect every 8 hours, with the
+installed packages cached), which fits a private repository's free 2,000 minutes a month: a run
+takes about 15 minutes. Use this guide to collect more often (the server collects every 90 minutes,
+on time, with no minute limit), or if the monthly usage (GitHub → Settings → Billing and licensing
+→ Usage) gets close to 2,000 as sources are added.
 
 Oracle Cloud's Always Free tier includes a small server that never expires and has no run limit. The
 **collect** and **cleanup** jobs run there; GitHub keeps running

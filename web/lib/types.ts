@@ -11,7 +11,6 @@ export interface Prefs {
   hideCrime: boolean;
   uiLanguage: Lang;
   aiAssistant: string;
-  feedSort: FeedSort;
   /** Topic ids in the order the reader put the topic buttons (every topic, each once). Moves buttons only. */
   topicOrder: string[];
 }

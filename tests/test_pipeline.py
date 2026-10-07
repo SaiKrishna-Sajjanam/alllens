@@ -165,6 +165,20 @@ class PipelineTests(unittest.TestCase):
         self.assertEqual(self.db.fetchall("SELECT snippet FROM articles WHERE id = 'x'")[0][0], "ప్రధానమంత్రి మోదీ")
         self.assertEqual(collect.repair_markup(self.db), 0, "once")
 
+    def test_publish_times_in_the_future_count_from_collection(self):
+        # One feed marks Indian time as UTC, so its reports looked 5½ hours newer than they were.
+        from types import SimpleNamespace
+        collect.sync_sources(self.db, SOURCES)
+        ahead = SimpleNamespace(url='https://x.test/ahead', title='Ahead of time', summary='', categories=[],
+                                image_url='', published_at=NOW + timedelta(hours=5, minutes=30))
+        collect.store_items(self.db, SOURCES[0], [ahead], NOW)
+        stored = self.db.fetchall("SELECT published_at FROM articles WHERE url = 'https://x.test/ahead'")[0][0]
+        self.assertEqual(str(stored).replace(' ', 'T')[:16], NOW.isoformat()[:16])
+        # Reports stored before the check are corrected once.
+        self.db.execute("UPDATE articles SET published_at = ? WHERE url = 'https://x.test/ahead'", (NOW + timedelta(hours=5),))
+        self.assertEqual(collect.repair_future_times(self.db), 1)
+        self.assertEqual(collect.repair_future_times(self.db), 0, "once")
+
     def test_database_calls_do_not_grow_with_articles(self):
         # The production database is far from the GitHub runners (~0.25 s per call), so a call
         # per article turned a 2,000-article run into an hour. Batches keep calls roughly constant.

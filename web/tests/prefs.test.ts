@@ -15,13 +15,12 @@ test('unknown or hostile values fall back to safe defaults', () => {
   assert.equal(p.state, '', 'a district is not a state; no state until the reader picks one');
   assert.equal(p.uiLanguage, 'en');
   assert.equal(p.aiAssistant, 'chatgpt');
-  assert.equal(p.feedSort, 'latest');
   assert.equal(p.hideCrime, false);
 });
 
 test('nothing saved narrows the news: old topic, language and source-kind choices are dropped', () => {
   const old = cleanPrefs({ topics: ['sports'], customTopics: ['Infosys'], languages: ['te'], sourceTypes: ['tv'], state: 'kl' });
-  assert.deepEqual(Object.keys(old).sort(), ['aiAssistant', 'feedSort', 'hideCrime', 'state', 'topicOrder', 'uiLanguage']);
+  assert.deepEqual(Object.keys(old).sort(), ['aiAssistant', 'hideCrime', 'state', 'topicOrder', 'uiLanguage']);
   assert.equal(old.state, 'kl');
   const row = profileFromPrefs('u1', old);
   assert.deepEqual([row.topics, row.custom_topics, row.languages, row.source_types], [[], [], [], []]);

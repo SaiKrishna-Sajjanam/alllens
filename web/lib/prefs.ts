@@ -3,18 +3,19 @@
 import { AI_ASSISTANTS } from './ai';
 import { TOPICS, isTopic, isState } from './catalog';
 import { isLang } from './i18n';
-import type { FeedSort, Prefs } from './types';
+import type { Prefs } from './types';
 
 export const PREFS_COOKIE = 'alllens_prefs';
 export const VISIT_COOKIE = 'alllens_last_visit';
 export const UI_COOKIE = 'alllens_ui';
+/** Light or dark, when the reader picked one (components/ThemeToggle.tsx). */
+export const THEME_COOKIE = 'vuaz_theme';
 
 export const DEFAULT_PREFS: Prefs = {
   state: '',            // none until the reader picks one: every state is treated alike
   hideCrime: false,
   uiLanguage: 'en',
   aiAssistant: 'chatgpt',
-  feedSort: 'latest',
   topicOrder: TOPICS.map((t) => t.id),
 };
 
@@ -25,11 +26,11 @@ export function cleanTopicOrder(input: unknown): string[] {
   return [...new Set([...mine, ...TOPICS.map((t) => t.id)])];
 }
 
-const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
 /** Accept only known values; anything unexpected falls back to the default. */
 export function cleanPrefs(input: unknown): Prefs {
   const o = (input && typeof input === 'object' ? input : {}) as Record<string, unknown>;
-  // Older cookies and profiles also carry topics, languages and kinds of sources: no longer used.
+  // Older cookies and profiles also carry topics, languages, kinds of sources and a feed order
+  // (saved without the reader choosing it): no longer used. Every visit starts on Latest first.
   const state = typeof o.state === 'string' && isState(o.state) ? o.state : DEFAULT_PREFS.state;
   return {
     state,
@@ -37,7 +38,6 @@ export function cleanPrefs(input: unknown): Prefs {
     uiLanguage: isLang(o.uiLanguage) ? o.uiLanguage : DEFAULT_PREFS.uiLanguage,
     aiAssistant: typeof o.aiAssistant === 'string' && AI_ASSISTANTS.some((a) => a.id === o.aiAssistant)
       ? o.aiAssistant : DEFAULT_PREFS.aiAssistant,
-    feedSort: SORTS.includes(o.feedSort as FeedSort) ? (o.feedSort as FeedSort) : DEFAULT_PREFS.feedSort,
     topicOrder: cleanTopicOrder(o.topicOrder),
   };
 }
@@ -66,7 +66,6 @@ export interface ProfileRow {
   hide_crime: boolean;
   ui_language: string;
   ai_assistant: string;
-  feed_sort: string;
   topic_order: string[];
   last_visit_at?: string | null;
 }
@@ -77,7 +76,6 @@ export function prefsFromProfile(row: Partial<ProfileRow>): Prefs {
     hideCrime: row.hide_crime,
     uiLanguage: row.ui_language,
     aiAssistant: row.ai_assistant,
-    feedSort: row.feed_sort,
     topicOrder: row.topic_order,
   });
 }
@@ -96,7 +94,6 @@ export function profileFromPrefs(userId: string, p: Prefs): ProfileRow {
     hide_crime: p.hideCrime,
     ui_language: p.uiLanguage,
     ai_assistant: p.aiAssistant,
-    feed_sort: p.feedSort,
     topic_order: p.topicOrder,
   };
 }

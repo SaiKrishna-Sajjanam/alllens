@@ -171,6 +171,38 @@ class Gazetteer:
 # Topics
 # --------------------------------------------------------------------------
 
+def _script_regex(term: str) -> re.Pattern:
+    """A keyword in an Indian script: from the start of a word, any ending allowed (రైతు finds
+    రైతులకు), but never from the middle of another word (యాప్ "app" is not in దేశవ్యాప్తంగా). A
+    trailing $ means the whole word only (ఏఐ "AI" but not ఏఐసీటీఈ "AICTE"); a leading * also
+    allows the middle of a word (*మంత్రి finds ముఖ్యమంత్రి)."""
+    inside, whole = term.startswith("*"), term.endswith("$")
+    body = re.escape(term.strip("*$")).replace(r"\ ", r"\s+")
+    return re.compile(("" if inside else f"(?<!{_LETTER})") + body + (f"(?!{_LETTER})" if whole else ""))
+
+
+_HASHTAG = re.compile(r"#\S+")
+_LINK = re.compile(r"https?://\S+|www\.\S+")
+# Channel boilerplate at the end of YouTube descriptions ("Subscribe to … here ►", "Follow us on …").
+_BOILERPLATE = re.compile(r"\b(?:subscribe|follow us|watch live|download (?:the )?app|for more (?:news|videos))\b.*",
+                          re.IGNORECASE | re.DOTALL)
+
+
+def plain_snippet(snippet: str, hashtags: int = 3) -> str:
+    """The snippet's own words: links and channel boilerplate removed, and only the first few
+    hashtags kept (as plain words). YouTube descriptions often end with dozens of trending hashtags
+    unrelated to the video; the first ones usually name its subject (#Cricket, #Congress)."""
+    text = _LINK.sub(" ", _BOILERPLATE.sub(" ", snippet or ""))
+    seen = 0
+
+    def keep(m: re.Match) -> str:
+        nonlocal seen
+        seen += 1
+        return " " + m.group(0)[1:] + " " if seen <= hashtags else " "
+
+    return _HASHTAG.sub(keep, text)
+
+
 class TopicTagger:
     def __init__(self, path: Path = DATA / "topics.json"):
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -180,20 +212,18 @@ class TopicTagger:
             matchers = []
             for kw in t["keywords"]:
                 kw_n = normalise(kw)
-                matchers.append(_word_regex(kw_n) if _is_latin(kw_n) else kw_n)
+                matchers.append(_word_regex(kw_n) if _is_latin(kw_n) else _script_regex(kw_n))
             cats = {normalise(c).lower() for c in t.get("categories", [])}
             self._rules.append((t["id"], matchers, cats))
 
     def tag(self, title: str, snippet: str = "", categories=(), source_topics=()) -> list[str]:
         """source_topics: the subject of a section feed (sources.csv `topics`), e.g. every
         report from a film site is Cinema even when its headline names only the star."""
-        text = normalise(f"{title} {snippet}")
+        text = normalise(f"{title} {plain_snippet(snippet)}")
         cats = {normalise(c).lower() for c in categories or []}
         out = []
         for tid, matchers, tcats in self._rules:
-            if tid in source_topics or cats & tcats or any(
-                (m.search(text) if isinstance(m, re.Pattern) else m in text) for m in matchers
-            ):
+            if tid in source_topics or cats & tcats or any(m.search(text) for m in matchers):
                 out.append(tid)
         return out
 

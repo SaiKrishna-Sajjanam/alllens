@@ -31,7 +31,7 @@ export default async function FollowingPage() {
           {items.map(({ story, seenArticleCount }) => {
             const fresh = Math.max(story.article_count - seenArticleCount, 0);
             return (
-              <StoryCard key={story.id} story={story} lang={lang} lastVisit={null} translated={cards.titles[story.id]}
+              <StoryCard key={story.id} story={story} lang={lang} translated={cards.titles[story.id]}
                 snippet={cards.snippets[story.id]}
                 extra={
                   <p className={fresh ? 'badge' : 'small muted'} style={{ alignSelf: 'flex-start' }}>

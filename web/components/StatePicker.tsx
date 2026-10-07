@@ -20,7 +20,7 @@ export default function StatePicker({ prefs, lang }: { prefs: Prefs; lang: Lang 
 
   return (
     <div className="stack" style={{ gap: 6 }} aria-busy={pending}>
-      <label className="field" htmlFor="state-tab">
+      <label className="field state-field" htmlFor="state-tab">
         <span className="field-label">{t(lang, 'prefs.state')}</span>
         <select id="state-tab" value={prefs.state} disabled={pending} onChange={(e) => change(e.target.value)}>
           {!prefs.state && <option value="">{t(lang, 'prefs.chooseState')}</option>}

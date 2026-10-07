@@ -1,7 +1,7 @@
 // Pure, mechanical rules for what a reader sees and in what order.
 // No scoring of sources anywhere: only time, counts, the reader's own
 // choices, or random order.
-import { groupsOf, isTopic, placeName, type SourceGroup } from './catalog';
+import { isTopic, placeName, type SourceGroup, SOURCE_GROUPS, sectionOf } from './catalog';
 import type { Article, FeedSort, LabelInfo, Lang, Prefs, Story, StorySort } from './types';
 
 export const FEED_DAYS = 7;
@@ -13,6 +13,8 @@ export const HIDDEN_BY_HIDE_CRIME = ['crime', 'accidents'];
 export const TAB_IDS = ['international', 'national', 'state'] as const;
 export type TabId = (typeof TAB_IDS)[number];
 export const DEFAULT_TAB: TabId = 'national';
+/** Every visit starts on the latest stories; the order buttons change it for that visit. */
+export const DEFAULT_SORT: FeedSort = 'latest';
 
 export interface Tab {
   id: TabId;
@@ -115,8 +117,12 @@ export function labelLanguage(story: Story, label: LabelInfo): string | null {
     ?? story.label_language;
 }
 
-export function isNewSince(story: Story, lastVisit: string | null): boolean {
-  return !!lastVisit && time(story.last_article_at) > time(lastVisit);
+/** A story is marked New for its first 30 minutes after the first report was published. */
+export const NEW_FOR_MINUTES = 30;
+
+export function isNew(story: Story, now: number = Date.now()): boolean {
+  const first = time(story.first_published_at);
+  return first > 0 && first <= now && now - first < NEW_FOR_MINUTES * 60_000;
 }
 
 // ------------------------------------------------------------------ one story
@@ -138,7 +144,7 @@ export function sortArticles(articles: Article[], sort: StorySort, seed: string)
 export function filterArticles(articles: Article[], group: string, language: string): Article[] {
   return articles.filter(
     (a) =>
-      (group === 'all' || groupsOf(a.sources?.type).includes(group as SourceGroup)) &&
+      (group === 'all' || sectionOf(a.sources?.type) === group) &&
       (language === 'all' || a.language === language),
   );
 }
@@ -155,9 +161,11 @@ export function wireCounts(articles: Article[]): Map<string, number> {
   return out;
 }
 
-export function presentGroups(articles: Article[]): SourceGroup[] {
-  const set = new Set(articles.flatMap((a) => groupsOf(a.sources?.type)));
-  return [...set];
+/** A story's reports by section (newspapers, TV, digital, YouTube, ...), in the fixed section order. */
+export function bySection(articles: Article[]): [SourceGroup, Article[]][] {
+  return SOURCE_GROUPS
+    .map((g): [SourceGroup, Article[]] => [g, articles.filter((a) => sectionOf(a.sources?.type) === g)])
+    .filter(([, list]) => list.length > 0);
 }
 
 export function presentLanguages(articles: Article[]): string[] {

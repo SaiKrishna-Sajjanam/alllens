@@ -1,7 +1,10 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
+import { sectionOf } from '../lib/catalog';
 import { demoData } from '../lib/demo';
 import {
+  bySection,
+  isNew,
   filterArticles, inTab, labelLanguage, matchesFilters, normaliseTab, normaliseTopic, pickLabel, seededShuffle, sortArticles,
   sortStories, tabsFor, toggleCompare, wireCounts,
 } from '../lib/feed';
@@ -98,4 +101,25 @@ test('wire copies are counted mechanically', () => {
   assert.equal(w.get('1'), 1);
   assert.equal(w.get('2'), 1);
   assert.equal(w.get('3'), undefined);
+});
+
+test('New: only for the first 30 minutes after a story was first reported', () => {
+  const now = Date.parse('2026-10-07T12:00:00Z');
+  const story = (at: string | null) => ({ first_published_at: at }) as Story;
+  assert.equal(isNew(story('2026-10-07T11:45:00Z'), now), true);
+  assert.equal(isNew(story('2026-10-07T11:29:00Z'), now), false);
+  assert.equal(isNew(story('2026-10-07T12:10:00Z'), now), false, 'a time in the future is not trusted');
+  assert.equal(isNew(story(null), now), false);
+});
+
+test('story page sections: each report in exactly one section, sections in a fixed order', () => {
+  assert.equal(sectionOf('tv_video'), 'video', 'a TV channel’s YouTube feed is listed under YouTube');
+  assert.equal(sectionOf('newspaper_tv'), 'newspaper');
+  assert.equal(sectionOf('tv_digital'), 'tv');
+  assert.equal(sectionOf('business'), 'digital');
+  assert.equal(sectionOf('community'), 'community');
+  const a = (id: string, type: string) => ({ id, sources: { type } }) as Article;
+  const sections = bySection([a('1', 'tv_video'), a('2', 'digital'), a('3', 'newspaper'), a('4', 'tv')]);
+  assert.deepEqual(sections.map(([g, list]) => [g, list.map((x) => x.id)]),
+    [['newspaper', ['3']], ['tv', ['4']], ['digital', ['2']], ['video', ['1']]]);
 });

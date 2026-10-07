@@ -1,13 +1,19 @@
 import Link from 'next/link';
-import { topicName } from '@/lib/catalog';
-import { DEFAULT_TAB, labelLanguage, pickLabel, type Tab, type TabId } from '@/lib/feed';
-import { formatTime, t } from '@/lib/i18n';
+import { topicName, isTopic } from '@/lib/catalog';
+import type { Video } from '@/lib/data';
+import { DEFAULT_SORT, DEFAULT_TAB, labelLanguage, pickLabel, type Tab, type TabId } from '@/lib/feed';
+import { formatDay, formatTime, t } from '@/lib/i18n';
+import { lightPicture } from '@/lib/pictures';
 import type { FeedSort, Lang, Prefs, Story } from '@/lib/types';
 import type { storyCardTexts } from '@/lib/headlines';
 import { textLanguage } from '@/lib/script';
+import { TopicIcon } from './Icons';
+import InstallCard from './InstallCard';
 import ReadAloud, { type Spoken } from './ReadAloud';
 import StatePicker from './StatePicker';
 import StoryCard from './StoryCard';
+import TopicBar from './TopicBar';
+import VideoCard from './VideoCard';
 
 interface Props {
   lang: Lang;
@@ -15,60 +21,86 @@ interface Props {
   tabs: Tab[];
   tab: TabId;
   sort: FeedSort;
-  topic: string | null;
+  /** The topic on screen (the reader's first topic unless they tapped another on this visit). */
+  topic: string;
   page: number;
   stories: Story[];
-  /** Card headlines and opening lines in the app language (Google's translation where needed), by story id. */
+  /** Most sources in the last 24 hours (all topics), and the newest stories: both mechanical. */
+  mostCovered: Story[];
+  justIn: Story[];
+  videos: Video[];
+  /** Headlines and opening lines in the app language (Google's translation where needed), by story id. */
   cards: Awaited<ReturnType<typeof storyCardTexts>>;
   hasMore: boolean;
   demo: boolean;
   lastVisit: string | null;
+  /** When news was last collected. */
+  lastRefresh: string | null;
+  /** Morning, afternoon or evening in India. */
+  greeting: 'feed.morning' | 'feed.afternoon' | 'feed.evening';
 }
 
 const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
 
 export default function FeedView(p: Props) {
   const { lang, prefs } = p;
-  const href = (over: Partial<{ tab: TabId; sort: FeedSort; topic: string | null; page: number }>) => {
+  const href = (over: Partial<{ tab: TabId; sort: FeedSort; topic: string; page: number }>) => {
     const q = new URLSearchParams();
     const tab = over.tab ?? p.tab;
     const sort = over.sort ?? p.sort;
-    const topic = over.topic !== undefined ? over.topic : p.topic;
+    const topic = over.topic ?? p.topic;
     const page = over.page ?? 0;
     if (tab !== DEFAULT_TAB) q.set('tab', tab);
-    if (sort !== prefs.feedSort) q.set('sort', sort);
-    if (topic) q.set('topic', topic);
+    if (sort !== DEFAULT_SORT) q.set('sort', sort);
+    if (topic !== prefs.topicOrder[0]) q.set('topic', topic);
     if (page) q.set('page', String(page));
     const s = q.toString();
     return s ? `/feed?${s}` : '/feed';
   };
 
+  // A story's headline as shown: the app-language headline, or Google's marked translation of it.
+  const headline = (s: Story) => {
+    const label = pickLabel(s, lang);
+    const tr = p.cards.titles[s.id];
+    return { text: tr ?? label.title, lang: tr ? lang : textLanguage(label.title, labelLanguage(s, label)) ?? undefined, label };
+  };
+  const firstTopic = (s: Story) => (s.topics ?? []).find((x) => isTopic(x));
+  const sourcesBadge = (s: Story) => {
+    const langs = (s.languages ?? []).length;
+    return langs === 1 ? t(lang, 'home.sourcesLang1', { n: s.source_count }) : t(lang, 'home.sourcesLangs', { n: s.source_count, l: langs });
+  };
   // Read aloud in the order shown: each card's source, headline and opening lines, as on screen.
   const spoken: Spoken[] = p.stories.map((s) => {
-    const label = pickLabel(s, lang);
+    const h = headline(s);
     const sn = p.cards.snippets[s.id];
-    const title = p.cards.titles[s.id];
     return {
-      source: label.source_name,
-      title: title ?? label.title,
-      titleLang: title ? lang : textLanguage(label.title, labelLanguage(s, label)),
+      source: h.label.source_name,
+      title: h.text,
+      titleLang: h.lang,
       snippet: sn ? sn.translated ?? sn.text : null,
       snippetLang: sn ? (sn.translated ? lang : textLanguage(sn.text, sn.language)) : null,
     };
   });
+  const noState = p.tab === 'state' && !prefs.state;
 
   return (
-    <div>
+    <div className="home">
       <div className="feed-head">
         <div className="spread">
           <div className="stack" style={{ gap: 2 }}>
-            <h1>{t(lang, 'feed.title')}</h1>
-            <p className="small muted">
-              {p.lastVisit ? t(lang, 'feed.since', { time: formatTime(p.lastVisit, lang) }) : t(lang, 'feed.firstVisit')}
-            </p>
+            <h1>{t(lang, p.greeting)}</h1>
+            <p className="muted feed-tagline">{t(lang, 'feed.tagline')}</p>
           </div>
           <Link className="btn btn-secondary btn-small" href="/settings">{t(lang, 'feed.edit')}</Link>
         </div>
+        <p className="small muted refresh-line">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>
+          <span>
+            {p.lastRefresh ? t(lang, 'feed.refreshed', { time: formatTime(p.lastRefresh, lang) }) : null}
+            {p.lastRefresh ? ' · ' : null}
+            {p.lastVisit ? t(lang, 'feed.since', { time: formatTime(p.lastVisit, lang) }) : t(lang, 'feed.firstVisit')}
+          </span>
+        </p>
         {p.demo && <p className="notice" role="note">{t(lang, 'feed.demo')}</p>}
         <nav className="segmented" aria-label={t(lang, 'feed.tabsLabel')}>
           {p.tabs.map((tab) => (
@@ -78,53 +110,115 @@ export default function FeedView(p: Props) {
           ))}
         </nav>
         {p.tab === 'state' && <StatePicker prefs={prefs} lang={lang} />}
-        {/* Topic buttons for this visit only, in the reader's own order: the feed starts with all news,
-            tapping a topic shows only that topic, tapping it again shows all news again. */}
-        <div className="filter-row" role="group" aria-label={t(lang, 'prefs.topics')}>
-          {prefs.topicOrder.map((id) => {
-            const on = p.topic === id;
-            return (
-              <Link key={id} href={href({ topic: on ? null : id })} className="chip" aria-pressed={on ? 'true' : 'false'}
-                title={on ? t(lang, 'feed.allTopics') : undefined}>
-                {topicName(id, lang)}
-                {on && <span aria-hidden="true">&nbsp;✕</span>}
-              </Link>
-            );
-          })}
-        </div>
-        <div className="spread">
-          <div className="row" role="group" aria-label={t(lang, 'feed.order')}>
-            <span className="small muted">{t(lang, 'feed.order')}:</span>
-            {SORTS.map((s) => (
-              <Link key={s} href={href({ sort: s })} className="chip soft" aria-pressed={s === p.sort ? 'true' : 'false'}
-                style={{ minHeight: 36, fontSize: 13 }}>
-                {t(lang, `sort.${s}` as const)}
-              </Link>
-            ))}
-          </div>
-        </div>
-        <p className="small muted">{t(lang, 'feed.orderNote')}</p>
-        <ReadAloud items={spoken} lang={lang} label="listen.all" />
+        {/* One topic at a time, in the reader's own order; the feed opens on the first (owner's decision,
+            2026-10-07: Politics unless the reader moved another topic to the front). */}
+        <TopicBar prefs={prefs} lang={lang} topic={p.topic}
+          hrefs={Object.fromEntries(prefs.topicOrder.map((id) => [id, href({ topic: id })]))} />
       </div>
 
-      {p.tab === 'state' && !prefs.state ? null : p.stories.length === 0 ? (
-        <div className="panel stack">
-          <p>{t(lang, 'feed.empty')}</p>
-          {p.topic && <Link className="btn btn-secondary" href={href({ topic: null })}>{t(lang, 'feed.allTopics')}</Link>}
-        </div>
-      ) : (
-        <div className="feed-grid">
-          {p.stories.map((s) => (
-            <StoryCard key={s.id} story={s} lang={lang} lastVisit={p.lastVisit} translated={p.cards.titles[s.id]}
-              snippet={p.cards.snippets[s.id]} />
-          ))}
-        </div>
-      )}
-      {p.hasMore && (
-        <div className="row" style={{ justifyContent: 'center', marginTop: 20 }}>
-          <Link className="btn btn-secondary" href={href({ page: p.page + 1 })} scroll={false}>{t(lang, 'feed.more')}</Link>
-        </div>
-      )}
+      {/* The chosen topic is the page (about 70% on a laptop); "most covered", "just in" and videos sit
+          in a narrow column beside it, or below it on phones and tablets. */}
+      <div className="home-grid">
+        <section className="topic-section" aria-labelledby="topic-title">
+          <div className="topic-banner">
+            <span className="topic-banner-icon" aria-hidden="true"><TopicIcon id={p.topic} size={24} /></span>
+            <h2 id="topic-title">{topicName(p.topic, lang)}</h2>
+            <span className="topic-banner-tab small muted">{p.tabs.find((x) => x.id === p.tab)?.label}</span>
+          </div>
+          <div className="topic-head">
+            <div className="row order-row" role="group" aria-label={t(lang, 'feed.order')}>
+              <span className="small muted">{t(lang, 'feed.order')}:</span>
+              {SORTS.map((s) => (
+                <Link key={s} href={href({ sort: s })} className="chip soft order-chip" aria-pressed={s === p.sort ? 'true' : 'false'}>
+                  {t(lang, `sort.${s}` as const)}
+                </Link>
+              ))}
+            </div>
+            <ReadAloud items={spoken} lang={lang} label="listen.all" />
+          </div>
+          {noState ? null : p.stories.length === 0 ? (
+            <div className="panel stack">
+              <p>{t(lang, 'feed.empty')}</p>
+            </div>
+          ) : (
+            <div className="feed-grid">
+              {p.stories.map((s) => (
+                <StoryCard key={s.id} story={s} lang={lang} translated={p.cards.titles[s.id]} viewTopic={p.topic}
+                  snippet={p.cards.snippets[s.id]} />
+              ))}
+            </div>
+          )}
+          <p className="small muted">{t(lang, 'feed.orderNote')}</p>
+          {p.hasMore && (
+            <div className="row" style={{ justifyContent: 'center', marginTop: 8 }}>
+              <Link className="btn btn-secondary" href={href({ page: p.page + 1 })} scroll={false}>{t(lang, 'feed.more')}</Link>
+            </div>
+          )}
+        </section>
+
+        <aside className="home-side">
+          {!noState && p.mostCovered.length > 0 && (
+            <section className="side-card" aria-labelledby="most-covered">
+              <h2 id="most-covered">{t(lang, 'home.mostCovered')}</h2>
+              <p className="small muted">{t(lang, 'home.mostCoveredNote')}</p>
+              <ol className="ranked">
+                {p.mostCovered.map((s, i) => {
+                  const h = headline(s);
+                  const topic = firstTopic(s);
+                  const pic = i === 0 ? lightPicture(s.image_url) : null;
+                  return (
+                    <li key={s.id}>
+                      <Link href={`/story/${s.id}`}>
+                        <span className="rank" aria-hidden="true">{i + 1}</span>
+                        <span className="stack" style={{ gap: 4, minWidth: 0, flex: 1 }}>
+                          {pic && <span className="ranked-pic"><img src={pic} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /></span>}
+                          <span className="ranked-headline" lang={h.lang}>{h.text}</span>
+                          <span className="small muted">
+                            {sourcesBadge(s)}
+                            {topic ? ` · ${topicName(topic, lang)}` : ''}
+                          </span>
+                        </span>
+                      </Link>
+                    </li>
+                  );
+                })}
+              </ol>
+            </section>
+          )}
+          {!noState && p.justIn.length > 0 && (
+            <section className="side-card just-in" aria-labelledby="just-in">
+              <h2 id="just-in">{t(lang, 'home.justIn')}</h2>
+              {p.justIn.map((s) => {
+                const h = headline(s);
+                const pic = lightPicture(s.image_url);
+                return (
+                  <Link key={s.id} href={`/story/${s.id}`} className="mini-story">
+                    <span className="mini-pic">{pic && <img src={pic} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}</span>
+                    <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+                      <span className="mini-headline" lang={h.lang}>{h.text}</span>
+                      <span className="small muted">
+                        {formatDay(s.first_published_at, lang)} · {h.label.source_name}
+                      </span>
+                    </span>
+                  </Link>
+                );
+              })}
+            </section>
+          )}
+          {p.videos.length > 0 && (
+            <section className="side-card" aria-labelledby="watch-title">
+              <div className="spread">
+                <h2 id="watch-title">{t(lang, 'home.watch')}</h2>
+                <Link className="small" href={p.tab === DEFAULT_TAB ? '/watch' : `/watch?tab=${p.tab}`}>{t(lang, 'home.seeAll')}</Link>
+              </div>
+              <div className="side-videos">
+                {p.videos.slice(0, 3).map((v) => <VideoCard key={v.id} video={v} lang={lang} />)}
+              </div>
+            </section>
+          )}
+          <InstallCard labels={{ title: t(lang, 'install.title'), body: t(lang, 'install.body'), button: t(lang, 'install.button'), ios: t(lang, 'install.ios') }} />
+        </aside>
+      </div>
     </div>
   );
 }
