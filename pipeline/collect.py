@@ -9,6 +9,7 @@ the retention window. A failing feed is logged and skipped; it never stops the r
 from __future__ import annotations
 
 import sys
+import time
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -33,14 +34,24 @@ def fetch_source(src: Source, fetcher=fetch):
         return src, [], f"{type(e).__name__}: {e}"
 
 
-def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
+def known_articles(db: DB, ids) -> dict[str, tuple[str, str | None]]:
+    """Stored reports among `ids`: id -> (title, image_url). One query per 1,000 ids."""
+    return {aid: (title, image) for aid, title, image in
+            db.fetch_in("SELECT id, title, image_url FROM articles WHERE id IN ({ids})", ids, chunk=1000)}
+
+
+def store_items(db: DB, src: Source, items, now: datetime, known: dict | None = None) -> tuple[int, int]:
     """Insert new articles; if a source re-words a headline, keep the current words.
+    `known` (from known_articles, for every feed of the run at once) saves a query per feed;
+    the reports inserted here are added to it.
 
     Returns (new articles, updated headlines).
     """
     cutoff = now - timedelta(days=RETENTION_DAYS)
     fresh = {article_id(it.url): it for it in items if not (it.published_at and it.published_at < cutoff)}
-    rows = db.fetch_in("SELECT id, title, image_url FROM articles WHERE id IN ({ids})", fresh)
+    if known is None:
+        known = known_articles(db, fresh)
+    rows = [(aid, *known[aid]) for aid in fresh if aid in known]
     stored = {aid: title for aid, title, _ in rows}
     no_picture = {aid for aid, _, image in rows if not image}
 
@@ -57,6 +68,8 @@ def store_items(db: DB, src: Source, items, now: datetime) -> tuple[int, int]:
            ON CONFLICT (id) DO NOTHING""",
         new,
     )
+    for row in new:
+        known[row[0]] = (row[2], row[10])
     # Already stored: rule 3 says show the source's current words, so follow edits.
     reworded = [(it.title, now, aid) for aid, it in fresh.items() if aid in stored and stored[aid] != it.title]
     db.executemany(
@@ -126,7 +139,7 @@ def check_stored_pictures(db: DB, too_heavy, now: datetime, workers: int = 16) -
     return len(heavy)
 
 
-def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: datetime | None = None,
+def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 16, now: datetime | None = None,
         too_heavy=None) -> dict:
     now = now or datetime.now(timezone.utc)
     sync_sources(db, sources)
@@ -143,13 +156,14 @@ def run(db: DB, sources: list[Source], fetcher=fetch, workers: int = 8, now: dat
     heavy = drop_heavy_pictures(db, results, too_heavy) if too_heavy else 0
 
     ok, failed, new_total, updated_total, notes = 0, 0, 0, 0, []
+    known = known_articles(db, {article_id(it.url) for _, items, error in results if not error for it in items})
     for src, items, error in results:
         if error:
             failed += 1
             notes.append(f"{src.id}: {error}")
             continue
         ok += 1
-        new, updated = store_items(db, src, items, now)
+        new, updated = store_items(db, src, items, now, known)
         new_total += new
         updated_total += updated
     db.commit()
@@ -176,6 +190,10 @@ def main(argv=None) -> int:
     ap.add_argument("--check-pictures", action="store_true",
                     help="remove the feed week's picture links that are too heavy for phones (once)")
     args = ap.parse_args(argv)
+    start = time.monotonic()
+
+    def took() -> str:   # minutes since the start, in the log, to see where a slow run spends its time
+        return f"[{(time.monotonic() - start) / 60:.1f} min]"
 
     db = DB()
     db.init_schema()
@@ -186,12 +204,13 @@ def main(argv=None) -> int:
     if args.retag:
         from pipeline import process
 
-        print(f"Tagging {process.retag_all(db)} stored articles again")
+        print(f"Tagging {process.retag_all(db)} stored articles again "
+              f"(at most {process.TAG_MAX_PER_RUN:,} a run, newest first; the rest in the next runs)")
     if args.check_pictures:
         n = check_stored_pictures(db, picture_too_heavy, datetime.now(timezone.utc))
         print(f"Removed {n} picture links too heavy for phones")
     summary = run(db, load_sources(), too_heavy=picture_too_heavy)
-    print(f"Feeds OK: {summary['feeds_ok']}  failed: {summary['feeds_failed']}  "
+    print(f"{took()} Feeds OK: {summary['feeds_ok']}  failed: {summary['feeds_failed']}  "
           f"new articles: {summary['new_articles']}  re-worded headlines: {summary['updated_headlines']}  "
           f"pictures too heavy to link: {summary['heavy_pictures']}")
     for n in summary["notes"]:
@@ -200,13 +219,13 @@ def main(argv=None) -> int:
         from pipeline import process
 
         result = process.run(db)
-        print(f"Tagged {result['tagged']}  grouped {result['grouped']} into "
+        print(f"{took()} Tagged {result['tagged']}  grouped {result['grouped']} into "
               f"{result['new_stories']} new and {result['joined']} existing stories")
         from pipeline import translate
 
         if translate.configured():
             try:
-                print("Translated:", translate.run(db))
+                print(f"{took()} Translated:", translate.run(db))
             except Exception as e:  # noqa: BLE001 - translation never fails the collection
                 db.rollback()
                 print(f"Headline translation skipped this run: {type(e).__name__}: {e}")

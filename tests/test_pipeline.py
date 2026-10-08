@@ -229,7 +229,7 @@ class CheckFeedsTests(unittest.TestCase):
                                 fetcher=lambda u: (200, old))
         self.assertEqual(row["result"], "abandoned", "a feed last updated years ago is not live")
 
-    def test_same_site_feeds_fetched_one_at_a_time(self):
+    def test_same_site_feeds_a_few_at_a_time_and_reddit_one_at_a_time(self):
         import threading
         import time
 
@@ -245,26 +245,29 @@ class CheckFeedsTests(unittest.TestCase):
                 active[host] -= 1
             return s.id
 
-        srcs = [Source(f"r{i}", "", "local", "community", "en", "", f"https://reddit.test/r/{i}/.rss", "live") for i in range(4)]
+        srcs = [Source(f"r{i}", "", "local", "community", "en", "", f"https://www.reddit.com/r/{i}/.rss", "live") for i in range(4)]
+        srcs += [Source(f"y{i}", "", "national", "tv_video", "en", "", f"https://yt.test/feeds/{i}", "live") for i in range(9)]
         srcs += [Source(f"o{i}", "", "local", "digital", "en", "", f"https://other{i}.test/feed", "live") for i in range(4)]
         self.assertEqual(map_by_host(fn, srcs, gap=0), [s.id for s in srcs])   # input order kept
-        self.assertEqual(peak["reddit.test"], 1)
+        self.assertEqual(peak["www.reddit.com"], 1)
+        self.assertGreater(peak["yt.test"], 1, "a site with many feeds is read a few at a time")
+        self.assertLessEqual(peak["yt.test"], 3)
 
     def test_site_that_says_slow_down_is_not_asked_again_this_run(self):
         calls = []
 
         def fetcher(url):
             calls.append(url)
-            return (429, b"") if "reddit.test" in url else (200, RSS)
+            return (429, b"") if "reddit.com" in url else (200, RSS)
 
-        srcs = [Source(f"r{i}", "", "state", "community", "en", "", f"https://reddit.test/r/{i}/.rss", "live")
+        srcs = [Source(f"r{i}", "", "state", "community", "en", "", f"https://www.reddit.com/r/{i}/.rss", "live")
                 for i in range(5)]
         srcs.append(Source("ok", "", "national", "digital", "en", "India", "https://ok.test/feed", "live"))
         tmp = tempfile.TemporaryDirectory()
         db = DB(f"sqlite:///{os.path.join(tmp.name, 't.db')}")
         db.init_schema()
         summary = collect.run(db, srcs, fetcher=fetcher, now=datetime(2026, 9, 29, 12, tzinfo=timezone.utc))
-        self.assertEqual(sum("reddit.test" in u for u in calls), 1, "one polite try per run")
+        self.assertEqual(sum("reddit.com" in u for u in calls), 1, "one polite try per run")
         self.assertEqual(summary["feeds_failed"], 5)
         self.assertEqual(summary["feeds_ok"], 1)
         db.close()

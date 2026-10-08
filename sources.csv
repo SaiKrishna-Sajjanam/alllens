@@ -39,9 +39,6 @@ hansindia,The Hans India,state,newspaper,en,Hyderabad,,no_feed,
 ntvtelugu_telangana,NTV Telugu (Telangana section),state,tv,te,Telangana,https://ntvtelugu.com/telangana-news/feed,live,
 ntnews_telangana,Namasthe Telangana (Telangana section),state,newspaper,te,Telangana,https://www.ntnews.com/telangana/feed,live,
 reddit_hyderabad,r/hyderabad (Reddit),state,community,en,Hyderabad,https://www.reddit.com/r/hyderabad/.rss,live,
-reddit_telangana,r/telangana (Reddit),state,community,en,Telangana,https://www.reddit.com/r/telangana/.rss,to_check,
-reddit_india,r/india (Reddit),national,community,en,India,https://www.reddit.com/r/india/.rss,to_check,
-reddit_indianews,r/IndiaNews (Reddit),national,community,en,India,https://www.reddit.com/r/IndiaNews/.rss,to_check,
 thehindu_world,The Hindu (World),international,newspaper,en,World,https://www.thehindu.com/news/international/feeder/default.rss,live,
 ndtv_world,NDTV (World),international,tv_digital,en,World,https://feeds.feedburner.com/ndtvnews-world-news,live,
 toi_world,Times of India (World),international,newspaper,en,World,https://timesofindia.indiatimes.com/rssfeeds/296589292.cms,live,
@@ -91,8 +88,6 @@ tv9telugu_ent,TV9 Telugu (Entertainment),state,tv,te,Telangana,https://tv9telugu
 abpdesam_ent,ABP Desam (Entertainment),state,tv_digital,te,Telangana,https://telugu.abplive.com/entertainment/feed,live,cinema
 oneindia_te,Oneindia Telugu,state,digital,te,Telangana,https://telugu.oneindia.com/rss/telugu-news-fb.xml,live,
 telanganatoday_ent,Telangana Today (Entertainment),state,newspaper,en,Telangana,https://telanganatoday.com/entertainment/feed,live,cinema
-reddit_tollywoodgossips,r/TollywoodGossips (Reddit),state,community,en,Telangana,https://www.reddit.com/r/TollywoodGossips/.rss,to_check,cinema
-reddit_tollywood,r/tollywood (Reddit),state,community,en,Telangana,https://www.reddit.com/r/tollywood/.rss,to_check,cinema
 thehindu_movies,The Hindu (Movies),national,newspaper,en,India,https://www.thehindu.com/entertainment/movies/feeder/default.rss,live,cinema
 toi_ent,Times of India (Entertainment),national,newspaper,en,India,https://timesofindia.indiatimes.com/rssfeeds/1081479906.cms,live,cinema
 hindustantimes_ent,Hindustan Times (Entertainment),national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/entertainment/rssfeed.xml,live,cinema
@@ -104,15 +99,12 @@ koimoi,Koimoi,national,digital,en,India,https://www.koimoi.com/feed/,live,cinema
 cinemaexpress,Cinema Express,national,digital,en,India,https://www.cinemaexpress.com/stories.rss,live,cinema
 onmanorama_ent,Onmanorama (Entertainment),state,digital,en,Kerala,https://www.onmanorama.com/entertainment.feeds.onmrss.xml,live,cinema
 amarujala_ent,Amar Ujala (Entertainment),national,newspaper,hi,India,https://www.amarujala.com/rss/entertainment.xml,live,cinema
-reddit_bollywood,r/bollywood (Reddit),national,community,en,India,https://www.reddit.com/r/bollywood/.rss,to_check,cinema
-reddit_kollywood,r/kollywood (Reddit),national,community,en,India,https://www.reddit.com/r/kollywood/.rss,to_check,cinema
 espncricinfo,ESPNcricinfo,national,digital,en,India,https://www.espncricinfo.com/rss/content/story/feeds/0.xml,live,sports
 sportstar,Sportstar,national,digital,en,India,https://sportstar.thehindu.com/feeder/default.rss,live,sports
 thehindu_sport,The Hindu (Sport),national,newspaper,en,India,https://www.thehindu.com/sport/feeder/default.rss,live,sports
 toi_sports,Times of India (Sports),national,newspaper,en,India,https://timesofindia.indiatimes.com/rssfeeds/4719148.cms,live,sports
 ndtv_sports,NDTV (Sports),national,tv_digital,en,India,https://feeds.feedburner.com/ndtvsports-latest,live,sports
 hindustantimes_cricket,Hindustan Times (Cricket),national,newspaper,en,India,https://www.hindustantimes.com/feeds/rss/cricket/rssfeed.xml,live,sports
-reddit_cricket,r/Cricket (Reddit),international,community,en,World,https://www.reddit.com/r/Cricket/.rss,to_check,sports
 businessline,BusinessLine,national,business,en,India,https://www.thehindubusinessline.com/feeder/default.rss,live,business
 mint_markets,Mint (Markets),national,business,en,India,https://www.livemint.com/rss/markets,live,business
 gadgets360,Gadgets 360,national,digital,en,India,https://feeds.feedburner.com/gadgets360-latest,live,tech
@@ -314,7 +306,6 @@ yt_zee24taas,Zee 24 Taas (YouTube),state,tv_video,mr,Maharashtra,https://www.you
 yt_abpananda,ABP Ananda (YouTube),state,tv_video,bn,West Bengal,https://www.youtube.com/feeds/videos.xml?channel_id=UCv3rFzn-GHGtqzXiaq3sWNg,live,
 yt_sandesh,Sandesh News (YouTube),state,tv_video,gu,Gujarat,https://www.youtube.com/feeds/videos.xml?user=sandeshnewstv,live,
 yt_tv5,TV5 News (YouTube),state,tv_video,te,Andhra Pradesh,https://www.youtube.com/feeds/videos.xml?user=tv5newschannel,live,
-reddit_tamilnadu,r/TamilNadu (Reddit),state,community,en,Tamil Nadu,https://www.reddit.com/r/TamilNadu/.rss,to_check,
 frontline,Frontline,national,digital,en,India,https://frontline.thehindu.com/feeder/default.rss,live,
 newslaundry,Newslaundry,national,digital,en,India,https://www.newslaundry.com/stories.rss,live,
 altnews,Alt News (fact-check),national,digital,en,India,https://www.altnews.in/feed/,live,
@@ -323,52 +314,6 @@ thebetterindia,The Better India,national,digital,en,India,https://thebetterindia
 newindianexpress,The New Indian Express,national,newspaper,en,India,https://www.newindianexpress.com/stories.rss,live,
 krishijagran_hi,Krishi Jagran (Hindi),national,digital,hi,India,https://hindi.krishijagran.com/feeds/rss,live,farming
 bhaskar_rj,Dainik Bhaskar (Rajasthan),state,newspaper,hi,Rajasthan,https://www.bhaskar.com/rss-v1--category-1740.xml,live,
-reddit_chennai,r/Chennai (Reddit),state,community,en,Tamil Nadu,https://www.reddit.com/r/Chennai/.rss,to_check,
-reddit_bangalore,r/bangalore (Reddit),state,community,en,Karnataka,https://www.reddit.com/r/bangalore/.rss,to_check,
-reddit_karnataka,r/karnataka (Reddit),state,community,en,Karnataka,https://www.reddit.com/r/karnataka/.rss,to_check,
-reddit_kerala,r/Kerala (Reddit),state,community,en,Kerala,https://www.reddit.com/r/Kerala/.rss,to_check,
-reddit_mumbai,r/mumbai (Reddit),state,community,en,Maharashtra,https://www.reddit.com/r/mumbai/.rss,to_check,
-reddit_pune,r/pune (Reddit),state,community,en,Maharashtra,https://www.reddit.com/r/pune/.rss,to_check,
-reddit_maharashtra,r/maharashtra (Reddit),state,community,en,Maharashtra,https://www.reddit.com/r/maharashtra/.rss,to_check,
-reddit_kolkata,r/kolkata (Reddit),state,community,en,West Bengal,https://www.reddit.com/r/kolkata/.rss,to_check,
-reddit_westbengal,r/westbengal (Reddit),state,community,en,West Bengal,https://www.reddit.com/r/westbengal/.rss,to_check,
-reddit_delhi,r/delhi (Reddit),state,community,en,Delhi,https://www.reddit.com/r/delhi/.rss,to_check,
-reddit_gurgaon,r/gurgaon (Reddit),state,community,en,Haryana,https://www.reddit.com/r/gurgaon/.rss,to_check,
-reddit_noida,r/noida (Reddit),state,community,en,Uttar Pradesh,https://www.reddit.com/r/noida/.rss,to_check,
-reddit_lucknow,r/lucknow (Reddit),state,community,en,Uttar Pradesh,https://www.reddit.com/r/lucknow/.rss,to_check,
-reddit_up,r/uttarpradesh (Reddit),state,community,en,Uttar Pradesh,https://www.reddit.com/r/uttarpradesh/.rss,to_check,
-reddit_bihar,r/bihar (Reddit),state,community,en,Bihar,https://www.reddit.com/r/bihar/.rss,to_check,
-reddit_jharkhand,r/jharkhand (Reddit),state,community,en,Jharkhand,https://www.reddit.com/r/jharkhand/.rss,to_check,
-reddit_jaipur,r/jaipur (Reddit),state,community,en,Rajasthan,https://www.reddit.com/r/jaipur/.rss,to_check,
-reddit_rajasthan,r/rajasthan (Reddit),state,community,en,Rajasthan,https://www.reddit.com/r/rajasthan/.rss,to_check,
-reddit_ahmedabad,r/ahmedabad (Reddit),state,community,en,Gujarat,https://www.reddit.com/r/ahmedabad/.rss,to_check,
-reddit_gujarat,r/gujarat (Reddit),state,community,en,Gujarat,https://www.reddit.com/r/gujarat/.rss,to_check,
-reddit_punjab,r/punjab (Reddit),state,community,en,Punjab,https://www.reddit.com/r/punjab/.rss,to_check,
-reddit_chandigarh,r/chandigarh (Reddit),state,community,en,Chandigarh,https://www.reddit.com/r/chandigarh/.rss,to_check,
-reddit_mp,r/MadhyaPradesh (Reddit),state,community,en,Madhya Pradesh,https://www.reddit.com/r/MadhyaPradesh/.rss,to_check,
-reddit_indore,r/indore (Reddit),state,community,en,Madhya Pradesh,https://www.reddit.com/r/indore/.rss,to_check,
-reddit_chhattisgarh,r/chhattisgarh (Reddit),state,community,en,Chhattisgarh,https://www.reddit.com/r/chhattisgarh/.rss,to_check,
-reddit_odisha,r/odisha (Reddit),state,community,en,Odisha,https://www.reddit.com/r/odisha/.rss,to_check,
-reddit_assam,r/assam (Reddit),state,community,en,Assam,https://www.reddit.com/r/assam/.rss,to_check,
-reddit_guwahati,r/guwahati (Reddit),state,community,en,Assam,https://www.reddit.com/r/guwahati/.rss,to_check,
-reddit_northeast,r/Northeastindia (Reddit),state,community,en,Assam,https://www.reddit.com/r/Northeastindia/.rss,to_check,
-reddit_manipur,r/Manipur (Reddit),state,community,en,Manipur,https://www.reddit.com/r/Manipur/.rss,to_check,
-reddit_goa,r/goa (Reddit),state,community,en,Goa,https://www.reddit.com/r/goa/.rss,to_check,
-reddit_kashmir,r/kashmir (Reddit),state,community,en,Jammu and Kashmir,https://www.reddit.com/r/kashmir/.rss,to_check,
-reddit_jammu,r/Jammu (Reddit),state,community,en,Jammu and Kashmir,https://www.reddit.com/r/Jammu/.rss,to_check,
-reddit_ladakh,r/ladakh (Reddit),state,community,en,Ladakh,https://www.reddit.com/r/ladakh/.rss,to_check,
-reddit_uttarakhand,r/Uttarakhand (Reddit),state,community,en,Uttarakhand,https://www.reddit.com/r/Uttarakhand/.rss,to_check,
-reddit_himachal,r/HimachalPradesh (Reddit),state,community,en,Himachal Pradesh,https://www.reddit.com/r/HimachalPradesh/.rss,to_check,
-reddit_haryana,r/haryana (Reddit),state,community,en,Haryana,https://www.reddit.com/r/haryana/.rss,to_check,
-reddit_ap,r/AndhraPradesh (Reddit),state,community,en,Andhra Pradesh,https://www.reddit.com/r/AndhraPradesh/.rss,to_check,
-reddit_vizag,r/vizag (Reddit),state,community,en,Andhra Pradesh,https://www.reddit.com/r/vizag/.rss,to_check,
-reddit_puducherry,r/pondicherry (Reddit),state,community,en,Puducherry,https://www.reddit.com/r/pondicherry/.rss,to_check,
-reddit_sikkim,r/Sikkim (Reddit),state,community,en,Sikkim,https://www.reddit.com/r/Sikkim/.rss,to_check,
-reddit_meghalaya,r/Meghalaya (Reddit),state,community,en,Meghalaya,https://www.reddit.com/r/Meghalaya/.rss,to_check,
-reddit_tripura,r/Tripura (Reddit),state,community,en,Tripura,https://www.reddit.com/r/Tripura/.rss,to_check,
-reddit_nagaland,r/nagaland (Reddit),state,community,en,Nagaland,https://www.reddit.com/r/nagaland/.rss,to_check,
-reddit_mizoram,r/mizoram (Reddit),state,community,en,Mizoram,https://www.reddit.com/r/mizoram/.rss,to_check,
-reddit_arunachal,r/ArunachalPradesh (Reddit),state,community,en,Arunachal Pradesh,https://www.reddit.com/r/ArunachalPradesh/.rss,to_check,
 dinamalar,Dinamalar,state,newspaper,ta,Tamil Nadu,,no_feed,
 samayam_ta,Samayam Tamil,state,digital,ta,Tamil Nadu,,no_feed,
 vijaykarnataka,Vijay Karnataka,state,newspaper,kn,Karnataka,,no_feed,

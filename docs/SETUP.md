@@ -45,7 +45,7 @@ Then Actions → **Collect news** → Run workflow. The first run takes ~5 minut
 
 From now on collection runs every hour and clean-up every night, by themselves.
 
-**Free:** the repository is public, and GitHub Actions minutes are free and unlimited for public repositories, so collection runs every hour (about 15 minutes a run). Secrets stay hidden in a public repository: they live in Settings → Secrets, never in the code. GitHub switches off scheduled runs in a public repository after 60 days without any push (it emails first; one click or any push turns them on again). If the repository is ever made private again, it gets only 2,000 minutes a month: change the schedule in `.github/workflows/collect.yml` back to every 8 hours (`37 0,8,16 * * *`, about 1,350 minutes a month).
+**Free:** the repository is public, and GitHub Actions minutes are free and unlimited for public repositories, so collection runs every hour (about 5-15 minutes a run; the log shows the minutes each step took). After ticking **retag**, each run re-tags at most 20,000 stored reports, newest first, so a full retag finishes over a few hourly runs while new news keeps flowing. Secrets stay hidden in a public repository: they live in Settings → Secrets, never in the code. GitHub switches off scheduled runs in a public repository after 60 days without any push (it emails first; one click or any push turns them on again). If the repository is ever made private again, it gets only 2,000 minutes a month: change the schedule in `.github/workflows/collect.yml` back to every 8 hours (`37 0,8,16 * * *`, about 1,350 minutes a month).
 
 ## 4. Vercel: put the website online (10 min)
 

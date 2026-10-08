@@ -266,6 +266,56 @@ class GroupingTests(unittest.TestCase):
         self.assertGreater(self.db.fetchall("SELECT COUNT(*) FROM coverage_counts")[0][0], 0)
 
 
+class RetagTests(unittest.TestCase):
+    """A retag of every stored report is spread over runs and saved as it goes."""
+
+    def setUp(self):
+        self.tmp, self.db = make_db()
+        self.now = DAY + timedelta(hours=20)
+        load(self.db, ARTICLES, self.now)
+        process.run(self.db, embedder=LexicalEmbedder(), now=self.now)
+
+    def tearDown(self):
+        self.db.close()
+        self.tmp.cleanup()
+
+    def pending(self):
+        return self.db.fetchall("SELECT COUNT(*) FROM articles WHERE processed_at IS NULL")[0][0]
+
+    def test_capped_per_run_and_saved_in_batches(self):
+        total = process.retag_all(self.db)
+        srcs = process._sources(self.db)
+        tagged, _ = process.tag_articles(self.db, srcs, self.now, limit=5, batch=2)
+        self.assertEqual(tagged, 5)
+        self.assertEqual(self.pending(), total - 5, "the rest waits for the next run")
+        process.tag_articles(self.db, srcs, self.now, limit=total, batch=2)
+        self.assertEqual(self.pending(), 0)
+
+    def test_new_reports_are_tagged_before_old_ones(self):
+        process.retag_all(self.db)
+        srcs = {s.id: s for s in sources()}
+        item = Item(title="Fresh report", url="https://thehindu.test/fresh", summary="", published_at=self.now)
+        store_items(self.db, next(iter(srcs.values())), [item], self.now)
+        process.tag_articles(self.db, process._sources(self.db), self.now, limit=1)
+        self.assertIsNotNone(self.db.fetchall(
+            "SELECT processed_at FROM articles WHERE url = 'https://thehindu.test/fresh'")[0][0])
+
+
+class RemovedSourceTests(unittest.TestCase):
+    def test_source_taken_out_of_the_list_is_marked_removed(self):
+        tmp, db = make_db()
+        srcs = sources()
+        sync_sources(db, srcs)
+        sync_sources(db, srcs[1:])
+        status = dict(db.fetchall("SELECT id, status FROM sources"))
+        self.assertEqual(status[srcs[0].id], "removed")
+        self.assertEqual(status[srcs[1].id], "live")
+        sync_sources(db, srcs)                       # put back: collected again
+        self.assertEqual(dict(db.fetchall("SELECT id, status FROM sources"))[srcs[0].id], "live")
+        db.close()
+        tmp.cleanup()
+
+
 class RotatingEmbedder:
     """Headline 'step k' -> a unit vector turned k * 10 degrees: each report is close to
     the previous one, but the first and last are unrelated (90 degrees apart)."""

@@ -29,7 +29,9 @@ SNIPPET_MAX = 280          # characters of feed summary we keep
 RETENTION_DAYS = 30        # articles older than this are deleted (counts are kept)
 USER_AGENT = "VuazBot/0.1 (news aggregator; contact via project site)"
 TIMEOUT = 20               # seconds per feed request
-HOST_GAP = 3.0             # seconds between feeds on the same site
+HOST_GAP = 1.0             # seconds between feeds on the same site, in each lane
+HOST_LANES = 3             # feeds on one site fetched at most this many at a time (YouTube has 100+ channels)
+ONE_LANE_HOSTS = ("reddit.com",)   # sites that answer 429 to any parallel reading: one at a time
 
 
 # --------------------------------------------------------------------------
@@ -202,6 +204,14 @@ def sync_sources(db: DB, sources: list[Source]) -> None:
         [(s.id, s.name, s.layer, s.type, s.language, s.region, s.feed_url or None, s.status, s.topic_list, now)
          for s in sources],
     )
+    # A source taken out of sources.csv is marked removed (not deleted: its stored reports keep
+    # their source until they expire), so it is no longer collected or listed on the website.
+    if sources:
+        db.execute(
+            f"""UPDATE sources SET status = 'removed', updated_at = ?
+                WHERE (status IS NULL OR status <> 'removed') AND id NOT IN ({", ".join("?" * len(sources))})""",
+            (now, *[s.id for s in sources]),
+        )
     db.commit()
 
 
@@ -273,33 +283,46 @@ def fetch_via_apps_script(url: str) -> tuple[int, bytes]:
     return int(body["status"]), base64.b64decode(body["body"])
 
 
-def map_by_host(fn, sources: list, workers: int = 8, gap: float = HOST_GAP,
+def map_by_host(fn, sources: list, workers: int = 16, gap: float = HOST_GAP, lanes: int = HOST_LANES,
                 stop_host=None, skipped=None) -> list:
-    """fn(source) for every source, in input order: different sites in parallel,
-    feeds on the same site one after another with a pause (sites like Reddit
-    answer 429 "too many requests" to parallel fetches).
+    """fn(source) for every source, results in input order: different sites in parallel, and
+    feeds on the same site at most `lanes` at a time, each lane pausing `gap` seconds between
+    feeds (sites like Reddit answer 429 "too many requests" to fast reading; those get one lane).
 
     If stop_host(result) is true (the site asked us to slow down), the site's
     remaining feeds are not requested this run: skipped(source) stands in for them."""
+    import threading
     from concurrent.futures import ThreadPoolExecutor
 
     groups: dict[str, list[int]] = {}
     for i, s in enumerate(sources):
         groups.setdefault(urlsplit(s.feed_url).hostname or "", []).append(i)
+    tasks: list[tuple[str, list[int]]] = []
+    for host, indexes in groups.items():
+        n = 1 if any(host == h or host.endswith("." + h) for h in ONE_LANE_HOSTS) else max(1, min(lanes, len(indexes)))
+        tasks += [(host, indexes[k::n]) for k in range(n)]
+    tasks.sort(key=lambda t: -len(t[1]))      # longest lanes first, so the run ends sooner
     results: list = [None] * len(sources)
+    stopped: set[str] = set()
+    lock = threading.Lock()
 
-    def run_host(indexes: list[int]):
+    def run_lane(task):
+        host, indexes = task
         for n, i in enumerate(indexes):
+            with lock:
+                stop = host in stopped
+            if stop:
+                results[i] = skipped(sources[i])
+                continue
             if n:
                 time.sleep(gap)
             results[i] = fn(sources[i])
             if stop_host and skipped and stop_host(results[i]):
-                for j in indexes[n + 1:]:
-                    results[j] = skipped(sources[j])
-                return
+                with lock:
+                    stopped.add(host)
 
     with ThreadPoolExecutor(max_workers=workers) as pool:
-        list(pool.map(run_host, groups.values()))
+        list(pool.map(run_lane, tasks))
     return results
 
 

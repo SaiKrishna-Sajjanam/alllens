@@ -331,6 +331,7 @@ async function sources(): Promise<Source[]> {
   const { data } = await supabase
     .from('sources')
     .select('id,name,layer,type,language,region,status')
+    .or('status.is.null,status.neq.removed')   // taken out of sources.csv (pipeline sync_sources)
     .order('name', { ascending: true });
   return (data ?? []) as unknown as Source[];
 }

@@ -66,25 +66,36 @@ def _sources(db: DB) -> dict:
 # 1. Tagging
 # --------------------------------------------------------------------------
 
-def tag_articles(db: DB, sources: dict, now: datetime) -> tuple[int, set[str]]:
+TAG_BATCH = 2_000          # tags saved after every batch, so a cut-off run keeps its work
+TAG_MAX_PER_RUN = 20_000   # a retag of every stored report is spread over several runs
+
+
+def tag_articles(db: DB, sources: dict, now: datetime, limit: int = TAG_MAX_PER_RUN,
+                 batch: int = TAG_BATCH) -> tuple[int, set[str]]:
+    """Tag reports not yet tagged: new ones (not yet in a story) first, then the newest, at most
+    `limit` a run; the rest wait for the next run (after a retag, they keep their old tags meanwhile)."""
     gz, tt = gazetteer(), topic_tagger()
     rows = db.fetchall(
-        "SELECT id, source_id, title, snippet, categories, story_id FROM articles WHERE processed_at IS NULL")
-    dirty: set[str] = set()
-    updates = []
-    for aid, sid, title, snippet, categories, story_id in rows:
-        src = sources.get(sid, {})
-        p = gz.tag(title, snippet or "", src.get("region", ""))
-        topics = tt.tag(title, snippet or "", as_list(categories), src.get("topics", ()))
-        updates.append((p.places, p.primary, topics, wire_key(snippet or ""), now, aid))
-        if story_id:
-            dirty.add(story_id)
-    db.executemany(
-        """UPDATE articles SET places = ?, primary_place = ?, topics = ?, wire_key = ?, processed_at = ?
-           WHERE id = ?""",
-        updates,
+        """SELECT id, source_id, title, snippet, categories, story_id FROM articles WHERE processed_at IS NULL
+           ORDER BY CASE WHEN story_id IS NULL THEN 0 ELSE 1 END, fetched_at DESC LIMIT ?""",
+        (limit,),
     )
-    db.commit()
+    dirty: set[str] = set()
+    for start in range(0, len(rows), batch):
+        updates = []
+        for aid, sid, title, snippet, categories, story_id in rows[start:start + batch]:
+            src = sources.get(sid, {})
+            p = gz.tag(title, snippet or "", src.get("region", ""))
+            topics = tt.tag(title, snippet or "", as_list(categories), src.get("topics", ()))
+            updates.append((p.places, p.primary, topics, wire_key(snippet or ""), now, aid))
+            if story_id:
+                dirty.add(story_id)
+        db.executemany(
+            """UPDATE articles SET places = ?, primary_place = ?, topics = ?, wire_key = ?, processed_at = ?
+               WHERE id = ?""",
+            updates,
+        )
+        db.commit()
     return len(rows), dirty
 
 

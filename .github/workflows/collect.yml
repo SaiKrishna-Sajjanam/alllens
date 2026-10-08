@@ -3,7 +3,7 @@ name: Collect news
 on:
   schedule:
     # Every hour, at 7 minutes past. The repository is public, so GitHub Actions minutes are free and
-    # unlimited. A run takes about 15 minutes; the concurrency group below never lets two overlap.
+    # unlimited. A run takes about 5-15 minutes; the concurrency group below never lets two overlap.
     # GitHub may start a scheduled run late or skip one when its machines are busy.
     # If the repository is ever made private again, go back to every 8 hours ("37 0,8,16 * * *"),
     # which fits a private repository's free 2,000 minutes a month.
@@ -30,7 +30,8 @@ concurrency:
 jobs:
   collect:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    # A normal run takes 5-15 minutes; the limit only stops a run that hangs.
+    timeout-minutes: 45
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       EMBEDDER: multilingual
