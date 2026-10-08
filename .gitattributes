@@ -1,3 +1,0 @@
-# Server scripts and schedules run on Linux: always LF line endings.
-deploy/server/** text eol=lf
-*.sh text eol=lf

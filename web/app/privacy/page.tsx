@@ -35,7 +35,7 @@ export default function PrivacyPage() {
       </p>
       <h2>Services we use</h2>
       <ul>
-        <li>Supabase (database and sign-in), Google (sign-in only), Vercel (website hosting), GitHub (code and tests) and Oracle Cloud (the server that collects public news feeds; it holds no reader data).</li>
+        <li>Supabase (database and sign-in), Google (sign-in only), Vercel (website hosting), and GitHub (code, tests and the scheduled collection of public news feeds; it holds no reader data).</li>
         <li>Pictures and video thumbnails are loaded directly from each outlet&rsquo;s own site (or YouTube), so those sites can see your IP address when you view them, as when you visit them. We send them no information about you. &ldquo;Translate&rdquo; opens Google Translate with the article link only.</li>
       </ul>
     </article>

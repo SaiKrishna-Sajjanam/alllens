@@ -7,9 +7,6 @@ on:
 
 jobs:
   cleanup:
-    # If scheduled runs ever move to the optional free server (docs/SERVER.md), set the
-    # repository variable SCHEDULE_ON_GITHUB=off to stop them here. Manual runs always work.
-    if: github.event_name != 'schedule' || vars.SCHEDULE_ON_GITHUB != 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:

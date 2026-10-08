@@ -13,7 +13,7 @@ import { getCardSnippets } from './data';
 import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
 import { textLanguage } from './script';
-import { createClient } from './supabase/server';
+import { publicCache, publicClient } from './supabase/public';
 import { titleHash } from './titlehash';
 import type { Article, Lang, Story } from './types';
 
@@ -68,30 +68,47 @@ const cachedTranslate = unstable_cache(callTranslator, ['headline-translation-v1
 
 async function translateNow(items: Text[], lang: Lang): Promise<Map<string, string>> {
   const out = new Map<string, string>();
-  const batches: { source: string; items: Text[] }[] = [];
-  const open = new Map<string, { source: string; items: Text[] }>();
+  const batches: { kind: Kind; source: string; items: Text[] }[] = [];
+  const open = new Map<string, { kind: Kind; source: string; items: Text[] }>();
   for (const it of items.slice(0, MAX_NOW)) {
     const source = it.language ?? '';
-    let cur = open.get(source);
+    const key = `${it.kind}:${source}`;   // headlines and snippets in separate calls
+    let cur = open.get(key);
     const size = (cur?.items ?? []).reduce((n, x) => n + oneLine(x.text).length, 0) + oneLine(it.text).length;
     if (!cur || cur.items.length >= BATCH_LINES || size > BATCH_CHARS) {
-      cur = { source, items: [] };
-      open.set(source, cur);
+      cur = { kind: it.kind, source, items: [] };
+      open.set(key, cur);
       batches.push(cur);
     }
     cur.items.push(it);
   }
-  const work = Promise.all(batches.map((b) =>
+  const run = (bs: typeof batches) => Promise.all(bs.map((b) =>
     cachedTranslate(b.items.map((x) => oneLine(x.text)), b.source, lang)
       .then((texts) => b.items.forEach((x, j) => { if (texts[j]) out.set(keyOf(x.id, x.kind), texts[j]); }))
       .catch(() => undefined),   // translator busy or not reachable: the original shows
   ));
-  // Google can take several seconds. The page doesn't wait for it: what is ready shows translated,
-  // the rest shows its original words this time, and finishes in the background (cached for a week).
-  const finished = await Promise.race([work.then(() => true), new Promise<false>((r) => setTimeout(() => r(false), WAIT_MS))]);
-  if (!finished) after(() => work);
+  // Snippets are translated when a reader first sees them (collection does headlines only), but the
+  // page never waits for them: they finish in the background and show translated from the next view
+  // (cached for a week, for everyone). Headlines are waited for, at most WAIT_MS: what is ready shows
+  // translated, the rest shows its original words this time and finishes in the background too.
+  const snippets = run(batches.filter((b) => b.kind === 'snippet'));
+  after(() => snippets);
+  const headlines = run(batches.filter((b) => b.kind === 'title'));
+  const finished = await Promise.race([headlines.then(() => true), new Promise<false>((r) => setTimeout(() => r(false), WAIT_MS))]);
+  if (!finished) after(() => headlines);
   return new Map(out);
 }
+
+type StoredRow = { article_id: string; title: string | null; source_hash: string | null; snippet: string | null; snippet_hash: string | null };
+/** Translations already stored by the pipeline, shared by every reader for a few minutes. */
+const storedTranslations = publicCache('translations', async (lang: Lang, ids: string[]): Promise<StoredRow[]> => {
+  const { data } = await publicClient()
+    .from('headline_translations')
+    .select('article_id,title,source_hash,snippet,snippet_hash')
+    .eq('lang', lang)
+    .in('article_id', ids);
+  return (data ?? []) as StoredRow[];
+});
 
 /** Translations into the reader's app language, keyed "articleId:title" / "articleId:snippet", for
  *  texts not already written in it. A text with no translation available shows its original words. */
@@ -103,15 +120,9 @@ async function translateTexts(items: Text[], lang: Lang): Promise<Map<string, st
   const out = new Map<string, string>();
   if (!need.length) return out;
   if (isConfigured()) {
-    const supabase = await createClient();
-    const { data } = await supabase
-      .from('headline_translations')
-      .select('article_id,title,source_hash,snippet,snippet_hash')
-      .eq('lang', lang)
-      .in('article_id', [...new Set(need.map((i) => i.id))]);
+    const data = await storedTranslations(lang, [...new Set(need.map((i) => i.id))].sort());
     const wanted = new Map(need.map((i) => [keyOf(i.id, i.kind), i]));
-    type Row = { article_id: string; title: string | null; source_hash: string | null; snippet: string | null; snippet_hash: string | null };
-    for (const r of (data ?? []) as Row[]) {
+    for (const r of data) {
       const t = wanted.get(keyOf(r.article_id, 'title'));
       if (t && r.title && r.source_hash === titleHash(t.text)) out.set(keyOf(r.article_id, 'title'), r.title);   // same wording only
       const s = wanted.get(keyOf(r.article_id, 'snippet'));

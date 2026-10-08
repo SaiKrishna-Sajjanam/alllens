@@ -2,10 +2,12 @@ name: Collect news
 
 on:
   schedule:
-    # Every 8 hours: 6:07 am, 2:07 pm and 10:07 pm India time (00:37, 08:37, 16:37 UTC). A run takes
-    # about 15 minutes, so 90 runs a month (~1,350 minutes) plus tests and clean-up stay within the
-    # free 2,000. GitHub may start a run late. More often: docs/SERVER.md (every 90 minutes there).
-    - cron: "37 0,8,16 * * *"
+    # Every hour, at 7 minutes past. The repository is public, so GitHub Actions minutes are free and
+    # unlimited. A run takes about 15 minutes; the concurrency group below never lets two overlap.
+    # GitHub may start a scheduled run late or skip one when its machines are busy.
+    # If the repository is ever made private again, go back to every 8 hours ("37 0,8,16 * * *"),
+    # which fits a private repository's free 2,000 minutes a month.
+    - cron: "7 * * * *"
   workflow_dispatch:
     inputs:
       regroup:
@@ -27,15 +29,11 @@ concurrency:
 
 jobs:
   collect:
-    # If scheduled runs ever move to the optional free server (docs/SERVER.md), set the
-    # repository variable SCHEDULE_ON_GITHUB=off to stop them here. Manual runs always work.
-    if: github.event_name != 'schedule' || vars.SCHEDULE_ON_GITHUB != 'off'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
       EMBEDDER: multilingual
-      GROUP_THRESHOLD: ${{ vars.GROUP_THRESHOLD }}   # optional repository variable; default 0.905
       # Headline translation (docs/TRANSLATE.md); skipped while these secrets are not set.
       TRANSLATE_URL: ${{ secrets.TRANSLATE_URL }}
       TRANSLATE_TOKEN: ${{ secrets.TRANSLATE_TOKEN }}

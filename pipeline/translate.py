@@ -17,6 +17,13 @@ Needs TRANSLATE_URL and TRANSLATE_TOKEN (GitHub secrets / local .env); without t
 nothing. Languages: English, every app language a signed-in reader has chosen, and any in
 TRANSLATE_LANGS (e.g. "te,ta"). The website translates what is still missing when a page
 is first opened.
+
+Google's free allowance is about 5,000 calls a day, so collection (every hour) translates
+headlines only, at most TRANSLATE_MAX_CALLS calls a run (default 150, about 3,600 a day); the
+rest of the day's allowance is left for the website. Snippets are translated by the website
+when a reader opens a page that shows them (one reader's call serves everyone, cached a week),
+so only snippets someone reads use the allowance. TRANSLATE_SNIPPETS=1 translates snippets here
+too, after the headlines.
 """
 from __future__ import annotations
 
@@ -166,7 +173,7 @@ def target_languages(db: DB) -> list[str]:
     return [lang for lang in UI_LANGUAGES if lang in wanted]
 
 
-def pending(db: DB, targets: list[str], now: datetime) -> list[tuple[str, str, str, str, str]]:
+def pending(db: DB, targets: list[str], now: datetime, snippets: bool | None = None) -> list[tuple[str, str, str, str, str]]:
     """(article_id, source language, target, "title" or "snippet", text) still to translate, most
     visible first: the headlines the feed cards show, every other headline, then the snippets
     (the short opening text on story pages), each newest first."""
@@ -179,7 +186,7 @@ def pending(db: DB, targets: list[str], now: datetime) -> list[tuple[str, str, s
     labels = {r[0] for r in db.fetchall(
         "SELECT label_article_id FROM stories WHERE last_article_at >= ? AND label_article_id IS NOT NULL", (since,))}
     arts.sort(key=lambda a: (a[0] not in labels, -(to_datetime(a[4]) or since).timestamp()))
-    titles, snippets = [], []
+    titles, snippet_jobs = [], []
     for aid, title, snippet, language, _ in arts:
         # A text already in the target language is not translated; one written in another
         # language than its source's (English titles on a Telugu channel) is, from that language.
@@ -189,8 +196,10 @@ def pending(db: DB, targets: list[str], now: datetime) -> list[tuple[str, str, s
             if target != title_lang and one_line(title) and title_done != title_hash(title):
                 titles.append((aid, title_lang, target, "title", title))
             if target != snippet_lang and one_line(snippet) and snippet_done != title_hash(snippet):
-                snippets.append((aid, snippet_lang, target, "snippet", snippet))
-    return titles + snippets
+                snippet_jobs.append((aid, snippet_lang, target, "snippet", snippet))
+    if snippets is None:
+        snippets = os.environ.get("TRANSLATE_SNIPPETS", "") == "1"
+    return titles + (snippet_jobs if snippets else [])
 
 
 def batches(jobs):
@@ -207,12 +216,13 @@ def batches(jobs):
     return order
 
 
-def run(db: DB, translator=None, now: datetime | None = None, max_calls: int | None = None) -> dict:
+def run(db: DB, translator=None, now: datetime | None = None, max_calls: int | None = None,
+        snippets: bool | None = None) -> dict:
     now = now or datetime.now(timezone.utc)
     translator = translator or AppsScriptTranslator()
-    budget = Budget(max_calls if max_calls is not None else int(os.environ.get("TRANSLATE_MAX_CALLS", "450")))
+    budget = Budget(max_calls if max_calls is not None else int(os.environ.get("TRANSLATE_MAX_CALLS", "150")))
     targets = target_languages(db)
-    jobs = pending(db, targets, now)
+    jobs = pending(db, targets, now, snippets)
     todo = batches(jobs)
 
     halt = threading.Event()   # after the first failure (quota, network) the rest waits for the next run

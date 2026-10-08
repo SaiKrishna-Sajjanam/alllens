@@ -103,11 +103,11 @@ test('wire copies are counted mechanically', () => {
   assert.equal(w.get('3'), undefined);
 });
 
-test('New: only for the first 30 minutes after a story was first reported', () => {
+test('New: for 60 minutes after Vuaz first collected the story', () => {
   const now = Date.parse('2026-10-07T12:00:00Z');
-  const story = (at: string | null) => ({ first_published_at: at }) as Story;
-  assert.equal(isNew(story('2026-10-07T11:45:00Z'), now), true);
-  assert.equal(isNew(story('2026-10-07T11:29:00Z'), now), false);
+  const story = (at: string | null) => ({ created_at: at, first_published_at: '2026-10-07T02:00:00Z' }) as Story;
+  assert.equal(isNew(story('2026-10-07T11:05:00Z'), now), true, 'collected 55 minutes ago');
+  assert.equal(isNew(story('2026-10-07T10:59:00Z'), now), false, 'collected 61 minutes ago');
   assert.equal(isNew(story('2026-10-07T12:10:00Z'), now), false, 'a time in the future is not trusted');
   assert.equal(isNew(story(null), now), false);
 });

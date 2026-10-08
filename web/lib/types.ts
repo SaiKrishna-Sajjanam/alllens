@@ -42,6 +42,8 @@ export interface Story {
   /** Link to the earliest report's own picture (never a copy), and that outlet's name. */
   image_url?: string | null;
   image_source?: string | null;
+  /** When Vuaz first collected the story (drives the New badge). */
+  created_at?: string | null;
 }
 
 export interface Source {

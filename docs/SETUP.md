@@ -43,9 +43,9 @@ GitHub repo → Settings → Secrets and variables → Actions → **New reposit
 Then Actions → **Collect news** → Run workflow. The first run takes ~5 minutes (it downloads the multilingual model once; later runs reuse it).
 **Check:** Supabase → Table editor → `stories` has rows, `runs` shows feeds OK / failed.
 
-From now on collection runs every 8 hours (6 am, 2 pm and 10 pm India time) and clean-up every night, by themselves.
+From now on collection runs every hour and clean-up every night, by themselves.
 
-**Free and private:** a private repository gets 2,000 GitHub Actions minutes a month; collecting every 8 hours (90 runs a month at about 15 minutes each, ~1,350 minutes) fits with room for tests and clean-up. To collect more often, use the free server in `docs/SERVER.md` (every 90 minutes). Check GitHub → Settings → Billing and licensing → Usage now and then; if it nears 2,000 as sources are added, move the scheduled jobs to a free server with `docs/SERVER.md`.
+**Free:** the repository is public, and GitHub Actions minutes are free and unlimited for public repositories, so collection runs every hour (about 15 minutes a run). Secrets stay hidden in a public repository: they live in Settings → Secrets, never in the code. GitHub switches off scheduled runs in a public repository after 60 days without any push (it emails first; one click or any push turns them on again). If the repository is ever made private again, it gets only 2,000 minutes a month: change the schedule in `.github/workflows/collect.yml` back to every 8 hours (`37 0,8,16 * * *`, about 1,350 minutes a month).
 
 ## 4. Vercel: put the website online (10 min)
 
@@ -83,7 +83,7 @@ Follow [TRANSLATE.md](TRANSLATE.md): a small Google Apps Script in your account 
 
 ## 6. Before inviting the 20 pilot users
 
-- [ ] Run **Review story grouping** (Actions) after a day of collection; mark 50 stories right/wrong in the CSV. Aim for 8 of 10 correct. Too many wrong merges: raise `GROUP_THRESHOLD` (default 0.905) a little, set as a repository **variable** under Settings → Secrets and variables → Actions → Variables; too many splits: lower it. Then run **Collect news** with **regroup** ticked so existing articles are grouped again with the new value.
+- [ ] Run **Review story grouping** (Actions) after a day of collection; mark 50 stories right/wrong in the CSV. Aim for 8 of 10 correct. Too many wrong merges: raise `threshold = 0.905` in `pipeline/embed.py` a little (e.g. 0.915) and push; too many splits: lower it. Then run **Collect news** with **regroup** ticked so existing articles are grouped again with the new value.
 - [ ] Ask a native speaker to read the Telugu interface text (`web/lib/i18n.ts`).
 - [ ] Fill the grievance officer and contact emails; read Privacy/Terms/Grievance pages and have a lawyer review before public launch.
 - [ ] Check each source's terms of use (some feeds are "personal, non-commercial use"). Ask publishers where needed.
@@ -103,4 +103,4 @@ Follow [TRANSLATE.md](TRANSLATE.md): a small Google Apps Script in your account 
 
 ## Costs to expect
 
-Pilot: close to ₹0. Watch these as users grow: Supabase free tier (500 MB database; the 30-day retention keeps it small), GitHub Actions minutes (only Tests once the scheduled jobs run on the free Oracle server, docs/SERVER.md), Vercel hobby tier (fine for a pilot; a commercial product needs the Pro plan). Check each pricing page when you sign up; limits change.
+Pilot: close to ₹0. Watch these as users grow: Supabase free tier (500 MB database; the 30-day retention keeps it small), GitHub Actions minutes (free and unlimited while the repository is public), Vercel hobby tier (fine for a pilot; a commercial product needs the Pro plan). Check each pricing page when you sign up; limits change.

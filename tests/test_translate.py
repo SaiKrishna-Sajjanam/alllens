@@ -158,18 +158,26 @@ class TranslateTests(unittest.TestCase):
         self.assertEqual(sent["texts"], ["First headline\n\nSecond headline"])
         self.assertEqual(out, ["మొదటి శీర్షిక రెండో భాగం", "రెండవ శీర్షిక"])
 
+    def test_collection_translates_headlines_only_by_default(self):
+        # Snippets wait for a reader to open them (the website translates them then), so Google's
+        # daily allowance goes to headlines first.
+        self.db.execute("UPDATE articles SET snippet = 'భారీ వర్షంతో రోడ్లు జలమయం' WHERE id = 'a1'")
+        self.assertEqual([j[3] for j in translate.pending(self.db, ["en"], NOW)], ["title"])
+        result = translate.run(self.db, Fake(), NOW)
+        self.assertEqual((result["headlines"], result["snippets"]), (1, 0))
+
     def test_snippets_are_translated_after_the_headlines(self):
         self.db.execute("UPDATE articles SET snippet = 'భారీ వర్షంతో రోడ్లు జలమయం' WHERE id = 'a1'")
-        jobs = translate.pending(self.db, ["en"], NOW)
+        jobs = translate.pending(self.db, ["en"], NOW, snippets=True)
         self.assertEqual([j[3] for j in jobs], ["title", "snippet"], "headlines first, then snippets")
-        result = translate.run(self.db, Fake(), NOW)
+        result = translate.run(self.db, Fake(), NOW, snippets=True)
         self.assertEqual((result["headlines"], result["snippets"]), (1, 1))
         self.assertEqual(self.stored()[("a1", "en")], "[en] హైదరాబాద్‌లో భారీ వర్షం")
         self.assertEqual(self.stored_snippets()[("a1", "en")], "[en] భారీ వర్షంతో రోడ్లు జలమయం")
         # Done once; a re-worded snippet alone is translated again, the headline is not.
         self.db.execute("UPDATE articles SET snippet = 'నగరంలో కుండపోత' WHERE id = 'a1'")
         again = Fake()
-        translate.run(self.db, again, NOW)
+        translate.run(self.db, again, NOW, snippets=True)
         self.assertEqual([t for _, _, texts in again.calls for t in texts], ["నగరంలో కుండపోత"])
         self.assertEqual(self.stored()[("a1", "en")], "[en] హైదరాబాద్‌లో భారీ వర్షం")
 

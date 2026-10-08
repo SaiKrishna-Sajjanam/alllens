@@ -117,11 +117,12 @@ export function labelLanguage(story: Story, label: LabelInfo): string | null {
     ?? story.label_language;
 }
 
-/** A story is marked New for its first 30 minutes after the first report was published. */
-export const NEW_FOR_MINUTES = 30;
+/** A story is marked New for 60 minutes after Vuaz first collected it (one hourly collection), by our
+ *  own clock: outlets' publish times are sometimes hours off (wrong time zone). */
+export const NEW_FOR_MINUTES = 60;
 
 export function isNew(story: Story, now: number = Date.now()): boolean {
-  const first = time(story.first_published_at);
+  const first = time(story.created_at ?? null);
   return first > 0 && first <= now && now - first < NEW_FOR_MINUTES * 60_000;
 }
 

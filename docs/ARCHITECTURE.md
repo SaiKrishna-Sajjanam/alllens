@@ -3,7 +3,7 @@
 ```mermaid
 flowchart LR
   subgraph GH[GitHub Actions, scheduled]
-    C[collect.py<br/>every 8 h<br/>(90 min on the free server)] --> P[process.py<br/>tag + group]
+    C[collect.py<br/>every hour] --> P[process.py<br/>tag + group]
     X[cleanup.py + accounts.py<br/>nightly]
   end
   F[(Public RSS / Atom feeds<br/>sources.csv)] --> C
