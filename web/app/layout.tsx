@@ -3,8 +3,10 @@ import localFont from 'next/font/local';
 import Footer from '@/components/Footer';
 import Header from '@/components/Header';
 import ScrollMemory from '@/components/ScrollMemory';
+import ViewCounter from '@/components/ViewCounter';
 import { cookies } from 'next/headers';
 import { getViewer } from '@/lib/data';
+import { SUPABASE_ANON_KEY, SUPABASE_URL } from '@/lib/env';
 import { THEME_COOKIE } from '@/lib/prefs';
 import { isRtl } from '@/lib/i18n';
 import './globals.css';
@@ -57,6 +59,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <main id="main" className="container">{children}</main>
         <Footer lang={lang} />
         <ScrollMemory />
+        <ViewCounter url={SUPABASE_URL} apiKey={SUPABASE_ANON_KEY} />
       </body>
     </html>
   );

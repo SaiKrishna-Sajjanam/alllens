@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { deleteAccount, signOut } from '@/app/actions';
 import PrefsForm from '@/components/PrefsForm';
+import { amIRestricted } from '@/lib/admin';
 import { getViewer } from '@/lib/data';
 import { t } from '@/lib/i18n';
 
@@ -12,9 +13,11 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
   const sp = await searchParams;
   const viewer = await getViewer();
   const lang = viewer.prefs.uiLanguage;
+  const restricted = viewer.user ? await amIRestricted() : false;
   return (
     <div className="narrow stack-lg">
       <h1>{t(lang, 'settings.title')}</h1>
+      {restricted && <p className="notice" role="note">{t(lang, 'settings.restricted')}</p>}
       <section className="stack" aria-labelledby="reading">
         <h2 id="reading">{t(lang, 'settings.reading')}</h2>
         <PrefsForm initial={viewer.prefs} lang={lang} mode="settings" />

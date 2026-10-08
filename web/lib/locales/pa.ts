@@ -38,6 +38,7 @@ export const pa: Record<Key, string> = {
 
   'feed.title': 'ਤੁਹਾਡੀਆਂ ਖ਼ਬਰਾਂ',
   'feed.since': 'ਤੁਹਾਡੀ ਪਿਛਲੀ ਫੇਰੀ {time} ਤੋਂ',
+  'settings.restricted': 'ਤੁਹਾਡਾ ਖਾਤਾ ਸੀਮਤ ਕੀਤਾ ਗਿਆ ਹੈ। ਤੁਸੀਂ ਸਾਰੀਆਂ ਖ਼ਬਰਾਂ ਪੜ੍ਹ ਸਕਦੇ ਹੋ, ਪਰ ਖ਼ਬਰਾਂ ਨੂੰ ਫਾਲੋ ਕਰਨਾ, ਸੈਟਿੰਗਾਂ ਸੰਭਾਲਣਾ ਅਤੇ ਸਰੋਤ ਸੁਝਾਉਣਾ ਬੰਦ ਹੈ।',
   'nav.watch': 'ਦੇਖੋ',
   'feed.morning': 'ਸ਼ੁਭ ਸਵੇਰ',
   'feed.afternoon': 'ਸ਼ੁਭ ਦੁਪਹਿਰ',

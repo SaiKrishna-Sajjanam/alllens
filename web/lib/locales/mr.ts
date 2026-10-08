@@ -38,6 +38,7 @@ export const mr: Record<Key, string> = {
 
   'feed.title': 'तुमच्या बातम्या',
   'feed.since': 'तुमच्या मागील भेटीपासून, {time}',
+  'settings.restricted': 'तुमच्या खात्यावर निर्बंध आहेत. तुम्ही सर्व बातम्या वाचू शकता, पण बातम्या फॉलो करणे, सेटिंग्ज जतन करणे आणि स्रोत सुचवणे बंद आहे.',
   'nav.watch': 'पाहा',
   'feed.morning': 'सुप्रभात',
   'feed.afternoon': 'नमस्कार',

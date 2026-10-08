@@ -38,6 +38,7 @@ export const ur: Record<Key, string> = {
 
   'feed.title': 'آپ کی خبریں',
   'feed.since': 'آپ کے پچھلے دورے {time} سے',
+  'settings.restricted': 'آپ کا اکاؤنٹ محدود ہے۔ آپ تمام خبریں پڑھ سکتے ہیں، لیکن خبروں کو فالو کرنا، ترتیبات محفوظ کرنا اور ذرائع تجویز کرنا بند ہے۔',
   'nav.watch': 'دیکھیں',
   'feed.morning': 'صبح بخیر',
   'feed.afternoon': 'سہ پہر بخیر',

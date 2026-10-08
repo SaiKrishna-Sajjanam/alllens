@@ -38,6 +38,7 @@ export const gu: Record<Key, string> = {
 
   'feed.title': 'તમારા સમાચાર',
   'feed.since': 'તમારી છેલ્લી મુલાકાત {time} થી',
+  'settings.restricted': 'તમારું ખાતું પ્રતિબંધિત છે. તમે બધા સમાચાર વાંચી શકો છો, પણ સમાચાર ફોલો કરવા, સેટિંગ્સ સાચવવી અને સ્ત્રોત સૂચવવા બંધ છે.',
   'nav.watch': 'જુઓ',
   'feed.morning': 'સુપ્રભાત',
   'feed.afternoon': 'શુભ બપોર',

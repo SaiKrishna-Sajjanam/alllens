@@ -118,6 +118,96 @@ select pg_temp.expect_count($q$select count(*) from public.follows$q$, 0);
 select pg_temp.expect_count($q$select count(*) from public.profiles where 'hacked' = any(topics)$q$, 0);
 select pg_temp.expect_count($q$select count(*) from public.source_suggestions where user_id is null$q$, 1);
 
+-- ---------------------------------------------------------------- admin page
+\set su '33333333-3333-3333-3333-333333333333'
+\set ad '44444444-4444-4444-4444-444444444444'
+\set rd '55555555-5555-5555-5555-555555555555'
+
+create or replace function pg_temp.expect_error(stmt text) returns void language plpgsql as $$
+begin
+    begin
+        execute stmt;
+    exception when others then
+        return;
+    end;
+    raise exception 'expected an error for: %', stmt;
+end $$;
+
+reset role;
+insert into auth.users (id, email) values (:'su', 'owner@example.com'), (:'ad', 'helper@example.com'),
+    (:'rd', 'reader@example.com') on conflict do nothing;
+insert into public.stories (id, label, article_count, source_count, created_at, updated_at, last_article_at)
+    values ('st2', 'Another headline', 1, 1, now(), now(), now()) on conflict do nothing;
+-- The super admin is set once by hand (docs/SETUP.md).
+insert into public.admins (user_id, role) values (:'su', 'super') on conflict do nothing;
+-- New accounts are counted (numbers only).
+select pg_temp.expect_count($q$select count(*) from public.account_counts where event = 'signup' and n >= 3$q$, 1);
+
+-- Guests: visits are counted, nothing admin is readable.
+set role anon;
+select public.count_view('feed', 'web', 'phone', 'te');
+select public.count_view('feed', 'web', 'phone', 'te');
+select public.count_view('not-a-page', 'web', 'phone', 'te');     -- ignored
+select pg_temp.expect_denied('select count(*) from public.page_views');
+select pg_temp.expect_denied('select count(*) from public.admins');
+select pg_temp.expect_denied('select count(*) from public.restricted_accounts');
+select pg_temp.expect_denied('select count(*) from public.account_counts');
+select pg_temp.expect_denied('select public.admin_stats(30)');
+select pg_temp.expect_denied($q$select public.admin_set_admin('44444444-4444-4444-4444-444444444444', true)$q$);
+select pg_temp.expect_denied($q$insert into public.page_views (day, page, platform, device, lang, views) values (current_date, 'feed', 'web', 'phone', 'en', 999)$q$);
+reset role;
+select pg_temp.expect_count($q$select sum(views)::int from public.page_views$q$, 2);
+
+-- An ordinary reader: no admin role, no admin functions, cannot make themselves admin.
+set role authenticated;
+select set_config('request.jwt.claim.sub', :'rd', false);
+select pg_temp.expect_count('select count(*) from (select public.my_admin_role() r) x where r is null', 1);
+select pg_temp.expect_denied('select public.admin_stats(30)');
+select pg_temp.expect_denied($q$select * from public.admin_find_accounts('example')$q$);
+select pg_temp.expect_denied('select * from public.admin_people()');
+select pg_temp.expect_denied($q$select public.admin_set_admin('55555555-5555-5555-5555-555555555555', true)$q$);
+select pg_temp.expect_denied($q$select public.admin_set_restricted('44444444-4444-4444-4444-444444444444', true, 'x')$q$);
+select pg_temp.expect_denied($q$insert into public.admins (user_id, role) values ('55555555-5555-5555-5555-555555555555', 'super')$q$);
+
+-- The super admin makes an admin; an admin sees statistics but cannot change admins.
+select set_config('request.jwt.claim.sub', :'su', false);
+select public.admin_set_admin(:'ad', true);
+select pg_temp.expect_count($q$select count(*) from public.admin_people() where role = 'admin'$q$, 1);
+select pg_temp.expect_count($q$select count(*) from public.admin_find_accounts('example.com')$q$, 4);
+select pg_temp.expect_error($q$select public.admin_set_admin('33333333-3333-3333-3333-333333333333', false)$q$);
+select set_config('request.jwt.claim.sub', :'ad', false);
+select pg_temp.expect_count($q$select (public.admin_stats(7)->>'views')::int$q$, 2);
+select pg_temp.expect_denied($q$select public.admin_set_admin('55555555-5555-5555-5555-555555555555', true)$q$);
+select pg_temp.expect_error($q$select public.admin_set_restricted('33333333-3333-3333-3333-333333333333', true, 'no')$q$);
+
+-- An admin restricts a reader: still reads the news, but follows and settings are refused.
+select set_config('request.jwt.claim.sub', :'rd', false);
+insert into public.profiles (user_id) values (:'rd');
+insert into public.follows (user_id, story_id) values (:'rd', 'st2');
+select set_config('request.jwt.claim.sub', :'ad', false);
+select public.admin_set_restricted(:'rd', true, 'spam suggestions');
+select set_config('request.jwt.claim.sub', :'rd', false);
+select pg_temp.expect_count('select count(*) from (select public.am_i_restricted() r) x where r', 1);
+select pg_temp.expect_count('select count(*) from public.stories', 2);    -- reads the news like anyone
+select pg_temp.expect_count('select count(*) from public.follows', 1);
+select pg_temp.expect_denied($q$insert into public.follows (user_id, story_id) values ('55555555-5555-5555-5555-555555555555', 'st1')$q$);
+select pg_temp.expect_denied($q$update public.profiles set hide_crime = true where user_id = '55555555-5555-5555-5555-555555555555'$q$);
+select pg_temp.expect_denied($q$insert into public.source_suggestions (user_id, name) values ('55555555-5555-5555-5555-555555555555', 'Spam')$q$);
+delete from public.follows where story_id = 'st2';                     -- removing a follow still works
+select pg_temp.expect_count('select count(*) from public.follows', 0);
+
+-- Allowed again: writes work; the super admin removes the admin, who loses access.
+select set_config('request.jwt.claim.sub', :'ad', false);
+select public.admin_set_restricted(:'rd', false);
+select set_config('request.jwt.claim.sub', :'rd', false);
+insert into public.follows (user_id, story_id) values (:'rd', 'st2');
+select set_config('request.jwt.claim.sub', :'su', false);
+select public.admin_set_admin(:'ad', false);
+select set_config('request.jwt.claim.sub', :'ad', false);
+select pg_temp.expect_denied('select public.admin_stats(30)');
+reset role;
+delete from public.follows where story_id = 'st2';
+
 -- Deleting a story removes follows of it.
 insert into public.follows (user_id, story_id) values (:'u2', 'st1');
 delete from public.stories where id = 'st1';

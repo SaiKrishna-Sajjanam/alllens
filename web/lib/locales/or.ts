@@ -38,6 +38,7 @@ export const or: Record<Key, string> = {
 
   'feed.title': 'ଆପଣଙ୍କ ଖବର',
   'feed.since': 'ଆପଣଙ୍କ ଶେଷ ଭ୍ରମଣ {time} ଠାରୁ',
+  'settings.restricted': 'ଆପଣଙ୍କ ଖାତା ସୀମିତ କରାଯାଇଛି। ଆପଣ ସମସ୍ତ ଖବର ପଢ଼ିପାରିବେ, କିନ୍ତୁ ଖବର ଫଲୋ କରିବା, ସେଟିଂସ ସେଭ କରିବା ଓ ଉତ୍ସ ପରାମର୍ଶ ଦେବା ବନ୍ଦ ଅଛି।',
   'nav.watch': 'ଦେଖନ୍ତୁ',
   'feed.morning': 'ସୁପ୍ରଭାତ',
   'feed.afternoon': 'ଶୁଭ ଅପରାହ୍ନ',

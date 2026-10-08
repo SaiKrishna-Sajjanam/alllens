@@ -38,6 +38,7 @@ export const bn: Record<Key, string> = {
 
   'feed.title': 'আপনার খবর',
   'feed.since': 'আপনার শেষ ভিজিট {time} থেকে',
+  'settings.restricted': 'আপনার অ্যাকাউন্ট সীমিত করা হয়েছে। আপনি সব খবর পড়তে পারবেন, কিন্তু খবর ফলো করা, সেটিং সংরক্ষণ করা এবং উৎস প্রস্তাব করা বন্ধ আছে।',
   'nav.watch': 'দেখুন',
   'feed.morning': 'সুপ্রভাত',
   'feed.afternoon': 'শুভ দুপুর',

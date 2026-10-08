@@ -38,6 +38,7 @@ export const hi: Record<Key, string> = {
 
   'feed.title': 'आपकी ख़बरें',
   'feed.since': 'आपकी पिछली विज़िट {time} के बाद से',
+  'settings.restricted': 'आपके खाते पर रोक है। आप सारी ख़बरें पढ़ सकते हैं, लेकिन ख़बरों को फ़ॉलो करना, सेटिंग सहेजना और स्रोत सुझाना बंद है।',
   'nav.watch': 'देखें',
   'feed.morning': 'सुप्रभात',
   'feed.afternoon': 'नमस्कार',

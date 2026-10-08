@@ -81,6 +81,23 @@ Readers sign in with Google only; the app never sends email. Reading needs no ac
 
 Follow [TRANSLATE.md](TRANSLATE.md): a small Google Apps Script in your account translates headlines for free.
 
+## 5c. Admin page (5 min)
+
+`/admin` shows visit counts (anonymous: a day's total per page, website or app, device and app language), accounts made and deleted, readers' languages and states, the most followed stories, and lets admins restrict an account. It exists only for admins; to everyone else it is "page not found".
+
+1. Sign in on the website once with your Google account (this creates your account).
+2. The tables arrive by themselves with the next **Collect news** run (it applies `supabase/migrations/`).
+3. Make yourself the **super admin**, once: Supabase → **SQL Editor** → New query, paste this with your own email, **Run**:
+   ```sql
+   insert into public.admins (user_id, role)
+   select id, 'super' from auth.users where email = 'your-email@gmail.com'
+   on conflict (user_id) do update set role = 'super';
+   ```
+   It should say "1 row". (There can be only one super admin. This is kept out of the code on purpose: an email address in a public repository would be public.)
+4. Open `https://<your-site>/admin`. As super admin you can find any account by email and **Make admin** / **Remove admin**; any admin can **Restrict** an account (with a reason only admins see) and **Allow** it again. A restricted account can still read the news like a guest, but cannot follow stories, save settings or suggest sources (the database refuses, not just the page).
+
+To hand the super admin role to someone else later: run the same query with their email after `delete from public.admins where role = 'super';`.
+
 ## 6. Before inviting the 20 pilot users
 
 - [ ] Run **Review story grouping** (Actions) after a day of collection; mark 50 stories right/wrong in the CSV. Aim for 8 of 10 correct. Too many wrong merges: raise `threshold = 0.905` in `pipeline/embed.py` a little (e.g. 0.915) and push; too many splits: lower it. Then run **Collect news** with **regroup** ticked so existing articles are grouped again with the new value.

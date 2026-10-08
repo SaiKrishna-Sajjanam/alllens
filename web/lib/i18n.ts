@@ -67,6 +67,7 @@ const en = {
 
   'feed.title': 'Your news',
   'feed.since': 'Since your last visit, {time}',
+  'settings.restricted': 'Your account is restricted. You can still read all the news, but following stories, saving settings and suggesting sources are turned off.',
   'nav.watch': 'Watch',
   'feed.morning': 'Good morning',
   'feed.afternoon': 'Good afternoon',
@@ -286,6 +287,7 @@ const te: Record<Key, string> = {
 
   'feed.title': 'మీ వార్తలు',
   'feed.since': 'మీరు చివరిసారి చూసిన {time} నుంచి',
+  'settings.restricted': 'మీ ఖాతాపై పరిమితి ఉంది. మీరు అన్ని వార్తలనూ చదవవచ్చు, కానీ కథనాలను ఫాలో చేయడం, సెట్టింగ్‌లను సేవ్ చేయడం, మూలాలను సూచించడం ఆపివేయబడ్డాయి.',
   'nav.watch': 'చూడండి',
   'feed.morning': 'శుభోదయం',
   'feed.afternoon': 'శుభ మధ్యాహ్నం',
