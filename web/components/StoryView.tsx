@@ -1,9 +1,10 @@
 'use client';
+import OwnKindTag, { reportKind } from './OwnKindTag';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import { groupsOf, languageName, mostSpecific, placeName } from '@/lib/catalog';
 import {
-  MAX_COMPARE, filterArticles, labelLanguage, pickLabel, bySection, presentLanguages, sortArticles, toggleCompare,
+  MAX_COMPARE, filterArticles, headlinePicks, labelLanguage, pickLabel, bySection, presentLanguages, sortArticles, toggleCompare,
   wireCounts,
 } from '@/lib/feed';
 import { formatTime, t } from '@/lib/i18n';
@@ -45,6 +46,8 @@ export default function StoryView({ story, articles, lang, translated, translate
   const counts = useMemo(() => bySection(articles), [articles]);
   const languages = useMemo(() => presentLanguages(articles), [articles]);
   const wires = useMemo(() => wireCounts(articles), [articles]);
+  const picks = useMemo(() => headlinePicks(articles), [articles]);
+  const compareHref = (ids: string[]) => `/compare?ids=${ids.join(',')}&story=${story.id}`;
   const shown = useMemo(
     () => sortArticles(filterArticles(articles, group, language), sort, story.id),
     [articles, group, language, sort, story.id],
@@ -88,6 +91,30 @@ export default function StoryView({ story, articles, lang, translated, translate
         </div>
         <ReadAloud items={shown.map(spoken)} lang={lang} label="listen.all" />
       </div>
+
+      {/* The point of a story page at a glance: different outlets' own headlines, picked mechanically
+          (the rule is stated under them), then one tap to read them side by side. */}
+      {picks.length >= 2 && (
+        <section className="panel stack headlined" aria-labelledby="headlined-title">
+          <h2 id="headlined-title" className="section-title">{t(lang, 'story.headlined')}</h2>
+          <ol className="headlined-list">
+            {picks.map((a) => (
+              <li key={a.id}>
+                <span className="small muted">
+                  <strong className="source">{a.sources?.name ?? a.source_id}</strong> · {languageName(a.language)}
+                  {' '}<OwnKindTag kind={reportKind(a)} lang={lang} />
+                </span>
+                <Translated as="p" className="headlined-title" original={a.title} originalLang={a.language}
+                  translated={translated[a.id]} lang={lang} />
+              </li>
+            ))}
+          </ol>
+          <p className="small muted">{t(lang, 'story.headlinedNote')}</p>
+          <Link className="btn btn-primary" href={compareHref(picks.slice(0, MAX_COMPARE).map((a) => a.id))}>
+            {t(lang, 'story.compareN', { n: Math.min(MAX_COMPARE, picks.length) })}
+          </Link>
+        </section>
+      )}
 
       <div className="filters">
         {counts.length > 1 && (
@@ -139,14 +166,14 @@ export default function StoryView({ story, articles, lang, translated, translate
                 return (
                   <article key={a.id} className="card article">
                     {lightPicture(a.image_url) && (
-                      <a href={a.url} target="_blank" rel="noopener noreferrer" className={video ? 'report-pic video' : 'report-pic'}
+                      <a href={a.url} target="_blank" rel="noopener noreferrer" data-count="original" className={video ? 'report-pic video' : 'report-pic'}
                         tabIndex={-1} aria-hidden="true">
                         <RemoteImage src={lightPicture(a.image_url)!} />
                       </a>
                     )}
                     <div className="spread" style={{ alignItems: 'baseline' }}>
                       <div className="stack" style={{ gap: 0 }}>
-                        <span className="source">{name}</span>
+                        <span className="source">{name} <OwnKindTag kind={reportKind(a)} lang={lang} /></span>
                         <span className="small muted">
                           {[...groupsOf(a.sources?.type).map((g) => t(lang, `group.${g}` as 'group.tv')), languageName(a.language)]
                             .filter(Boolean).join(' · ')}
@@ -163,7 +190,7 @@ export default function StoryView({ story, articles, lang, translated, translate
                     )}
                     {wires.get(a.id) ? <p className="small muted">{t(lang, 'story.wire', { n: wires.get(a.id)! })}</p> : null}
                     <div className="actions">
-                      <a className="btn btn-primary btn-small" href={a.url} target="_blank" rel="noopener noreferrer">
+                      <a className="btn btn-primary btn-small" href={a.url} target="_blank" rel="noopener noreferrer" data-count="original">
                         {t(lang, video ? 'story.watch' : 'story.read', { source: name })}
                         <ExternalIcon />
                       </a>
@@ -188,7 +215,7 @@ export default function StoryView({ story, articles, lang, translated, translate
         <div className="compare-bar" role="region" aria-label={t(lang, 'story.compare')}>
           <span className="small muted">{warn ? t(lang, 'story.compareMax') : t(lang, 'story.compareHint')}</span>
           {selected.length >= 2 ? (
-            <Link className="btn btn-primary" href={`/compare?ids=${selected.join(',')}&story=${story.id}`}>
+            <Link className="btn btn-primary" href={compareHref(selected)}>
               {t(lang, 'story.compareN', { n: selected.length })}
             </Link>
           ) : (

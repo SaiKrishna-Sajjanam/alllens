@@ -28,6 +28,19 @@ export interface AdminStats {
   most_followed: { id: string; label: string; n: number }[];
 }
 
+/** Do readers find the story page, compare, open originals, come back? (admin_funnel, anonymous totals) */
+export interface Funnel {
+  feed: number; story: number; compare: number; original: number;
+  visit_first: number; visit_return: number;
+  by_day: { day: string; first: number; return: number }[];
+}
+
+export async function getFunnel(days: number): Promise<Funnel | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc('admin_funnel', { days });
+  return error ? null : (data as Funnel);
+}
+
 export interface Account {
   user_id: string;
   email: string | null;

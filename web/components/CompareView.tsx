@@ -1,3 +1,4 @@
+import OwnKindTag, { reportKind } from './OwnKindTag';
 import { groupsOf, languageName } from '@/lib/catalog';
 import { formatTime, t } from '@/lib/i18n';
 import type { Article, Lang } from '@/lib/types';
@@ -35,7 +36,7 @@ export default function CompareView({ articles, lang, storyId, aiAssistant, tran
           return (
             <section key={a.id} className="card compare-col" aria-label={a.sources?.name ?? a.source_id}>
               <div className="stack" style={{ gap: 0, paddingBottom: 8, borderBottom: '1px solid var(--line)' }}>
-                <strong>{a.sources?.name ?? a.source_id}</strong>
+                <strong>{a.sources?.name ?? a.source_id} <OwnKindTag kind={reportKind(a)} lang={lang} /></strong>
                 <span className="small muted">
                   {[...groupsOf(a.sources?.type).map((g) => t(lang, `group.${g}` as 'group.tv')), languageName(a.language)].join(' · ')}
                 </span>
@@ -51,7 +52,7 @@ export default function CompareView({ articles, lang, storyId, aiAssistant, tran
                     translated={translated.snippets[a.id]} lang={lang} />
                 </>
               )}
-              <a href={a.url} target="_blank" rel="noopener noreferrer" className="row" style={{ minHeight: 44, fontWeight: 600 }}>
+              <a href={a.url} target="_blank" rel="noopener noreferrer" data-count="original" className="row" style={{ minHeight: 44, fontWeight: 600 }}>
                 {t(lang, 'compare.original')} <ExternalIcon />
               </a>
               <OwnTranslatorNote articleLang={a.language} lang={lang} />

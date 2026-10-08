@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useId, useState } from 'react';
 import { languageName } from '@/lib/catalog';
+import { SpeakerIcon, StopIcon } from './Icons';
 import { t } from '@/lib/i18n';
 import type { Lang } from '@/lib/types';
 
@@ -74,7 +75,7 @@ export default function ReadAloud({ items, lang, label }: { items: Spoken[]; lan
     <span className="read-aloud">
       <button type="button" className="btn btn-secondary btn-small" aria-pressed={speaking} onClick={speaking ? stop : start}
         aria-label={t(lang, speaking ? 'listen.stop' : label)}>
-        <span aria-hidden="true">{speaking ? '■' : '🔊'}</span><span className="read-aloud-text" aria-hidden="true">&nbsp;{t(lang, speaking ? 'listen.stop' : label)}</span>
+        {speaking ? <StopIcon /> : <SpeakerIcon />}<span className="read-aloud-text" aria-hidden="true">&nbsp;{t(lang, speaking ? 'listen.stop' : label)}</span>
       </button>
       {speaking && missing.length > 0 && (
         <span className="small muted" role="status">

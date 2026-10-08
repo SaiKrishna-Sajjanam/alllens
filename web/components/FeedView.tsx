@@ -1,3 +1,4 @@
+import IntroBox from './IntroBox';
 import Link from 'next/link';
 import { topicName, isTopic } from '@/lib/catalog';
 import type { Video } from '@/lib/data';
@@ -12,6 +13,8 @@ import InstallCard from './InstallCard';
 import QuickPanels, { type QuickPanel } from './QuickPanels';
 import ReadAloud, { type Spoken } from './ReadAloud';
 import StatePicker from './StatePicker';
+import WeatherStrip from './WeatherStrip';
+import type { Weather } from '@/lib/weatherData';
 import StoryCard from './StoryCard';
 import TopicBar from './TopicBar';
 import VideoCard from './VideoCard';
@@ -40,6 +43,8 @@ interface Props {
   /** Morning, afternoon or evening in India. */
   /** Already in the reader's language, with their name when signed in. */
   greeting: string;
+  /** State tab: the weather at the state's capital. */
+  weather?: (Weather & { city: string }) | null;
 }
 
 const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
@@ -157,10 +162,14 @@ export default function FeedView(p: Props) {
           <span>
             {p.lastRefresh ? t(lang, 'feed.refreshed', { time: formatTime(p.lastRefresh, lang) }) : null}
             {p.lastRefresh ? ' · ' : null}
-            {p.lastVisit ? t(lang, 'feed.since', { time: formatTime(p.lastVisit, lang) }) : t(lang, 'feed.firstVisit')}
+            {!p.lastVisit ? t(lang, 'feed.firstVisit')
+              // Visited after the last collection: nothing has arrived since.
+              : p.lastRefresh && Date.parse(p.lastVisit) >= Date.parse(p.lastRefresh) ? t(lang, 'feed.nothingNew')
+              : t(lang, 'feed.since', { time: formatTime(p.lastVisit, lang) })}
           </span>
         </p>
         {p.demo && <p className="notice" role="note">{t(lang, 'feed.demo')}</p>}
+        {!p.lastVisit && <IntroBox lang={lang} />}
         <nav className="segmented" aria-label={t(lang, 'feed.tabsLabel')}>
           {p.tabs.map((tab) => (
             <Link key={tab.id} href={href({ tab: tab.id })} aria-current={tab.id === p.tab ? 'true' : undefined}>
@@ -169,6 +178,7 @@ export default function FeedView(p: Props) {
           ))}
         </nav>
         {p.tab === 'state' && <StatePicker prefs={prefs} lang={lang} />}
+        {p.tab === 'state' && prefs.state && <WeatherStrip state={prefs.state} weather={p.weather ?? null} lang={lang} />}
         <QuickPanels panels={quick} label={t(lang, 'feed.tabsLabel')} />
         {/* One topic at a time, in the reader's own order; the feed opens on the first (owner's decision,
             2026-10-07: Politics unless the reader moved another topic to the front). */}
@@ -204,7 +214,7 @@ export default function FeedView(p: Props) {
             <div className="feed-grid">
               {p.stories.map((s) => (
                 <StoryCard key={s.id} story={s} lang={lang} translated={p.cards.titles[s.id]} viewTopic={p.topic}
-                  snippet={p.cards.snippets[s.id]} />
+                  snippet={p.cards.snippets[s.id]} kind={p.cards.kinds[s.id]} />
               ))}
             </div>
           )}

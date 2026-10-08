@@ -10,6 +10,7 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import { after } from 'next/server';
 import { getCardSnippets } from './data';
+import type { OwnKind } from './ownKind';
 import { isConfigured, runtimeSetting, tidySetting } from './env';
 import { labelLanguage, pickLabel } from './feed';
 import { textLanguage } from './script';
@@ -154,8 +155,10 @@ export async function translateReports(articles: Article[], lang: Lang): Promise
 export async function storyCardTexts(stories: Story[], lang: Lang): Promise<{
   titles: Record<string, string>;
   snippets: Record<string, { text: string; language: string | null; translated?: string }>;
+  /** The outlet's own mark on the headline's report (opinion, editorial, analysis), by story id. */
+  kinds: Record<string, OwnKind>;
 }> {
-  const snippets = await getCardSnippets(stories, lang);
+  const { snippets, kinds } = await getCardSnippets(stories, lang);
   const texts: Text[] = [];
   const storyOf = new Map<string, string>();
   for (const s of stories) {
@@ -174,5 +177,6 @@ export async function storyCardTexts(stories: Story[], lang: Lang): Promise<{
     titles: byStory(pick(m, 'title')),
     snippets: Object.fromEntries(Object.entries(snippets).map(([id, sn]) =>
       [id, { text: sn.snippet, language: sn.language, translated: translatedSnippets[id] }])),
+    kinds,
   };
 }

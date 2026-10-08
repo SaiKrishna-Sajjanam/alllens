@@ -1,6 +1,6 @@
 {
  "version": 2,
- "notes": "Topic tags let readers filter by interest. They are organisational only and never shown as a judgement. A topic matches when a keyword appears in the headline or snippet, or the feed's own category matches. In snippets, web links, channel boilerplate and all hashtags after the first three are ignored (YouTube descriptions often end with dozens of unrelated trending hashtags). English keywords match whole words; a trailing * matches any ending (elect* = election, elected). Keywords in Indian scripts match from the start of a word, so suffixes still match (రైతు = రైతులకు) but never the middle of another word; a trailing $ means the whole word only, a leading * also the middle of a word. Keep keywords specific: a wrong tag hides or shows stories wrongly. Published on the About page for transparency.",
+ "notes": "Topic tags let readers filter by interest. They are organisational only and never shown as a judgement. A topic matches when a keyword appears in the headline or snippet, or the feed's own category matches. In snippets, web links, channel boilerplate and all hashtags after the first three are ignored (YouTube descriptions often end with dozens of unrelated trending hashtags). English keywords match whole words; a trailing * matches any ending (elect* = election, elected). Keywords in Indian scripts match from the start of a word, so suffixes still match (రైతు = రైతులకు) but never the middle of another word; a trailing $ means the whole word only, a leading * also the middle of a word. Keep keywords specific: a wrong tag hides or shows stories wrongly. Published on the About page for transparency. A topic's \"not\" list names things that contain a keyword but are not that topic (India Mobile Congress, a telecom show, is not the Congress party); they are blanked out before that topic's keywords are tried.",
  "topics": [
   {
    "id": "politics",
@@ -209,6 +209,15 @@
     "political",
     "politician*",
     "byelection*"
+   ],
+   "not": [
+    "India Mobile Congress",
+    "इंडिया मोबाइल कांग्रेस",
+    "Mobile World Congress",
+    "Indian Science Congress",
+    "Indian Roads Congress",
+    "World Congress",
+    "IMC 2026"
    ]
   },
   {

@@ -215,6 +215,9 @@ class TopicTagger:
                 matchers.append(_word_regex(kw_n) if _is_latin(kw_n) else _script_regex(kw_n))
             cats = {normalise(c).lower() for c in t.get("categories", [])}
             self._rules.append((t["id"], matchers, cats))
+        # "not": names that contain a keyword but are not the topic ("India Mobile Congress", a
+        # telecom show, is not the Congress party): blanked out before that topic's keywords are tried.
+        self._not = {t["id"]: _names_regex(t["not"]) for t in self.topics if t.get("not")}
 
     def tag(self, title: str, snippet: str = "", categories=(), source_topics=()) -> list[str]:
         """source_topics: the subject of a section feed (sources.csv `topics`), e.g. every
@@ -223,7 +226,8 @@ class TopicTagger:
         cats = {normalise(c).lower() for c in categories or []}
         out = []
         for tid, matchers, tcats in self._rules:
-            if tid in source_topics or cats & tcats or any(m.search(text) for m in matchers):
+            words = self._not[tid].sub(" ", text) if tid in self._not else text
+            if tid in source_topics or cats & tcats or any(m.search(words) for m in matchers):
                 out.append(tid)
         return out
 

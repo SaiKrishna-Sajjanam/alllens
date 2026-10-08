@@ -142,6 +142,32 @@ export function sortArticles(articles: Article[], sort: StorySort, seed: string)
   return [...articles].sort(byTime);
 }
 
+/** "How they headlined it": a few reports to show first, chosen mechanically (rule 4) and said so on
+ *  the page: the earliest report in each language, then the earliest from other outlets; one per
+ *  outlet, and never the same headline twice. In time order. */
+export function headlinePicks(articles: Article[], n = 4): Article[] {
+  const byTime = sortArticles(articles, 'earliest', '');
+  const picked: Article[] = [];
+  const outlets = new Set<string>();
+  const titles = new Set<string>();
+  const take = (a: Article) => {
+    const title = a.title.trim().toLowerCase();
+    if (picked.length >= n || outlets.has(a.source_id) || titles.has(title)) return;
+    picked.push(a);
+    outlets.add(a.source_id);
+    titles.add(title);
+  };
+  const languages = new Set<string>();
+  for (const a of byTime) {
+    if (!languages.has(a.language ?? '')) {
+      languages.add(a.language ?? '');
+      take(a);
+    }
+  }
+  for (const a of byTime) take(a);
+  return sortArticles(picked, 'earliest', '');
+}
+
 export function filterArticles(articles: Article[], group: string, language: string): Article[] {
   return articles.filter(
     (a) =>

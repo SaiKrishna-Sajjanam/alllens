@@ -6,6 +6,7 @@ import { getFeed, getHighlights, getLastRefresh, getVideos, getViewer } from '@/
 import { greetingKey } from '@/lib/displayName';
 import { DEFAULT_SORT, normaliseTab, normaliseTopic, tabsFor } from '@/lib/feed';
 import { storyCardTexts } from '@/lib/headlines';
+import { stateWeather } from '@/lib/weather';
 import { t } from '@/lib/i18n';
 import type { FeedSort } from '@/lib/types';
 
@@ -29,11 +30,13 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   const topic = normaliseTopic(one(sp.topic)) ?? prefs.topicOrder[0];
   const seed = `${viewer.user?.id ?? 'guest'}-${new Date().toISOString().slice(0, 13)}`;
 
-  const [feed, lastRefresh, highlights, videos] = await Promise.all([
+  const [feed, lastRefresh, highlights, videos, weather] = await Promise.all([
     getFeed({ prefs, tab, sort, topic, page, seed }),
     getLastRefresh(),
     getHighlights(tab, prefs),
     getVideos({ tab, prefs, limit: 3 }),
+    // State tab only: the weather at the state's capital (never the reader's location).
+    tab === 'state' && prefs.state ? stateWeather(prefs.state) : Promise.resolve(null),
   ]);
   // One translation pass for everything on the page (cards, most covered, just in).
   const seen = new Set<string>();
@@ -57,6 +60,7 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
         videos={videos}
         cards={cards}
         greeting={greeting}
+        weather={weather}
         hasMore={feed.hasMore}
         demo={feed.demo}
         lastVisit={viewer.lastVisit}

@@ -14,7 +14,7 @@ export default function PrivacyPage() {
         <li><strong>Without an account:</strong> your choices and the time of your last visit, in a cookie on your device.</li>
         <li><strong>With an account:</strong> the email address and name Google shares when you sign in with Google (used only to identify your account; we never send you email), the name you choose to be greeted by (seen only by you and our team; change it in Settings), your choices (state, app language, whether to hide crime and accident stories, feed order, preferred AI assistant), the stories you follow, source suggestions you send, and when you last visited.</li>
         <li><strong>Translated headlines:</strong> to show headlines and opening text in your app language, that news text (nothing about you) is sent to Google&rsquo;s translator through our own Google Apps Script. Articles you open are not translated by us; your phone&rsquo;s own translator works on your device.</li>
-        <li><strong>Visit counts:</strong> each page you open adds 1 to that day&rsquo;s total for that kind of page, with only whether it was the website or the installed app, a phone, tablet or laptop, and the app language. No identifier, cookie, address or account is attached, so a count can never be traced back to you.</li>
+        <li><strong>Visit counts:</strong> each page you open adds 1 to that day&rsquo;s total for that kind of page, with only whether it was the website or the installed app, a phone, tablet or laptop, and the app language. We also count, per day, visits that are a device&rsquo;s first or a return (your device keeps only a yes/no note of that, in its own storage) and taps that open an outlet&rsquo;s original report. No identifier, cookie, address or account is attached, so a count can never be traced back to you.</li>
         <li><strong>Account restriction:</strong> if an account is misused, our team can restrict it (it can still read the news, but cannot follow stories, save settings or suggest sources). The reason is kept with the account and seen only by our team.</li>
         <li><strong>We do not store</strong> which articles you open, your location, or anything you ask an AI assistant. &ldquo;Ask your AI&rdquo; opens the assistant you choose directly; what you do there is between you and that service.</li>
       </ul>
@@ -38,6 +38,7 @@ export default function PrivacyPage() {
       <h2>Services we use</h2>
       <ul>
         <li>Supabase (database and sign-in), Google (sign-in only), Vercel (website hosting), and GitHub (code, tests and the scheduled collection of public news feeds; it holds no reader data).</li>
+        <li>Weather comes from MET Norway (the Norwegian Meteorological Institute) for each state&rsquo;s capital. Our server asks for it; nothing about you, and never your location, is sent.</li>
         <li>Pictures and video thumbnails are loaded directly from each outlet&rsquo;s own site (or YouTube), so those sites can see your IP address when you view them, as when you visit them. We send them no information about you. &ldquo;Translate&rdquo; opens Google Translate with the article link only.</li>
       </ul>
     </article>

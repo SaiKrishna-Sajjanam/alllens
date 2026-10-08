@@ -21,6 +21,10 @@ export const WatchIcon = ({ size = 22 }: P) => (
 );
 export const ClockIcon = ({ size = 16 }: P) => <svg {...base(size)}><circle cx="12" cy="12" r="9" /><path d="M12 7v5l3 2" /></svg>;
 export const TrendIcon = ({ size = 16 }: P) => <svg {...base(size)}><path d="M3 17l6-6 4 4 8-8M15 7h6v6" /></svg>;
+export const SpeakerIcon = ({ size = 16 }: P) => (
+  <svg {...base(size)}><path d="M4 9v6h4l5 4V5L8 9H4z" /><path d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12" /></svg>
+);
+export const StopIcon = ({ size = 16 }: P) => <svg {...base(size)}><rect x="6" y="6" width="12" height="12" rx="2" /></svg>;
 export const SearchIcon = ({ size = 20 }: P) => <svg {...base(size)}><circle cx="11" cy="11" r="7" /><path d="M20 20l-4-4" /></svg>;
 export const ArrangeIcon = ({ size = 16 }: P) => <svg {...base(size)}><path d="M7 4L3 8l4 4M3 8h14M17 20l4-4-4-4M21 16H7" /></svg>;
 

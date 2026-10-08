@@ -34,7 +34,7 @@ export default async function SearchPage({ searchParams }: { searchParams: Searc
       {stories.length > 0 && (
         <div className="feed-grid">
           {stories.map((s) => (
-            <StoryCard key={s.id} story={s} lang={lang} translated={cards.titles[s.id]} snippet={cards.snippets[s.id]} />
+            <StoryCard key={s.id} story={s} lang={lang} translated={cards.titles[s.id]} snippet={cards.snippets[s.id]} kind={cards.kinds[s.id]} />
           ))}
         </div>
       )}

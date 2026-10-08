@@ -148,6 +148,12 @@ set role anon;
 select public.count_view('feed', 'web', 'phone', 'te');
 select public.count_view('feed', 'web', 'phone', 'te');
 select public.count_view('not-a-page', 'web', 'phone', 'te');     -- ignored
+select public.count_event('visit_first', 'web');
+select public.count_event('open_original', 'web');
+select public.count_event('open_original', 'web');
+select public.count_event('who-am-i', 'web');                        -- ignored
+select pg_temp.expect_denied('select count(*) from public.usage_events');
+select pg_temp.expect_denied('select public.admin_funnel(30)');
 select pg_temp.expect_denied('select count(*) from public.page_views');
 select pg_temp.expect_denied('select count(*) from public.admins');
 select pg_temp.expect_denied('select count(*) from public.restricted_accounts');
@@ -157,6 +163,7 @@ select pg_temp.expect_denied($q$select public.admin_set_admin('44444444-4444-444
 select pg_temp.expect_denied($q$insert into public.page_views (day, page, platform, device, lang, views) values (current_date, 'feed', 'web', 'phone', 'en', 999)$q$);
 reset role;
 select pg_temp.expect_count($q$select sum(views)::int from public.page_views$q$, 2);
+select pg_temp.expect_count($q$select sum(n)::int from public.usage_events$q$, 3);
 
 -- An ordinary reader: no admin role, no admin functions, cannot make themselves admin.
 set role authenticated;
@@ -165,6 +172,7 @@ select pg_temp.expect_count('select count(*) from (select public.my_admin_role()
 select pg_temp.expect_denied('select public.admin_stats(30)');
 select pg_temp.expect_denied($q$select * from public.admin_find_accounts('example')$q$);
 select pg_temp.expect_denied('select * from public.admin_people()');
+select pg_temp.expect_denied('select public.admin_funnel(30)');
 select pg_temp.expect_denied($q$select public.admin_set_admin('55555555-5555-5555-5555-555555555555', true)$q$);
 select pg_temp.expect_denied($q$select public.admin_set_restricted('44444444-4444-4444-4444-444444444444', true, 'x')$q$);
 select pg_temp.expect_denied($q$insert into public.admins (user_id, role) values ('55555555-5555-5555-5555-555555555555', 'super')$q$);
@@ -177,6 +185,8 @@ select pg_temp.expect_count($q$select count(*) from public.admin_find_accounts('
 select pg_temp.expect_error($q$select public.admin_set_admin('33333333-3333-3333-3333-333333333333', false)$q$);
 select set_config('request.jwt.claim.sub', :'ad', false);
 select pg_temp.expect_count($q$select (public.admin_stats(7)->>'views')::int$q$, 2);
+select pg_temp.expect_count($q$select (public.admin_funnel(7)->>'original')::int$q$, 2);
+select pg_temp.expect_count($q$select (public.admin_funnel(7)->>'feed')::int$q$, 2);
 select pg_temp.expect_denied($q$select public.admin_set_admin('55555555-5555-5555-5555-555555555555', true)$q$);
 select pg_temp.expect_error($q$select public.admin_set_restricted('33333333-3333-3333-3333-333333333333', true, 'no')$q$);
 

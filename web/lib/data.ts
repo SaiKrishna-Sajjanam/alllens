@@ -7,6 +7,7 @@ import {
   ARCHIVE_DAYS, FEED_DAYS, PAGE_SIZE, HIDDEN_BY_HIDE_CRIME, inTab, matchesFilters, pickLabel, sortStories, type TabId,
 } from './feed';
 import { isLang } from './i18n';
+import { ownKind, type OwnKind } from './ownKind';
 import { plainText } from './plaintext';
 import {
   DEFAULT_PREFS, PREFS_COOKIE, UI_COOKIE, VISIT_COOKIE, decodePrefsCookie, prefsFromProfile,
@@ -18,9 +19,15 @@ import type { Article, FeedSort, FollowedStory, Prefs, Source, Story, Viewer } f
 const STORY_COLS =
   'id,label,label_source_id,label_language,labels,first_published_at,last_article_at,article_count,source_count,languages,source_types,places,primary_place,scope,topics,image_url,image_source,created_at';
 const ARTICLE_COLS =
-  'id,source_id,title,snippet,url,published_at,fetched_at,title_updated_at,language,wire_key,primary_place,image_url,story_id,sources(id,name,type,language,region,layer)';
+  'id,source_id,title,snippet,categories,url,published_at,fetched_at,title_updated_at,language,wire_key,primary_place,image_url,story_id,sources(id,name,type,language,region,layer)';
 
-const cleanArticle = (a: Article): Article => ({ ...a, title: plainText(a.title), snippet: plainText(a.snippet) });
+/** A YouTube channel's description is mostly channel boilerplate (subscribe links, dozens of hashtags):
+ *  video reports show their title only. Nothing is reworded (rule 3); the text is just not shown. */
+const isVideoSource = (type: string | null | undefined) => (type ?? '').toLowerCase().includes('video');
+
+const cleanArticle = (a: Article): Article => ({
+  ...a, title: plainText(a.title), snippet: isVideoSource(a.sources?.type) ? null : plainText(a.snippet),
+});
 
 const daysAgo = (n: number) => new Date(Date.now() - n * 86_400_000).toISOString();
 
@@ -221,20 +228,28 @@ export interface CardSnippet {
   language: string | null;
 }
 
-/** The opening lines of the report each card's headline comes from, by story id: the same
- *  source's own words, credited on the card with the headline. */
-export async function getCardSnippets(stories: Story[], lang: string): Promise<Record<string, CardSnippet>> {
+/** For the report each card's headline comes from, by story id: its opening lines (the same
+ *  source's own words, credited on the card with the headline), and its own kind when the outlet
+ *  marks it as opinion, editorial or analysis. */
+export async function getCardSnippets(stories: Story[], lang: string): Promise<{
+  snippets: Record<string, CardSnippet>; kinds: Record<string, OwnKind>;
+}> {
   const byArticle = new Map(stories.map((s): [string, string] => [pickLabel(s, lang).article_id, s.id]).filter(([a]) => a));
-  if (!byArticle.size) return {};
+  if (!byArticle.size) return { snippets: {}, kinds: {} };
   const rows = isConfigured()
     ? await snippetRows([...byArticle.keys()].sort())
     : demoData().articles.filter((a) => byArticle.has(a.id));
-  const out: Record<string, CardSnippet> = {};
-  for (const r of rows) {
+  const snippets: Record<string, CardSnippet> = {};
+  const kinds: Record<string, OwnKind> = {};
+  for (const r of rows as SnippetRow[]) {
+    const storyId = byArticle.get(r.id)!;
+    const kind = ownKind(r.url, r.categories);
+    if (kind) kinds[storyId] = kind;
+    if (isVideoSource(r.sources?.type)) continue;     // title only for YouTube reports
     const snippet = plainText(r.snippet);
-    if (snippet) out[byArticle.get(r.id)!] = { article_id: r.id, snippet, language: r.language };
+    if (snippet) snippets[storyId] = { article_id: r.id, snippet, language: r.language };
   }
-  return out;
+  return { snippets, kinds };
 }
 
 /** When news was last collected: the time the most recent report reached the database. */
@@ -336,10 +351,13 @@ async function sources(): Promise<Source[]> {
   return (data ?? []) as unknown as Source[];
 }
 
-type SnippetRow = { id: string; snippet: string | null; language: string | null };
-const snippetRows = publicCache('snippets', async (ids: string[]): Promise<SnippetRow[]> => {
-  const { data } = await publicClient().from('articles').select('id,snippet,language').in('id', ids);
-  return (data ?? []) as SnippetRow[];
+type SnippetRow = {
+  id: string; snippet: string | null; language: string | null; url?: string | null; categories?: string[] | null;
+  sources?: { type: string | null } | null;
+};
+const snippetRows = publicCache('snippets-v3', async (ids: string[]): Promise<SnippetRow[]> => {
+  const { data } = await publicClient().from('articles').select('id,snippet,language,url,categories,sources(type)').in('id', ids);
+  return (data ?? []) as unknown as SnippetRow[];
 });
 
 // ------------------------------------------------------------------ cached public reads

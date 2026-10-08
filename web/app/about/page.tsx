@@ -4,6 +4,20 @@ import { getViewer } from '@/lib/data';
 
 export const metadata = { title: 'How it works' };
 
+/** Why Vuaz exists, in the founder's own words (spelling corrected only; kept in English as written). */
+function FounderNote() {
+  return (
+    <figure className="founder-note" lang="en">
+      <blockquote>
+        These days news is everywhere, and everybody writes the same news the way they want. So I wanted to create a
+        platform that acts like a mediator: I collect all the news, and you compare and see for yourself. Understand
+        what is really happening, and who is writing what. Read between the lines.
+      </blockquote>
+      <figcaption>Sai Krishna, founder</figcaption>
+    </figure>
+  );
+}
+
 export default async function AboutPage() {
   const viewer = await getViewer();
   return viewer.prefs.uiLanguage === 'te' ? <AboutTe /> : <AboutEn />;
@@ -13,6 +27,7 @@ function AboutEn() {
   return (
     <article className="prose">
       <h1>How Vuaz works</h1>
+      <FounderNote />
       <p>
         When you hear a story from one source, you tend to believe that version. When you see many versions side by
         side, you start comparing and reading between the lines. Vuaz puts every public version of a story in one
@@ -66,6 +81,7 @@ function AboutTe() {
   return (
     <article className="prose" lang="te">
       <h1>Vuaz ఎలా పనిచేస్తుంది</h1>
+      <FounderNote />
       <p>
         ఒక వార్తను ఒకే వనరు నుంచి విన్నప్పుడు ఆ వెర్షన్‌నే నమ్ముతాం. అదే వార్తకు చాలా వెర్షన్లు పక్కపక్కన చూస్తే
         పోల్చి, లోతుగా ఆలోచిస్తాం. ప్రతి వార్తకు ఉన్న అన్ని పబ్లిక్ వెర్షన్లను ఒకే చోట చూపించి, మీరే నిర్ణయించుకునేలా చేయడమే Vuaz లక్ష్యం.

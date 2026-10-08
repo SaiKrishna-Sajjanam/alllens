@@ -62,6 +62,8 @@ export interface Article {
   source_id: string;
   title: string;
   snippet: string | null;
+  /** The feed's own categories for the report (used only to show the outlet's own "Opinion" mark). */
+  categories?: string[] | null;
   url: string;
   published_at: string | null;
   fetched_at: string;

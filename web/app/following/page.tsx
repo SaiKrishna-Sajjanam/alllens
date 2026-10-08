@@ -32,7 +32,7 @@ export default async function FollowingPage() {
             const fresh = Math.max(story.article_count - seenArticleCount, 0);
             return (
               <StoryCard key={story.id} story={story} lang={lang} translated={cards.titles[story.id]}
-                snippet={cards.snippets[story.id]}
+                snippet={cards.snippets[story.id]} kind={cards.kinds[story.id]}
                 extra={
                   <p className={fresh ? 'badge' : 'small muted'} style={{ alignSelf: 'flex-start' }}>
                     {fresh ? t(lang, 'following.newSince', { n: fresh }) : t(lang, 'following.noNew')}

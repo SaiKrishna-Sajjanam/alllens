@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { groupsOf, languageName, mostSpecific, placeName, isTopic, topicName } from '@/lib/catalog';
+import { languageName, mostSpecific, placeName, isTopic, topicName } from '@/lib/catalog';
 import { isNew, labelLanguage, pickLabel } from '@/lib/feed';
 import { formatDay, t } from '@/lib/i18n';
 import type { Lang, Story } from '@/lib/types';
 import { lightPicture } from '@/lib/pictures';
 import { textLanguage } from '@/lib/script';
+import type { OwnKind } from '@/lib/ownKind';
+import OwnKindTag from './OwnKindTag';
 import RemoteImage from './RemoteImage';
 
 interface Props {
@@ -17,16 +19,18 @@ interface Props {
   extra?: React.ReactNode;
   /** The topic being viewed, shown as the card's label (a story can belong to several topics). */
   viewTopic?: string;
+  /** The outlet's own mark on the headline's report (Opinion, Editorial, Analysis). */
+  kind?: OwnKind;
 }
 
 /** One story in a list. The headline and its opening lines are one source's own words,
  *  credited to it, or Google's translation of them, marked as such (the original is on the
  *  story page). */
-export default function StoryCard({ story, lang, translated, snippet, extra, viewTopic }: Props) {
+export default function StoryCard({ story, lang, translated, snippet, extra, viewTopic, kind }: Props) {
   const label = pickLabel(story, lang);
   const labelLang = labelLanguage(story, label) ?? undefined;
   const place = mostSpecific(story.places ?? []);
-  const groups = [...new Set((story.source_types ?? []).flatMap((x) => groupsOf(x)))];
+  const langs = (story.languages ?? []).length;
   const fresh = isNew(story);
   const picture = lightPicture(story.image_url);
   // The card's label: the topic being viewed, else its first topic (topics.json order).
@@ -42,6 +46,7 @@ export default function StoryCard({ story, lang, translated, snippet, extra, vie
       <div className="spread card-top">
         <span className="kicker">
           {[topic ? topicName(topic, lang) : null, place ? placeName(place, lang) : null].filter(Boolean).join(' · ')}
+          {kind && <> <OwnKindTag kind={kind} lang={lang} /></>}
         </span>
         {fresh && (
           <span className="badge">
@@ -49,32 +54,26 @@ export default function StoryCard({ story, lang, translated, snippet, extra, vie
           </span>
         )}
       </div>
-      <h2 className="headline" lang={translated ? lang : labelLang}>{translated ?? label.title}</h2>
+      {/* A translated headline carries the source's own words as a tooltip; the story page shows them too. */}
+      <h2 className="headline" lang={translated ? lang : labelLang} title={translated ? label.title : undefined}>
+        {translated ?? label.title}
+      </h2>
       {snippet && (
         <p className="card-snippet" lang={snippet.translated ? lang : textLanguage(snippet.text, snippet.language) ?? undefined}>
           {snippet.translated ?? snippet.text}
         </p>
       )}
+      {/* The point of Vuaz on every card: how many outlets told this story, in how many languages. */}
+      <p className="card-versions">
+        <span className="count">{langs > 1
+          ? t(lang, 'home.sourcesLangs', { n: story.source_count, l: langs })
+          : story.source_count === 1 ? t(lang, 'feed.source1') : t(lang, 'feed.sources', { n: story.source_count })}</span>
+        {story.source_count > 1 && <span className="versions-cta">{t(lang, 'card.versions')} →</span>}
+      </p>
       <p className="small muted">
         {t(lang, 'feed.firstBy', { source: label.source_name })} · {formatDay(story.last_article_at, lang)}
         {translated || snippet?.translated ? ` · ${t(lang, 'tr.from', { language: languageName(labelLang) })}` : ''}
       </p>
-      <p className="small card-sum">
-        <span className="count">{(story.languages ?? []).length > 1
-          ? t(lang, 'home.sourcesLangs', { n: story.source_count, l: (story.languages ?? []).length })
-          : story.source_count === 1 ? t(lang, 'feed.source1') : t(lang, 'feed.sources', { n: story.source_count })}</span>
-      </p>
-      <div className="row small card-tags">
-        <span className="count">
-          {story.source_count === 1 ? t(lang, 'feed.source1') : t(lang, 'feed.sources', { n: story.source_count })}
-        </span>
-        {(story.languages ?? []).map((l) => (
-          <span key={l} className="tag" lang={l}>{languageName(l)}</span>
-        ))}
-        {groups.map((g) => (
-          <span key={g} className="tag">{t(lang, `group.${g}` as const)}</span>
-        ))}
-      </div>
       {extra}
     </Link>
   );

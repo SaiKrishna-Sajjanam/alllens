@@ -249,9 +249,11 @@ def refresh_story(db: DB, story_id: str, sources: dict, now: datetime) -> bool:
 
 
 def _scope_without_place(arts, sources: dict, gz) -> str:
-    """International, national, or the id of the state, for a story none of whose places is
-    named often enough. Mechanical, from each report's words and the feed it came from
-    (pipeline/data/scope.json lists the names); the same rule for every state."""
+    """International or national, for a story none of whose places is named often enough.
+    Mechanical, from each report's words and the feed it came from (pipeline/data/scope.json
+    lists the names). A state comes only from places the reports name, never from the outlets'
+    home state: state outlets also report national, world and film news (a Tamil paper on a
+    Karnataka minister, a Chhattisgarh channel on Nigeria)."""
     n = len(arts)
     sm = scope_markers()
     layers = [sources.get(a["source_id"], {}).get("layer") for a in arts]
@@ -263,22 +265,7 @@ def _scope_without_place(arts, sources: dict, gz) -> str:
     # "international"), or most reports naming a foreign country, capital, leader or body.
     if world_desk * 2 >= n or (world * 2 > n and world > country):
         return "international"
-    # Naming India, a nationwide institution or another country: the same for every reader.
-    if world or country:
-        return "national"
-    # Otherwise, reported mostly (at least half) by one state's own outlets (sources.csv layer
-    # state/local), and more of them than national outlets: that state.
-    homes = Counter()
-    for a, layer in zip(arts, layers):
-        if layer in ("state", "local"):
-            home = gz.place_of(sources.get(a["source_id"], {}).get("region") or "")
-            if home:
-                homes[home] += 1
-    if homes:
-        home, c = homes.most_common(1)[0]
-        wide = sum(1 for layer in layers if layer in ("national", "international"))
-        if c * 2 >= n and c > wide:
-            return home
+    # Otherwise (naming India, a nationwide institution, or no place at all): the same for every reader.
     return "national"
 
 

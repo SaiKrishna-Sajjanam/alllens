@@ -126,8 +126,8 @@ class GroupingTests(unittest.TestCase):
         self.assertEqual(rows[self.story["world_un"]], ([], "international"))
         self.assertEqual(rows[self.story["world_hyd"]], (["tg"], "state"),
                          "world-desk report naming an Indian place stays in India")
-        # No place named, reported by one state's own outlet: that state.
-        self.assertEqual(rows[self.story["flipkart"]], (["tg"], "state"))
+        # No place named: national, even from one state's own outlet (where it happened, not who reported it).
+        self.assertEqual(rows[self.story["flipkart"]], ([], "national"))
         # No place named, national outlet: national.
         self.assertEqual(rows[self.story["rrb"]], ([], "national"))
 
@@ -176,8 +176,10 @@ class GroupingTests(unittest.TestCase):
         # A state outlet's report on world news is world news; on a nationwide matter, national.
         self.assertEqual(scope(("ntv", "కెనడా ఉత్పత్తులపై అమెరికా నిషేధం ఎందుకు?")), "international")
         self.assertEqual(scope(("kn", "ವಾಹನ ಸವಾರರಿಗೆ ಸುಪ್ರೀಂ ಕೋರ್ಟ್ ಶಾಕ್")), "national")
-        # Nothing country-wide or foreign named: the state whose outlets reported it.
-        self.assertEqual(scope(("ntv", "Flipkart Sale: కొత్త ఫోన్ల జాబితా")), "tg")
+        # Nothing country-wide or foreign named: national, never the outlet's home state.
+        self.assertEqual(scope(("ntv", "Flipkart Sale: కొత్త ఫోన్ల జాబితా")), "national")
+        self.assertEqual(scope(("kn", "Priyank Kharge alleges BJP marks living voters dead"),
+                               ("kn", "Priyank Kharge alleges BJP marks living voters dead")), "national")
         # As many national outlets as the state's own: the same for every reader.
         self.assertEqual(scope(("ntv", "AI safety debate grows"), ("ndtv", "AI safety debate grows")), "national")
         # One report in two naming a foreign company is not enough for International.
@@ -382,6 +384,20 @@ class TopicKeywordTests(unittest.TestCase):
     def tag(self, title, snippet=""):
         from pipeline.tagging import topic_tagger
         return topic_tagger().tag(title, snippet)
+
+    def test_names_that_are_not_the_topic(self):
+        # 2026-10-08: Jio stories from India Mobile Congress (a telecom show) were in Politics.
+        self.assertNotIn("politics", self.tag("Jio Showcases India's AI Playbook at India Mobile Congress 2026"))
+        self.assertNotIn("politics", self.tag("Jio IPO पर क्या बोले आकाश अंबानी", "इंडिया मोबाइल कांग्रेस में"))
+        self.assertIn("politics", self.tag("Congress names candidates for Bihar polls"))
+        self.assertIn("politics", self.tag("Congress leader speaks at India Mobile Congress"), "the party is still named")
+
+    def test_place_spellings_found_in_live_articles(self):
+        from pipeline.tagging import gazetteer
+
+        gz = gazetteer()
+        self.assertEqual(gz.tag("Nandyala accident", "").primary, "ap")
+        self.assertEqual(gz.tag("ಮೈಸೂರು ದಸರಾ", "").primary, "ka")
 
     def test_english_keywords_do_not_match_other_words(self):
         self.assertNotIn("business", self.tag("Afternoon Important News LIVE"))

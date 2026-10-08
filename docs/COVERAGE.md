@@ -26,7 +26,7 @@ Sources collected: **371** (national 134, international 10, state and local 227)
 | Jammu and Kashmir | 5 | 0 | 0 | English, Hindi | Daily Excelsior |
 | Jharkhand | 5 | 0 | 0 | Hindi, English | – |
 | Karnataka | 15 | 0 | 0 | English, Kannada | Asianet Suvarna News (YouTube), Public TV (YouTube), TV9 Kannada (YouTube), Udayavani, Vijay Karnataka |
-| Kerala | 11 | 0 | 7 | Malayalam, English | Deshabhimani, Kerala Kaumudi, Madhyamam, Malayala Manorama, MediaOne |
+| Kerala | 11 | 0 | 7 | Malayalam, English | Deshabhimani, Kerala Kaumudi, Madhyamam, Malayala Manorama, MediaOne TV |
 | Ladakh | 0 | 0 | 0 | – | Reach Ladakh |
 | Lakshadweep | 1 | 0 | 0 | English | – |
 | Madhya Pradesh | 5 | 0 | 0 | Hindi, English | Naidunia |

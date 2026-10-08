@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound, redirect } from 'next/navigation';
 import AdminAccountActions from '@/components/AdminAccountActions';
-import { findAccounts, getAdminPeople, getAdminRole, getAdminStats, type Account, type Count } from '@/lib/admin';
+import { findAccounts, getAdminPeople, getAdminRole, getAdminStats, getFunnel, type Account, type Count, type Funnel } from '@/lib/admin';
 import { languageName, placeName } from '@/lib/catalog';
 import { getViewer } from '@/lib/data';
 
@@ -39,6 +39,42 @@ function Bars({ rows, label }: { rows: { name: string; n: number }[]; label: (na
         </li>
       ))}
     </ul>
+  );
+}
+
+const pct = (part: number, whole: number) => (whole ? `${Math.round((100 * part) / whole)}%` : '—');
+
+/** Feed -> story -> compare -> original, each step with its share of the step before. One series: bars, no legend. */
+function FunnelSection({ f, days }: { f: Funnel; days: number }) {
+  const steps = [
+    { name: 'Feed views', n: f.feed, note: '' },
+    { name: 'Story pages opened', n: f.story, note: `${pct(f.story, f.feed)} of feed views` },
+    { name: 'Compare pages opened', n: f.compare, note: `${pct(f.compare, f.story)} of story pages` },
+    { name: "Outlets' originals opened", n: f.original, note: `${pct(f.original, f.story)} of story pages` },
+  ];
+  const max = Math.max(1, ...steps.map((s) => s.n));
+  const visits = f.visit_first + f.visit_return;
+  return (
+    <section className="panel stack" aria-labelledby="funnel-title">
+      <h2 id="funnel-title">Do readers find the comparison? Last {days} days</h2>
+      <ul className="admin-bars">
+        {steps.map((s) => (
+          <li key={s.name} title={`${s.name}: ${num(s.n)}${s.note ? ` (${s.note})` : ''}`}>
+            <span className="admin-bar-name">{s.name}</span>
+            <span className="admin-bar-track"><span className="admin-bar" style={{ width: `${(100 * s.n) / max}%` }} /></span>
+            <span className="admin-bar-n">{num(s.n)}{s.note && <span className="small muted"> · {s.note}</span>}</span>
+          </li>
+        ))}
+      </ul>
+      <p className="small">
+        <strong>{pct(f.visit_return, visits)}</strong> of visits came from a device that had opened Vuaz before
+        ({num(f.visit_return)} returning, {num(f.visit_first)} first-time).
+      </p>
+      <p className="small muted">
+        Counted, never recorded: daily totals only, no visitor id. Story views include readers arriving from a shared
+        link. These numbers never change what readers see (rule 4).
+      </p>
+    </section>
   );
 }
 
@@ -83,7 +119,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Search
 
   const days = RANGES.includes(Number(sp.days)) ? Number(sp.days) : 30;
   const q = typeof sp.q === 'string' ? sp.q : '';
-  const [stats, people, found] = await Promise.all([getAdminStats(days), getAdminPeople(), findAccounts(q)]);
+  const [stats, people, found, funnel] = await Promise.all([getAdminStats(days), getAdminPeople(), findAccounts(q), getFunnel(days)]);
   if (!stats) notFound();
 
   const perDay = stats.by_day.map((d) => ({ ...d, total: d.web + d.app }));
@@ -114,6 +150,8 @@ export default async function AdminPage({ searchParams }: { searchParams: Search
         <Tile label="Active accounts, 7 days" value={stats.active_7d} />
         <Tile label="Restricted accounts" value={stats.restricted} />
       </section>
+
+      {funnel && <FunnelSection f={funnel} days={days} />}
 
       <section className="panel stack" aria-labelledby="visits-title">
         <h2 id="visits-title">Visits per day</h2>

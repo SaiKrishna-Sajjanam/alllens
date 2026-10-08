@@ -9,7 +9,7 @@ import RemoteImage from './RemoteImage';
 export default function VideoCard({ video, lang }: { video: Video; lang: Lang }) {
   const picture = lightPicture(video.image_url);
   return (
-    <a className="video-card" href={video.url} target="_blank" rel="noopener noreferrer">
+    <a className="video-card" href={video.url} target="_blank" rel="noopener noreferrer" data-count="original">
       <span className="video-thumb">
         {picture && <RemoteImage src={picture} />}
         <span className="play" aria-hidden="true">

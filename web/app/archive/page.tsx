@@ -34,7 +34,7 @@ export default async function ArchivePage({ searchParams }: { searchParams: Sear
         <div className="feed-grid">
           {stories.map((s) => (
             <StoryCard key={s.id} story={s} lang={lang} translated={cards.titles[s.id]}
-              snippet={cards.snippets[s.id]} />
+              snippet={cards.snippets[s.id]} kind={cards.kinds[s.id]} />
           ))}
         </div>
       )}

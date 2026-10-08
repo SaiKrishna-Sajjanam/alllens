@@ -280,6 +280,41 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
 .story-card .card-snippet:lang(te) { font-family: var(--telugu); }
 .read-aloud { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .story-card .count { font-weight: 600; color: var(--accent); }
+/* "12 sources · 5 languages   See all versions →": the line that says what Vuaz is for. */
+.card-versions { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px;
+  margin: 0; font-size: 14px; }
+.card-versions .versions-cta { font-size: 13px; font-weight: 600; color: var(--accent); white-space: nowrap; }
+.story-card:hover .versions-cta { text-decoration: underline; }
+
+/* Story page: "How they headlined it". */
+.headlined { gap: 10px; margin-bottom: 16px; }
+.headlined-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.headlined-list li { padding-left: 12px; border-left: 3px solid var(--accent-soft); }
+.headlined-list .headlined-title { margin: 2px 0 0; font-weight: 600; line-height: 1.35; }
+.headlined .btn { align-self: flex-start; }
+
+/* Weather: State tab strip and the all-states page. */
+.weather-strip { display: flex; align-items: center; gap: 10px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--surface); color: inherit; text-decoration: none; }
+.weather-strip:hover { border-color: var(--accent); }
+.weather-now { font-size: 22px; font-weight: 700; }
+.weather-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.weather-cta { color: var(--accent); font-weight: 600; white-space: nowrap; }
+.weather-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.weather-list li { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border: 1px solid var(--line);
+  border-radius: var(--radius); background: var(--surface); }
+.weather-list li.mine { border-color: var(--accent); }
+.weather-temps { display: flex; flex-direction: column; align-items: flex-end; }
+@media (max-width: 420px) { .weather-strip .weather-cta { display: none; } }
+
+/* First visit only: what Vuaz is, in three lines. */
+.intro-box { position: relative; background: var(--accent-soft); color: var(--accent-soft-ink); border-radius: var(--radius);
+  padding: 14px 44px 14px 16px; margin: 0; }
+.intro-box h2 { font-size: 16px; margin: 0 0 6px; color: inherit; }
+.intro-box ol { margin: 0; padding-left: 20px; display: grid; gap: 2px; font-size: 14px; }
+.intro-box .intro-close { position: absolute; top: 6px; right: 6px; }
+[dir='rtl'] .intro-box { padding: 14px 16px 14px 44px; }
+[dir='rtl'] .intro-box .intro-close { right: auto; left: 6px; }
 /* Outlets' own pictures, loaded from their sites. A picture that fails to load simply collapses. */
 .story-pic { margin: -4px -4px 0; }
 .story-pic img, .report-pic img {
@@ -302,6 +337,12 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
 .filter-row { display: flex; align-items: center; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
 .filter-row .chip { min-height: 36px; font-size: 13px; flex-shrink: 0; }
 .filter-row a.chip { text-decoration: none; }
+/* The topic row scrolls sideways: its edge fades so a cut-off chip reads as "more this way". */
+.topic-row { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to right, #000 calc(100% - 40px), transparent); }
+.topic-row::after { content: ''; flex: 0 0 32px; }   /* room to scroll the last chip clear of the fade */
+[dir='rtl'] .topic-row { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent);
+  mask-image: linear-gradient(to left, #000 calc(100% - 40px), transparent); }
 /* A headline in the reader's language: Google's translation, marked, with the source's own words one tap away. */
 .translated { display: flex; flex-direction: column; gap: 2px; }
 .original summary { cursor: pointer; color: var(--muted); min-height: 32px; display: flex; align-items: center; }
@@ -347,6 +388,12 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
 .list li:last-child { border-bottom: 0; }
 .prose { display: flex; flex-direction: column; gap: 14px; max-width: 720px; }
 .prose h2 { margin-top: 12px; }
+.founder-note { margin: 0; padding: 16px 18px; border-left: 4px solid var(--accent); background: var(--accent-soft);
+  color: var(--accent-soft-ink); border-radius: 0 var(--radius) var(--radius) 0; }
+.founder-note blockquote { margin: 0; font-size: 17px; line-height: 1.55; font-style: italic; }
+.founder-note figcaption { margin-top: 8px; font-size: 14px; font-weight: 600; }
+.founder-note figcaption::before { content: '— '; }
+[dir='rtl'] .founder-note { border-left: 0; border-right: 4px solid var(--accent); border-radius: var(--radius) 0 0 var(--radius); }
 .prose ul, .prose ol { margin: 0; padding-left: 22px; display: flex; flex-direction: column; gap: 6px; }
 
 /* ------------------------------------------------------------------ footer */
@@ -409,11 +456,9 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
   .story-card .headline { font-size: 18px; }
   .story-card .headline:lang(te) { font-size: 16px; }
   .story-card .card-snippet { -webkit-line-clamp: 2; font-size: 13.5px; }
-  .story-card .card-tags { display: none; }
   .topic-head .read-aloud-text { display: none; }
   .topic-head .read-aloud .btn { min-width: 40px; padding-inline: 10px; }
 }
-@media (min-width: 760px) { .story-card .card-sum { display: none; } }
 
 /* Phones and tablets: "Most covered", "Just in" and "Watch" as buttons under the tabs, each opening its
    list in place. On a laptop (1100+) the same lists are in the right-hand column, so the buttons hide
