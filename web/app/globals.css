@@ -414,3 +414,20 @@ textarea { padding: 10px 12px; min-height: 88px; resize: vertical; }
   .topic-head .read-aloud .btn { min-width: 40px; padding-inline: 10px; }
 }
 @media (min-width: 760px) { .story-card .card-sum { display: none; } }
+
+/* Phones and tablets: "Most covered", "Just in" and "Watch" as buttons under the tabs, each opening its
+   list in place. On a laptop (1100+) the same lists are in the right-hand column, so the buttons hide
+   there, and the column's copies hide below 1100. */
+.quick-panels { display: flex; flex-direction: column; gap: 10px; }
+.quick-row { display: flex; gap: 8px; }
+.quick-row .quick-chip { flex: 1 1 auto; }
+.quick-chip { justify-content: center; min-height: 40px; font-size: 13px; font-weight: 600; gap: 6px; padding-inline: 8px; text-align: center; line-height: 1.2; }
+.quick-chip svg { flex-shrink: 0; }
+@media (max-width: 430px) { .quick-chip > svg:first-child { display: none; } .quick-chip { padding-inline: 10px; gap: 4px; } }
+.quick-chip[aria-expanded='true'] { background: var(--accent-soft); color: var(--accent-soft-ink); border-color: var(--accent); }
+.quick-caret { transition: transform 0.15s; }
+.quick-chip[aria-expanded='true'] .quick-caret { transform: rotate(180deg); }
+.quick-body { padding: 12px 14px; }
+@media (min-width: 1100px) { .quick-panels { display: none; } }
+@media (max-width: 1099px) { .home-side .side-list { display: none; } }
+.quick-body .side-videos { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }

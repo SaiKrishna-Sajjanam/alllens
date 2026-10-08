@@ -7,8 +7,9 @@ import { lightPicture } from '@/lib/pictures';
 import type { FeedSort, Lang, Prefs, Story } from '@/lib/types';
 import type { storyCardTexts } from '@/lib/headlines';
 import { textLanguage } from '@/lib/script';
-import { TopicIcon } from './Icons';
+import { ClockIcon, TopicIcon, TrendIcon, WatchIcon } from './Icons';
 import InstallCard from './InstallCard';
+import QuickPanels, { type QuickPanel } from './QuickPanels';
 import ReadAloud, { type Spoken } from './ReadAloud';
 import StatePicker from './StatePicker';
 import StoryCard from './StoryCard';
@@ -83,6 +84,63 @@ export default function FeedView(p: Props) {
   });
   const noState = p.tab === 'state' && !prefs.state;
 
+  // "Most covered", "just in" and videos: in the right-hand column on a laptop, and as buttons under the
+  // tabs on phones and tablets (where that column would sit below the whole topic).
+  const watchHref = p.tab === DEFAULT_TAB ? '/watch' : `/watch?tab=${p.tab}`;
+  const coveredList = (
+    <ol className="ranked">
+      {p.mostCovered.map((s, i) => {
+        const h = headline(s);
+        const topic = firstTopic(s);
+        const pic = i === 0 ? lightPicture(s.image_url) : null;
+        return (
+          <li key={s.id}>
+            <Link href={`/story/${s.id}`}>
+              <span className="rank" aria-hidden="true">{i + 1}</span>
+              <span className="stack" style={{ gap: 4, minWidth: 0, flex: 1 }}>
+                {pic && <span className="ranked-pic"><img src={pic} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /></span>}
+                <span className="ranked-headline" lang={h.lang}>{h.text}</span>
+                <span className="small muted">
+                  {sourcesBadge(s)}
+                  {topic ? ` · ${topicName(topic, lang)}` : ''}
+                </span>
+              </span>
+            </Link>
+          </li>
+        );
+      })}
+    </ol>
+  );
+  const justInList = p.justIn.map((s) => {
+    const h = headline(s);
+    const pic = lightPicture(s.image_url);
+    return (
+      <Link key={s.id} href={`/story/${s.id}`} className="mini-story">
+        <span className="mini-pic">{pic && <img src={pic} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}</span>
+        <span className="stack" style={{ gap: 2, minWidth: 0 }}>
+          <span className="mini-headline" lang={h.lang}>{h.text}</span>
+          <span className="small muted">
+            {formatDay(s.first_published_at, lang)} · {h.label.source_name}
+          </span>
+        </span>
+      </Link>
+    );
+  });
+  const videoList = (
+    <div className="side-videos">
+      {p.videos.slice(0, 3).map((v) => <VideoCard key={v.id} video={v} lang={lang} />)}
+    </div>
+  );
+  const showCovered = !noState && p.mostCovered.length > 0;
+  const showJustIn = !noState && p.justIn.length > 0;
+  const quick: QuickPanel[] = [
+    ...(showCovered ? [{ id: 'covered', label: t(lang, 'home.mostCovered'), icon: <TrendIcon />,
+      content: <><p className="small muted">{t(lang, 'home.mostCoveredNote')}</p>{coveredList}</> }] : []),
+    ...(showJustIn ? [{ id: 'justin', label: t(lang, 'home.justIn'), icon: <ClockIcon />, content: <div className="just-in">{justInList}</div> }] : []),
+    ...(p.videos.length ? [{ id: 'watch', label: t(lang, 'nav.watch'), icon: <WatchIcon size={16} />,
+      content: <>{videoList}<Link className="small" href={watchHref}>{t(lang, 'home.seeAll')}</Link></> }] : []),
+  ];
+
   return (
     <div className="home">
       <div className="feed-head">
@@ -110,6 +168,7 @@ export default function FeedView(p: Props) {
           ))}
         </nav>
         {p.tab === 'state' && <StatePicker prefs={prefs} lang={lang} />}
+        <QuickPanels panels={quick} label={t(lang, 'feed.tabsLabel')} />
         {/* One topic at a time, in the reader's own order; the feed opens on the first (owner's decision,
             2026-10-07: Politics unless the reader moved another topic to the front). */}
         <TopicBar prefs={prefs} lang={lang} topic={p.topic}
@@ -157,63 +216,26 @@ export default function FeedView(p: Props) {
         </section>
 
         <aside className="home-side">
-          {!noState && p.mostCovered.length > 0 && (
-            <section className="side-card" aria-labelledby="most-covered">
+          {showCovered && (
+            <section className="side-card side-list" aria-labelledby="most-covered">
               <h2 id="most-covered">{t(lang, 'home.mostCovered')}</h2>
               <p className="small muted">{t(lang, 'home.mostCoveredNote')}</p>
-              <ol className="ranked">
-                {p.mostCovered.map((s, i) => {
-                  const h = headline(s);
-                  const topic = firstTopic(s);
-                  const pic = i === 0 ? lightPicture(s.image_url) : null;
-                  return (
-                    <li key={s.id}>
-                      <Link href={`/story/${s.id}`}>
-                        <span className="rank" aria-hidden="true">{i + 1}</span>
-                        <span className="stack" style={{ gap: 4, minWidth: 0, flex: 1 }}>
-                          {pic && <span className="ranked-pic"><img src={pic} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" /></span>}
-                          <span className="ranked-headline" lang={h.lang}>{h.text}</span>
-                          <span className="small muted">
-                            {sourcesBadge(s)}
-                            {topic ? ` · ${topicName(topic, lang)}` : ''}
-                          </span>
-                        </span>
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ol>
+              {coveredList}
             </section>
           )}
-          {!noState && p.justIn.length > 0 && (
-            <section className="side-card just-in" aria-labelledby="just-in">
+          {showJustIn && (
+            <section className="side-card side-list just-in" aria-labelledby="just-in">
               <h2 id="just-in">{t(lang, 'home.justIn')}</h2>
-              {p.justIn.map((s) => {
-                const h = headline(s);
-                const pic = lightPicture(s.image_url);
-                return (
-                  <Link key={s.id} href={`/story/${s.id}`} className="mini-story">
-                    <span className="mini-pic">{pic && <img src={pic} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" />}</span>
-                    <span className="stack" style={{ gap: 2, minWidth: 0 }}>
-                      <span className="mini-headline" lang={h.lang}>{h.text}</span>
-                      <span className="small muted">
-                        {formatDay(s.first_published_at, lang)} · {h.label.source_name}
-                      </span>
-                    </span>
-                  </Link>
-                );
-              })}
+              {justInList}
             </section>
           )}
           {p.videos.length > 0 && (
-            <section className="side-card" aria-labelledby="watch-title">
+            <section className="side-card side-list" aria-labelledby="watch-title">
               <div className="spread">
                 <h2 id="watch-title">{t(lang, 'home.watch')}</h2>
-                <Link className="small" href={p.tab === DEFAULT_TAB ? '/watch' : `/watch?tab=${p.tab}`}>{t(lang, 'home.seeAll')}</Link>
+                <Link className="small" href={watchHref}>{t(lang, 'home.seeAll')}</Link>
               </div>
-              <div className="side-videos">
-                {p.videos.slice(0, 3).map((v) => <VideoCard key={v.id} video={v} lang={lang} />)}
-              </div>
+              {videoList}
             </section>
           )}
           <InstallCard labels={{ title: t(lang, 'install.title'), body: t(lang, 'install.body'), button: t(lang, 'install.button'), ios: t(lang, 'install.ios') }} />
