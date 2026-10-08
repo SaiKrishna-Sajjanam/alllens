@@ -205,46 +205,7 @@ grant execute on function public.admin_stats(integer) to authenticated;
 
 -- ---------------------------------------------------------------- admin: people
 
--- Accounts whose email contains the text (admins only), with their role and restriction.
-create or replace function public.admin_find_accounts(q text)
-returns table (user_id uuid, email text, created_at timestamptz, last_sign_in_at timestamptz,
-               role text, restricted boolean, reason text)
-language plpgsql stable security definer set search_path = '' as $$
-begin
-    if public.my_admin_role() is null then
-        raise exception 'admins only' using errcode = '42501';
-    end if;
-    return query
-        select u.id, u.email::text, u.created_at, u.last_sign_in_at, a.role, r.user_id is not null, r.reason
-        from auth.users u
-        left join public.admins a on a.user_id = u.id
-        left join public.restricted_accounts r on r.user_id = u.id
-        where char_length(coalesce(q, '')) between 2 and 200
-          and u.email ilike '%' || replace(replace(replace(q, '\', '\\'), '%', '\%'), '_', '\_') || '%'
-        order by u.created_at desc
-        limit 20;
-end $$;
-revoke all on function public.admin_find_accounts(text) from public, anon;
-grant execute on function public.admin_find_accounts(text) to authenticated;
-
--- Every admin, and every restricted account (admins only).
-create or replace function public.admin_people()
-returns table (user_id uuid, email text, role text, restricted boolean, reason text, since timestamptz)
-language plpgsql stable security definer set search_path = '' as $$
-begin
-    if public.my_admin_role() is null then
-        raise exception 'admins only' using errcode = '42501';
-    end if;
-    return query
-        select u.id, u.email::text, a.role, r.user_id is not null, r.reason, coalesce(a.created_at, r.created_at)
-        from auth.users u
-        left join public.admins a on a.user_id = u.id
-        left join public.restricted_accounts r on r.user_id = u.id
-        where a.user_id is not null or r.user_id is not null
-        order by a.role nulls last, coalesce(a.created_at, r.created_at);
-end $$;
-revoke all on function public.admin_people() from public, anon;
-grant execute on function public.admin_people() to authenticated;
+-- admin_find_accounts() and admin_people() are in 20261008000200_display_name.sql (they show names).
 
 -- The super admin makes an account an admin (make_admin = true) or removes its admin status.
 -- The super admin's own role never changes here.

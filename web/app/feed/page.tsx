@@ -1,6 +1,9 @@
 import FeedView from '@/components/FeedView';
+import { redirect } from 'next/navigation';
 import MarkVisited from '@/components/MarkVisited';
+import { amIRestricted } from '@/lib/admin';
 import { getFeed, getHighlights, getLastRefresh, getVideos, getViewer } from '@/lib/data';
+import { greetingKey } from '@/lib/displayName';
 import { DEFAULT_SORT, normaliseTab, normaliseTopic, tabsFor } from '@/lib/feed';
 import { storyCardTexts } from '@/lib/headlines';
 import { t } from '@/lib/i18n';
@@ -14,6 +17,8 @@ const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
 export default async function FeedPage({ searchParams }: { searchParams: Search }) {
   const sp = await searchParams;
   const viewer = await getViewer();
+  // Signed in before names were asked: ask once (not a restricted account, which cannot save it).
+  if (viewer.user?.needsName && !(await amIRestricted())) redirect('/name?next=/feed');
   const { prefs } = viewer;
   const lang = prefs.uiLanguage;
   const tab = normaliseTab(one(sp.tab));
@@ -34,8 +39,8 @@ export default async function FeedPage({ searchParams }: { searchParams: Search 
   const seen = new Set<string>();
   const all = [...feed.stories, ...highlights.mostCovered, ...highlights.justIn].filter((s) => !seen.has(s.id) && seen.add(s.id));
   const cards = await storyCardTexts(all, lang);
-  const hour = Number(new Date().toLocaleString('en-US', { hour: 'numeric', hourCycle: 'h23', timeZone: 'Asia/Kolkata' }));
-  const greeting = hour < 12 ? 'feed.morning' : hour < 17 ? 'feed.afternoon' : 'feed.evening';
+  const name = viewer.user?.name ?? null;
+  const greeting = t(lang, greetingKey(name, viewer.lastVisit), name ? { name } : undefined);
   return (
     <>
       <FeedView

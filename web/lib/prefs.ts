@@ -68,6 +68,7 @@ export interface ProfileRow {
   ai_assistant: string;
   topic_order: string[];
   last_visit_at?: string | null;
+  display_name?: string | null;
 }
 
 export function prefsFromProfile(row: Partial<ProfileRow>): Prefs {

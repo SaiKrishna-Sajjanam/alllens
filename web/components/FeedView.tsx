@@ -38,7 +38,8 @@ interface Props {
   /** When news was last collected. */
   lastRefresh: string | null;
   /** Morning, afternoon or evening in India. */
-  greeting: 'feed.morning' | 'feed.afternoon' | 'feed.evening';
+  /** Already in the reader's language, with their name when signed in. */
+  greeting: string;
 }
 
 const SORTS: FeedSort[] = ['sources', 'latest', 'random'];
@@ -146,7 +147,7 @@ export default function FeedView(p: Props) {
       <div className="feed-head">
         <div className="spread">
           <div className="stack" style={{ gap: 2 }}>
-            <h1>{t(lang, p.greeting)}</h1>
+            <h1>{p.greeting}</h1>
             <p className="muted feed-tagline">{t(lang, 'feed.tagline')}</p>
           </div>
           <Link className="btn btn-secondary btn-small" href="/settings">{t(lang, 'feed.edit')}</Link>

@@ -58,7 +58,8 @@ function People({ rows, viewerRole, selfId }: { rows: Account[]; viewerRole: 'su
       {rows.map((a) => (
         <li key={a.user_id}>
           <div className="stack" style={{ gap: 2, minWidth: 0 }}>
-            <strong className="admin-email">{a.email ?? a.user_id}</strong>
+            <strong className="admin-email">{a.display_name ?? a.email ?? a.user_id}</strong>
+            {a.display_name && a.email && <span className="small muted admin-email">{a.email}</span>}
             <span className="small muted">
               {a.role === 'super' ? 'Super admin' : a.role === 'admin' ? 'Admin' : 'Reader'}
               {a.restricted ? ` · Restricted${a.reason ? `: ${a.reason}` : ''}` : ''}
@@ -198,7 +199,7 @@ export default async function AdminPage({ searchParams }: { searchParams: Search
         <h2 id="find-title">Find an account</h2>
         <form className="row" action="/admin" method="get">
           <input type="hidden" name="days" value={days} />
-          <input name="q" type="search" defaultValue={q} minLength={2} placeholder="Part of an email address" aria-label="Email" style={{ flex: 1, minWidth: 200 }} />
+          <input name="q" type="search" defaultValue={q} minLength={2} placeholder="Part of a name or email address" aria-label="Name or email" style={{ flex: 1, minWidth: 200 }} />
           <button className="btn btn-primary btn-small" type="submit">Find</button>
         </form>
         {q && (found.length ? <People rows={found} viewerRole={role} selfId={viewer.user.id} />

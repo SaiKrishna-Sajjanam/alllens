@@ -40,7 +40,13 @@ export const getViewer = cache(async (): Promise<Viewer> => {
   if (!user) return { configured: true, ...guest };
 
   const { data: row } = await supabase.from('profiles').select('*').eq('user_id', user.id).maybeSingle();
-  const me = { id: user.id, email: user.email ?? user.phone ?? null };
+  const me = {
+    id: user.id,
+    email: user.email ?? user.phone ?? null,
+    name: (row?.display_name as string | null | undefined) ?? null,
+    // undefined (not null) means the database does not have the column yet: ask nobody then.
+    needsName: !!row && row.display_name === null,
+  };
   if (!row) return { configured: true, ...guest, user: me };
   return { configured: true, user: me, prefs: prefsFromProfile(row), hasPrefs: true, lastVisit: row.last_visit_at ?? null };
 });

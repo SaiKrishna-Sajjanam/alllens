@@ -201,6 +201,19 @@ select set_config('request.jwt.claim.sub', :'ad', false);
 select public.admin_set_restricted(:'rd', false);
 select set_config('request.jwt.claim.sub', :'rd', false);
 insert into public.follows (user_id, story_id) values (:'rd', 'st2');
+
+-- Display names: the reader sets their own (1 to 40 letters, trimmed); nobody else reads it; admins see it.
+update public.profiles set display_name = 'Reader One' where user_id = :'rd';
+select pg_temp.expect_count($q$select count(*) from public.profiles where display_name = 'Reader One'$q$, 1);
+select pg_temp.expect_error($q$update public.profiles set display_name = '' where user_id = '55555555-5555-5555-5555-555555555555'$q$);
+select pg_temp.expect_error($q$update public.profiles set display_name = ' padded' where user_id = '55555555-5555-5555-5555-555555555555'$q$);
+select pg_temp.expect_error($q$update public.profiles set display_name = repeat('a', 41) where user_id = '55555555-5555-5555-5555-555555555555'$q$);
+select set_config('request.jwt.claim.sub', :'u1', false);
+select pg_temp.expect_count($q$select count(*) from public.profiles where display_name is not null$q$, 0);
+update public.profiles set display_name = 'Hijacked' where user_id = :'rd';  -- no row of theirs: changes nothing
+select set_config('request.jwt.claim.sub', :'ad', false);
+select pg_temp.expect_count($q$select count(*) from public.admin_find_accounts('reader one') where display_name = 'Reader One'$q$, 1);
+
 select set_config('request.jwt.claim.sub', :'su', false);
 select public.admin_set_admin(:'ad', false);
 select set_config('request.jwt.claim.sub', :'ad', false);

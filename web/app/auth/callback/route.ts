@@ -12,6 +12,10 @@ export async function GET(request: Request) {
     const { data, error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error && data.user) {
       await ensureProfile(supabase, data.user.id);
+      // No name yet: ask for one first. (An error means the database is older than display names.)
+      const { data: row, error: nameError } = await supabase
+        .from('profiles').select('display_name').eq('user_id', data.user.id).maybeSingle();
+      if (!nameError && !row?.display_name) return NextResponse.redirect(`${origin}/name?next=${encodeURIComponent(next)}`);
       return NextResponse.redirect(`${origin}${next}`);
     }
   }

@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { deleteAccount, signOut } from '@/app/actions';
+import NameForm from '@/components/NameForm';
 import PrefsForm from '@/components/PrefsForm';
-import { amIRestricted } from '@/lib/admin';
+import { amIRestricted, getAdminRole } from '@/lib/admin';
 import { getViewer } from '@/lib/data';
 import { t } from '@/lib/i18n';
 
@@ -13,10 +14,14 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
   const sp = await searchParams;
   const viewer = await getViewer();
   const lang = viewer.prefs.uiLanguage;
-  const restricted = viewer.user ? await amIRestricted() : false;
+  const [restricted, adminRole] = viewer.user ? await Promise.all([amIRestricted(), getAdminRole()]) : [false, null];
   return (
     <div className="narrow stack-lg">
-      <h1>{t(lang, 'settings.title')}</h1>
+      <div className="spread">
+        <h1>{t(lang, 'settings.title')}</h1>
+        {/* Only admins see this (the admin page is not translated: it is a tool for the team). */}
+        {adminRole && <Link className="btn btn-secondary btn-small" href="/admin">Admin page</Link>}
+      </div>
       {restricted && <p className="notice" role="note">{t(lang, 'settings.restricted')}</p>}
       <section className="stack" aria-labelledby="reading">
         <h2 id="reading">{t(lang, 'settings.reading')}</h2>
@@ -28,6 +33,7 @@ export default async function SettingsPage({ searchParams }: { searchParams: Sea
         {viewer.user ? (
           <>
             <p>{t(lang, 'settings.signedInAs', { email: viewer.user.email ?? '' })}</p>
+            {!restricted && <NameForm lang={lang} from="settings" initial={viewer.user.name ?? ''} />}
             <form action={signOut}>
               <button className="btn btn-secondary" type="submit">{t(lang, 'settings.signOut')}</button>
             </form>

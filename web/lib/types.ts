@@ -81,7 +81,9 @@ export interface FollowedStory {
 
 export interface Viewer {
   configured: boolean;
-  user: { id: string; email: string | null } | null;
+  /** name: what the reader asked to be called (null until they write one, after signing in). */
+  /** needsName: signed in but no name written yet (only once the database has the column). */
+  user: { id: string; email: string | null; name: string | null; needsName: boolean } | null;
   prefs: Prefs;
   hasPrefs: boolean;
   lastVisit: string | null;

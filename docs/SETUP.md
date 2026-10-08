@@ -75,7 +75,7 @@ Readers sign in with Google only; the app never sends email. Reading needs no ac
 2. Google Cloud Console (free) → APIs & Services → **OAuth consent screen**: External, app name Vuaz, your support email. Then **Credentials → Create OAuth client ID** (Web application). Authorised redirect URI: the callback URL shown in Supabase → Authentication → Providers → Google. Paste the client ID and secret into that Supabase page and enable it.
 3. Supabase → Authentication → Providers → **Email**: turn it off, so no sign-in email is ever sent.
 
-**Check:** on the site, Sign in → Continue with Google → you land on your feed; your choices are kept; Follow works; Settings shows your Google email.
+**Check:** on the site, Sign in → Continue with Google → the app asks "What should we call you?" once (filled in with your Google name; change it if you like) → you land on your feed, greeted by that name; your choices are kept; Follow works; Settings shows your Google email.
 
 ## 5b. Headlines in every reader's language (10 min)
 

@@ -3,10 +3,12 @@
 import { revalidatePath } from 'next/cache';
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { cleanName } from '@/lib/displayName';
 import { isConfigured } from '@/lib/env';
 import { isLang } from '@/lib/i18n';
+import { safeNextPath } from '@/lib/paths';
 import {
-  PREFS_COOKIE, UI_COOKIE, VISIT_COOKIE, cleanPrefs, decodePrefsCookie, encodePrefsCookie, profileFromPrefs,
+  DEFAULT_PREFS, PREFS_COOKIE, UI_COOKIE, VISIT_COOKIE, cleanPrefs, decodePrefsCookie, encodePrefsCookie, profileFromPrefs,
 } from '@/lib/prefs';
 import { createClient } from '@/lib/supabase/server';
 import type { Lang } from '@/lib/types';
@@ -76,6 +78,29 @@ export async function toggleFollow(storyId: string, follow: boolean): Promise<{ 
   revalidatePath(`/story/${storyId}`);
   revalidatePath('/following');
   return { ok: true, following: follow };
+}
+
+export type NameState = { status: 'idle' | 'saved' | 'empty' | 'failed' };
+
+/** Save the name the reader wants to be greeted with. From the page asked after sign-in it then
+ *  continues to `next` (or to choosing a state, for a brand-new account); from Settings it stays. */
+export async function saveName(_prev: NameState, form: FormData): Promise<NameState> {
+  const name = cleanName(form.get('name'));
+  if (!name) return { status: 'empty' };
+  const { supabase, user } = await currentUser();
+  if (!supabase || !user) redirect('/login?next=/name');
+  const { data: row } = await supabase.from('profiles').select('user_id').eq('user_id', user.id).maybeSingle();
+  const guest = decodePrefsCookie((await cookies()).get(PREFS_COOKIE)?.value);
+  const { error } = row
+    ? await supabase.from('profiles').update({ display_name: name, updated_at: new Date().toISOString() }).eq('user_id', user.id)
+    : await supabase.from('profiles').insert({
+      ...profileFromPrefs(user.id, guest ?? DEFAULT_PREFS), display_name: name, last_seen_at: new Date().toISOString(),
+    });
+  if (error) return { status: 'failed' };
+  revalidatePath('/', 'layout');
+  if (form.get('from') === 'settings') return { status: 'saved' };
+  // A new account that never chose a state goes on to choose one, as a guest would.
+  redirect(row || guest ? safeNextPath(String(form.get('next') ?? '')) : '/welcome');
 }
 
 export type SuggestState = { status: 'idle' | 'ok' | 'error' | 'signin' };

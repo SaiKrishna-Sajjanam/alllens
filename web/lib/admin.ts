@@ -31,6 +31,7 @@ export interface AdminStats {
 export interface Account {
   user_id: string;
   email: string | null;
+  display_name?: string | null;
   role: AdminRole | null;
   restricted: boolean;
   reason: string | null;
@@ -60,7 +61,7 @@ export async function getAdminPeople(): Promise<Account[]> {
   return (data ?? []) as Account[];
 }
 
-/** Accounts whose email contains the text (at least 2 characters). */
+/** Accounts whose email or name contains the text (at least 2 characters). */
 export async function findAccounts(q: string): Promise<Account[]> {
   const text = q.trim().slice(0, 200);
   if (text.length < 2) return [];
